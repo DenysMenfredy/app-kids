@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (backend/functions and rules tests have their own, this is a safety net)
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example

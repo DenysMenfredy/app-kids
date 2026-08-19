@@ -1,0 +1,195 @@
+rules_version = '2';
+
+// Letrando — Firestore Security Rules
+//
+// Trust model (spec §12–§16):
+//   - The mobile client is untrusted.
+//   - Clients may read/write only their own user-centric data, and may never
+//     touch privileged state (roles, subscriptions, entitlements, webhooks).
+//   - Subscription/entitlement/role writes happen exclusively in Cloud
+//     Functions through the Admin SDK (which bypasses these rules).
+//   - Published educational content is world-readable for authenticated
+//     users; content writes go through admin functions only.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function incomingKeysOnly(allowed) {
+      return request.resource.data.keys().hasOnly(allowed);
+    }
+
+    // Client-writable user profile fields. Privileged fields (role,
+    // stripeCustomerId, ...) are absent from this list, so any attempt to
+    // write them is rejected.
+    function validUserProfile() {
+      return incomingKeysOnly([
+        'email', 'displayName', 'locale', 'timezone',
+        'onboardingState', 'createdAt', 'updatedAt'
+      ]);
+    }
+
+    // Child-data constraint (spec §4, §19): minimum required data only.
+    // school / address / precise location / phone / photos are not allowed.
+    function validChild() {
+      return incomingKeysOnly([
+        'name', 'birthDate', 'age', 'avatarId', 'learningLevel',
+        'currentCourseId', 'currentLessonId', 'createdAt', 'updatedAt'
+      ]);
+    }
+
+    function validNotificationPreferences() {
+      return incomingKeysOnly([
+        'dailyReminder', 'achievement', 'weeklyReport', 'subscription',
+        'marketing', 'preferredTime', 'updatedAt'
+      ]);
+    }
+
+    function validLearningProgress() {
+      return incomingKeysOnly([
+        'lessonId', 'childId', 'status', 'startedAt', 'completedAt',
+        'durationSeconds', 'score', 'attempts', 'correctAnswers',
+        'wrongAnswers', 'updatedAt'
+      ])
+        && request.resource.data.status in ['in_progress', 'completed', 'abandoned']
+        && (!('score' in request.resource.data)
+            || (request.resource.data.score is int
+                && request.resource.data.score >= 0
+                && request.resource.data.score <= 100));
+    }
+
+    function validActivityAttempt() {
+      return incomingKeysOnly([
+        'activityId', 'lessonId', 'childId', 'type', 'answer', 'correct',
+        'attemptNumber', 'responseTimeMs', 'createdAt'
+      ])
+        && request.resource.data.correct is bool
+        && request.resource.data.attemptNumber is int
+        && request.resource.data.attemptNumber >= 1;
+    }
+
+    function validSession() {
+      return incomingKeysOnly([
+        'childId', 'startedAt', 'endedAt', 'durationSeconds',
+        'appVersion', 'platform'
+      ]);
+    }
+
+    function isPublished() {
+      return resource.data.published == true;
+    }
+
+    // ---------- user-centric private data ----------
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validUserProfile();
+      allow delete: if false; // account deletion runs through the backend
+
+      match /children/{childId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validChild();
+        allow delete: if isOwner(uid);
+      }
+
+      match /devices/{deviceId} {
+        // Registered/updated exclusively through the registerDevice callable
+        // so token bookkeeping stays consistent.
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /subscriptions/{subscriptionId} {
+        allow read: if isOwner(uid);
+        allow write: if false; // backend only (spec §13)
+      }
+
+      match /entitlements/{entitlementId} {
+        allow read: if isOwner(uid);
+        allow write: if false; // backend only (spec §13)
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isOwner(uid);
+        allow write: if false; // backend fan-out only
+      }
+
+      match /notificationPreferences/{preferenceId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validNotificationPreferences();
+        allow delete: if false;
+      }
+
+      match /sessions/{sessionId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validSession();
+        allow update: if isOwner(uid) && validSession();
+        allow delete: if false;
+      }
+
+      match /learningProgress/{progressId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validLearningProgress();
+        allow delete: if false;
+      }
+
+      match /activityAttempts/{attemptId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validActivityAttempt();
+        allow update, delete: if false; // attempts are immutable facts
+      }
+    }
+
+    // ---------- global/shared educational content (read-only) ----------
+
+    match /courses/{courseId} {
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /modules/{moduleId} {
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /lessons/{lessonId} {
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /activities/{activityId} {
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /products/{productId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /featureFlags/{flagId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // ---------- backend-internal ----------
+
+    match /webhookEvents/{eventId} {
+      allow read, write: if false; // Admin SDK only
+    }
+
+    // deny-by-default for anything not matched above
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

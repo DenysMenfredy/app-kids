@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Letrando — Cloud Storage Rules
+//
+// Storage holds binary educational assets only (spec §6). Firestore holds
+// metadata. Content writes go through admin tooling with the Admin SDK or
+// content_editor custom claims — never from the regular mobile client.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isContentEditor() {
+      return signedIn()
+        && (request.auth.token.role == 'content_editor'
+            || request.auth.token.role == 'admin');
+    }
+
+    // /content/{audio|images|illustrations|books|animations}/...
+    match /content/{assetType}/{allPaths=**} {
+      allow read: if signedIn();
+      allow write: if isContentEditor();
+    }
+
+    // deny-by-default: no user uploads in the MVP (no child photos — §19)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

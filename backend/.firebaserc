@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "dev": "letrando-dev",
+    "staging": "letrando-staging",
+    "production": "letrando-production",
+    "default": "letrando-dev"
+  }
+}
