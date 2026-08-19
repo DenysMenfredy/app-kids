@@ -9,6 +9,8 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_stats_controller.dart';
+import '../../data/lesson_sync_service.dart';
 import '../../domain/lesson.dart';
 import '../../../session/application/session_controller.dart';
 
@@ -31,6 +33,7 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
   void _onTap(String word) {
     if (_done) return;
     if (word == _answer) {
+      ref.read(lessonStatsProvider.notifier).recordCorrect();
       ref.read(ttsServiceProvider).speak('Parabéns!');
       setState(() {
         _picked = word;
@@ -38,14 +41,25 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       });
       Future.delayed(const Duration(milliseconds: 1000), () {
         if (mounted) {
-          // Lesson finished: grant rewards before showing the celebration.
+          // Lesson finished: grant local rewards, report to the backend,
+          // then celebrate.
           ref.read(sessionProvider.notifier).completeLesson();
+          final stats = ref.read(lessonStatsProvider);
+          ref.read(lessonSyncServiceProvider).lessonCompleted(
+                todaysLessonId,
+                durationSeconds: stats.durationSeconds(DateTime.now()),
+                score: stats.score,
+                attempts: stats.attempts,
+                correctAnswers: stats.correctAnswers,
+                wrongAnswers: stats.wrongAnswers,
+              );
           context.goNamed(
             ref.read(lessonFlowProvider).nextRoute(ActivityType.listen),
           );
         }
       });
     } else {
+      ref.read(lessonStatsProvider.notifier).recordWrong();
       setState(() {
         _picked = word;
         _wrongAttempts++;

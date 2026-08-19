@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../learning/domain/learning_module.dart';
+import '../../paywall/application/entitlement_provider.dart';
 import '../../session/application/session_controller.dart';
 
 class _DayActivity {
@@ -68,26 +69,45 @@ class DashboardScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () => context.goNamed(AppRoutes.paywall),
-                          child: Container(
+                        if (ref.watch(isPremiumProvider))
+                          Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
                               vertical: 9,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.purplePale,
+                              color: AppColors.greenPale,
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
-                              'Teste grátis · 5 dias',
+                              'Premium ativo',
                               style: AppTextStyles.baloo(
                                 13,
-                                color: AppColors.purple,
+                                color: AppColors.greenDark,
+                              ),
+                            ),
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () => context.goNamed(AppRoutes.paywall),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 9,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.purplePale,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                'Teste grátis · 5 dias',
+                                style: AppTextStyles.baloo(
+                                  13,
+                                  color: AppColors.purple,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 16),

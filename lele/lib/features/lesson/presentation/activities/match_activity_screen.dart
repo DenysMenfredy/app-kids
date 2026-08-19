@@ -9,6 +9,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 
 const _uppercase = ['A', 'B', 'C'];
@@ -40,6 +41,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
     if (_matched.contains(upper) || _selected == null) return;
     if (upper == _selected) {
       final all = _matched.length + 1 == _uppercase.length;
+      ref.read(lessonStatsProvider.notifier).recordCorrect();
       ref.read(ttsServiceProvider).speak(all ? 'Incrível!' : 'Isso!');
       setState(() {
         _matched.add(upper);
@@ -56,6 +58,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
         });
       }
     } else {
+      ref.read(lessonStatsProvider.notifier).recordWrong();
       setState(() {
         _wrong = letter;
         _wrongAttempts++;

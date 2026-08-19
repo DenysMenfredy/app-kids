@@ -42,6 +42,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           );
       ref.read(sessionProvider.notifier).setParentName(_nameController.text);
       if (mounted) context.goNamed(AppRoutes.profileSetup);
+    } on AuthFailure catch (failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: AppColors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

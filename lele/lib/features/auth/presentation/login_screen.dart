@@ -37,6 +37,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             password: _passwordController.text,
           );
       if (mounted) context.goNamed(AppRoutes.dashboard);
+    } on AuthFailure catch (failure) {
+      _showError(failure.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -48,9 +50,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
       if (mounted) context.goNamed(AppRoutes.dashboard);
+    } on AuthFailure catch (failure) {
+      _showError(failure.message);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override

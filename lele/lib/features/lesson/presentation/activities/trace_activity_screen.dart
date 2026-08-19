@@ -9,6 +9,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_button.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 
 const _letter = 'A';
@@ -39,6 +40,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
 
   void _finish() {
     if (!_hasTraced) return;
+    ref.read(lessonStatsProvider.notifier).recordCorrect();
     ref.read(ttsServiceProvider).speak('Que capricho!');
     context.goNamed(
       ref.read(lessonFlowProvider).nextRoute(ActivityType.trace),

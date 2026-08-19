@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/storage/local_storage.dart';
+import '../data/profile_sync_service.dart';
 import '../domain/child_profile.dart';
 
 /// Everything the app knows about the current family: parent, child profile
@@ -83,11 +86,17 @@ class SessionController extends Notifier<SessionState> {
     if (name.trim().isEmpty) return;
     state = state.copyWith(parentName: name.trim());
     _persist();
+    unawaited(
+      ref.read(profileSyncServiceProvider).syncParentName(state.parentName),
+    );
   }
 
   void saveChildProfile(ChildProfile profile) {
     state = state.copyWith(child: profile);
     _persist();
+    final sync = ref.read(profileSyncServiceProvider);
+    unawaited(sync.syncChildProfile(profile));
+    unawaited(sync.syncOnboardingState('child_profile_created'));
   }
 
   /// Rewards granted when the daily lesson is completed.

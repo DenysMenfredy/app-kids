@@ -1,21 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
+import '../data/subscription_service.dart';
 import '../domain/plan.dart';
 
-class PaywallScreen extends StatefulWidget {
+class PaywallScreen extends ConsumerStatefulWidget {
   const PaywallScreen({super.key});
 
   @override
-  State<PaywallScreen> createState() => _PaywallScreenState();
+  ConsumerState<PaywallScreen> createState() => _PaywallScreenState();
 }
 
-class _PaywallScreenState extends State<PaywallScreen> {
+class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   String _selectedPlanId = 'annual';
+  bool _busy = false;
+
+  /// App plan ids → backend/Stripe plan ids (domain/plans.ts).
+  static const _backendPlanIds = {
+    'monthly': 'founder_monthly',
+    'quarterly': 'founder_quarterly',
+    'annual': 'founder_annual',
+  };
+
+  Future<void> _startCheckout() async {
+    if (_busy) return;
+    if (!AppConfig.useFirebase) {
+      // Demo mode: no payments backend — keep the prototype behavior.
+      context.goNamed(AppRoutes.dashboard);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      final url = await ref
+          .read(subscriptionServiceProvider)
+          .createCheckoutSession(_backendPlanIds[_selectedPlanId]!);
+      final launched = await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        throw const CheckoutFailure('Não foi possível abrir o pagamento.');
+      }
+    } on CheckoutFailure catch (failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(failure.message),
+            backgroundColor: AppColors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +134,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
               ],
               const SizedBox(height: 2),
               LeleButton(
-                label: 'Começar teste grátis de 7 dias',
+                label: _busy
+                    ? 'Abrindo pagamento...'
+                    : 'Começar teste grátis de 7 dias',
                 fontSize: 19,
                 color: AppColors.purple,
                 shadowColor: AppColors.purpleDark,
-                onPressed: () => context.goNamed(AppRoutes.dashboard),
+                enabled: !_busy,
+                onPressed: _startCheckout,
               ),
               const SizedBox(height: 12),
               Text(

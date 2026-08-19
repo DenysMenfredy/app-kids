@@ -9,6 +9,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 
 const _target = 'B';
@@ -29,7 +30,9 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
   void _onTap(String letter) {
     if (_done) return;
     final tts = ref.read(ttsServiceProvider);
+    final stats = ref.read(lessonStatsProvider.notifier);
     if (letter == _target) {
+      stats.recordCorrect();
       tts.speak('Muito bem!');
       setState(() {
         _picked = letter;
@@ -43,6 +46,7 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
         }
       });
     } else {
+      stats.recordWrong();
       tts.speak('Tente de novo');
       setState(() {
         _picked = letter;
