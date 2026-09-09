@@ -1,0 +1,18 @@
+{
+  "id": "course_001",
+  "title": "Jornada de Alfabetização",
+  "description": "Da coordenação motora às primeiras histórias, 15 minutos por dia.",
+  "locale": "pt-BR",
+  "order": 1,
+  "moduleIds": [
+    "module_001",
+    "module_002",
+    "module_003",
+    "module_004",
+    "module_005",
+    "module_006",
+    "module_007"
+  ],
+  "lessonCount": 37,
+  "published": true
+}

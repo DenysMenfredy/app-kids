@@ -1,0 +1,93 @@
+[
+  {
+    "id": "module_001",
+    "courseId": "course_001",
+    "number": 1,
+    "title": "Coordenação Motora",
+    "description": "Traçados, formas e movimentos que preparam a mãozinha para escrever.",
+    "lessonTheme": "Traçados e formas",
+    "firstLessonId": "lesson_001",
+    "lessonCount": 3,
+    "estimatedWeeks": 4,
+    "order": 1,
+    "published": true
+  },
+  {
+    "id": "module_002",
+    "courseId": "course_001",
+    "number": 2,
+    "title": "Reconhecimento Visual",
+    "description": "Reconhecer letras e diferenciar formas — o primeiro passo para ler.",
+    "lessonTheme": "Achar as letras",
+    "firstLessonId": "lesson_004",
+    "lessonCount": 4,
+    "estimatedWeeks": 5,
+    "order": 2,
+    "published": true
+  },
+  {
+    "id": "module_003",
+    "courseId": "course_001",
+    "number": 3,
+    "title": "Consciência Fonológica",
+    "description": "Brincadeiras com sons, rimas e sílabas — a base para ler as primeiras palavras.",
+    "lessonTheme": "Sons e rimas",
+    "firstLessonId": "lesson_008",
+    "lessonCount": 6,
+    "estimatedWeeks": 6,
+    "order": 3,
+    "published": true
+  },
+  {
+    "id": "module_004",
+    "courseId": "course_001",
+    "number": 4,
+    "title": "Fônica",
+    "description": "Juntar sons e letras para formar e ler as primeiras palavras.",
+    "lessonTheme": "Juntar os sons",
+    "firstLessonId": "lesson_014",
+    "lessonCount": 6,
+    "estimatedWeeks": 6,
+    "order": 4,
+    "published": true
+  },
+  {
+    "id": "module_005",
+    "courseId": "course_001",
+    "number": 5,
+    "title": "Palavras",
+    "description": "Ler palavras inteiras, do jeitinho que elas aparecem nas histórias.",
+    "lessonTheme": "Ler palavrinhas",
+    "firstLessonId": "lesson_020",
+    "lessonCount": 6,
+    "estimatedWeeks": 6,
+    "order": 5,
+    "published": true
+  },
+  {
+    "id": "module_006",
+    "courseId": "course_001",
+    "number": 6,
+    "title": "Frases",
+    "description": "Juntar palavras em frases curtas e entender o que elas dizem.",
+    "lessonTheme": "Juntar palavras",
+    "firstLessonId": "lesson_026",
+    "lessonCount": 6,
+    "estimatedWeeks": 6,
+    "order": 6,
+    "published": true
+  },
+  {
+    "id": "module_007",
+    "courseId": "course_001",
+    "number": 7,
+    "title": "Histórias",
+    "description": "Ler histórias completas — a chegada da jornada.",
+    "lessonTheme": "Ler uma história",
+    "firstLessonId": "lesson_032",
+    "lessonCount": 6,
+    "estimatedWeeks": 6,
+    "order": 7,
+    "published": true
+  }
+]

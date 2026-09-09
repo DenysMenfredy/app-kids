@@ -28,7 +28,11 @@ backend/
 │       │                      # submitAssessment (server-side placement)
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
 │       └── admin/             # setUserRole (custom claims), manageContent
-├── seed/                      # content imported into dev/staging Firestore
+├── seed/                      # curriculum content, imported into Firestore
+│   ├── courses/ modules/      # 1 course, 7 modules
+│   ├── lessons/               # 37 lessons (4 activities each)
+│   ├── activities/            # 148 tap/match/trace/listen exercises
+│   └── assessments/           # onboarding placement questionnaire
 ├── test/rules/                # Security Rules tests (emulator)
 └── docs/adr/                  # architecture decision records
 ```
@@ -65,6 +69,42 @@ Flutter → completeLesson {lessonId, childId, stats}
 XP, coins and streak are never written by the client; the app reads that
 document and displays what it is told.
 
+## Content model (§5)
+
+The curriculum is data, not code. `backend/seed/` holds it as plain JSON,
+hand-editable by a content editor and validated on every `npm test`
+(`src/content/seed_content.test.ts` checks ids, cross-references, lesson
+ordering and per-activity payloads):
+
+```
+courses/{courseId}          → moduleIds, locale, published
+modules/{moduleId}          → courseId, number, title, lessonTheme,
+                              firstLessonId, lessonCount
+lessons/{lessonId}          → moduleId, number, order, title, theme,
+                              estimatedMinutes, activityIds
+activities/{activityId}     → lessonId, type, order, difficulty, instruction
+```
+
+One lesson is four activities in play order — `tap`, `match`, `trace`,
+`listen` — each carrying only what its exercise needs:
+
+| type | payload |
+| --- | --- |
+| `tap` | `target`, `options[]` (one `correct`), `speech` |
+| `match` | `pairs[]` of upper/lower, `lowercaseOrder` for the right column |
+| `trace` | `letter` |
+| `listen` | `answer`, `options[]` (one `correct`), `speech` |
+
+`speech` is the pt-BR text the app reads aloud; recorded audio replaces it
+once assets exist. Two content rules are enforced by tests: exactly one
+correct option per exercise, and never uppercase `I` alongside `L` — the
+same glyph in most fonts, so the child couldn't tell them apart.
+
+A seed file may hold one document or an array of them, so 148 activities
+stay in one reviewable file. Module lesson ranges match the assessment's
+placement bands and the app's `curriculum`, which is asserted by tests on
+both sides.
+
 ## Payments flow (§8)
 
 ```
@@ -83,9 +123,9 @@ integer cents (R$149,90 = 14990).
 ```bash
 cd functions
 npm install
-npm test                # tsc build + 44 domain unit tests (node --test)
+npm test                # tsc build + 59 unit tests (domain + seed integrity)
 
-# Seed educational content (assessment questions, weights, placement bands)
+# Seed educational content (course, modules, lessons, activities, assessment)
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
@@ -116,9 +156,9 @@ firebase deploy --project production
 6. BigQuery: create a Cloud Logging sink filtered on
    `jsonPayload.message="letrando_event"` (server events) and enable the
    Firebase Analytics BigQuery export (client events).
-7. Seed the onboarding assessment (`npm run seed` above). Without it,
-   `submitAssessment` returns "Avaliação indisponível" and the app shows its
-   offline fallback placement.
+7. Seed the curriculum and assessment (`npm run seed` above). Without the
+   assessment, `submitAssessment` returns "Avaliação indisponível" and the
+   app shows its offline fallback placement.
 
 Never use production payment credentials or production data during
 development (spec §21).
@@ -127,10 +167,9 @@ development (spec §21).
 
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
-- Courses/modules/lessons/activities content: the collections and rules
-  exist, but only the assessment is seeded. The app reads the child's
-  `currentLessonId` to place them on the journey, yet the lesson ranges and
-  the activities themselves are still described in app code.
+- The app doesn't fetch lessons or activities yet: it reads the child's
+  `currentLessonId` to place them on the journey, but still plays the four
+  exercises hardcoded in app code rather than the seeded ones.
 - Multi-child aggregation for the parent dashboard (gamification is stored
   per child, the app uses a single fixed child id).
 - Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must

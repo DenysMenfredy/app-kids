@@ -52,18 +52,43 @@ const collections = readdirSync(seedRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
 
+/**
+ * A seed file holds either one document or an array of them — collections
+ * like `activities` have hundreds, which would be unreadable one file each.
+ */
+function documentsIn(collection, file) {
+  const parsed = JSON.parse(readFileSync(join(seedRoot, collection, file), "utf8"));
+  const documents = Array.isArray(parsed) ? parsed : [parsed];
+  return documents.map((document, index) => {
+    const id = document.id ?? (Array.isArray(parsed) ? null : file.replace(/\.json$/, ""));
+    if (!id) {
+      throw new Error(`${collection}/${file}: document ${index} has no "id"`);
+    }
+    return [id, document];
+  });
+}
+
 let written = 0;
 for (const collection of collections) {
-  const dir = join(seedRoot, collection);
-  for (const file of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
-    const document = JSON.parse(readFileSync(join(dir, file), "utf8"));
-    const id = document.id ?? file.replace(/\.json$/, "");
-    await db
-      .collection(collection)
-      .doc(id)
-      .set({ ...document, updatedAt: new Date() }, { merge: true });
-    console.log(`seeded ${collection}/${id}`);
-    written += 1;
+  for (const file of readdirSync(join(seedRoot, collection)).filter((f) =>
+    f.endsWith(".json"),
+  )) {
+    const documents = documentsIn(collection, file);
+    // Firestore caps a batch at 500 writes.
+    for (let start = 0; start < documents.length; start += 400) {
+      const chunk = documents.slice(start, start + 400);
+      const batch = db.batch();
+      for (const [id, document] of chunk) {
+        batch.set(
+          db.collection(collection).doc(id),
+          { ...document, updatedAt: new Date() },
+          { merge: true },
+        );
+      }
+      await batch.commit();
+      written += chunk.length;
+    }
+    console.log(`seeded ${collection}/${file} — ${documents.length} document(s)`);
   }
 }
 console.log(`done — ${written} document(s) into ${projectId}`);

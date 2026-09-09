@@ -108,13 +108,12 @@ Firestore.
 
 ## Known MVP simplifications
 
-- The curriculum *shape* is still static in the app (`curriculum` in
-  `features/learning/domain`, `bookLibrary`): the app knows which lessons
-  belong to which module, but only the assessment is served from the
-  backend's content collections so far.
-- Every lesson plays the same four activities — lesson content isn't
-  fetched, so the journey position changes the labels and progress, not the
-  exercises themselves.
+- The curriculum *shape* is still duplicated in the app (`curriculum` in
+  `features/learning/domain`, `bookLibrary`). The backend now seeds the same
+  7 modules / 37 lessons / 148 activities (`backend/seed/`), but the app
+  doesn't fetch them yet — so the journey position changes the labels and
+  progress while every lesson still plays the same four hardcoded exercises.
+  Tests on both sides assert the two copies agree.
 - One child profile per account (`AppConfig.primaryChildId`), though the
   backend data model supports several.
 - FCM device registration (`registerDevice`) is not called from the app yet,

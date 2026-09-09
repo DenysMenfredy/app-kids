@@ -1,0 +1,631 @@
+[
+  {
+    "id": "lesson_001",
+    "courseId": "course_001",
+    "moduleId": "module_001",
+    "number": 1,
+    "order": 1,
+    "title": "A letra A",
+    "theme": "Traçados e formas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_001_tap",
+      "activity_001_match",
+      "activity_001_trace",
+      "activity_001_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_002",
+    "courseId": "course_001",
+    "moduleId": "module_001",
+    "number": 2,
+    "order": 2,
+    "title": "A letra B",
+    "theme": "Traçados e formas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_002_tap",
+      "activity_002_match",
+      "activity_002_trace",
+      "activity_002_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_003",
+    "courseId": "course_001",
+    "moduleId": "module_001",
+    "number": 3,
+    "order": 3,
+    "title": "A letra C",
+    "theme": "Traçados e formas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_003_tap",
+      "activity_003_match",
+      "activity_003_trace",
+      "activity_003_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_004",
+    "courseId": "course_001",
+    "moduleId": "module_002",
+    "number": 4,
+    "order": 1,
+    "title": "A letra D",
+    "theme": "Achar as letras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_004_tap",
+      "activity_004_match",
+      "activity_004_trace",
+      "activity_004_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_005",
+    "courseId": "course_001",
+    "moduleId": "module_002",
+    "number": 5,
+    "order": 2,
+    "title": "A letra E",
+    "theme": "Achar as letras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_005_tap",
+      "activity_005_match",
+      "activity_005_trace",
+      "activity_005_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_006",
+    "courseId": "course_001",
+    "moduleId": "module_002",
+    "number": 6,
+    "order": 3,
+    "title": "A letra F",
+    "theme": "Achar as letras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_006_tap",
+      "activity_006_match",
+      "activity_006_trace",
+      "activity_006_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_007",
+    "courseId": "course_001",
+    "moduleId": "module_002",
+    "number": 7,
+    "order": 4,
+    "title": "A letra G",
+    "theme": "Achar as letras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_007_tap",
+      "activity_007_match",
+      "activity_007_trace",
+      "activity_007_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_008",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 8,
+    "order": 1,
+    "title": "A letra I",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_008_tap",
+      "activity_008_match",
+      "activity_008_trace",
+      "activity_008_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_009",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 9,
+    "order": 2,
+    "title": "A letra J",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_009_tap",
+      "activity_009_match",
+      "activity_009_trace",
+      "activity_009_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_010",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 10,
+    "order": 3,
+    "title": "A letra L",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_010_tap",
+      "activity_010_match",
+      "activity_010_trace",
+      "activity_010_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_011",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 11,
+    "order": 4,
+    "title": "A letra M",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_011_tap",
+      "activity_011_match",
+      "activity_011_trace",
+      "activity_011_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_012",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 12,
+    "order": 5,
+    "title": "A letra N",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_012_tap",
+      "activity_012_match",
+      "activity_012_trace",
+      "activity_012_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_013",
+    "courseId": "course_001",
+    "moduleId": "module_003",
+    "number": 13,
+    "order": 6,
+    "title": "A letra O",
+    "theme": "Sons e rimas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_013_tap",
+      "activity_013_match",
+      "activity_013_trace",
+      "activity_013_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_014",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 14,
+    "order": 1,
+    "title": "A letra P",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_014_tap",
+      "activity_014_match",
+      "activity_014_trace",
+      "activity_014_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_015",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 15,
+    "order": 2,
+    "title": "A letra Q",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_015_tap",
+      "activity_015_match",
+      "activity_015_trace",
+      "activity_015_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_016",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 16,
+    "order": 3,
+    "title": "A letra R",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_016_tap",
+      "activity_016_match",
+      "activity_016_trace",
+      "activity_016_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_017",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 17,
+    "order": 4,
+    "title": "A letra S",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_017_tap",
+      "activity_017_match",
+      "activity_017_trace",
+      "activity_017_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_018",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 18,
+    "order": 5,
+    "title": "A letra T",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_018_tap",
+      "activity_018_match",
+      "activity_018_trace",
+      "activity_018_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_019",
+    "courseId": "course_001",
+    "moduleId": "module_004",
+    "number": 19,
+    "order": 6,
+    "title": "A letra U",
+    "theme": "Juntar os sons",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_019_tap",
+      "activity_019_match",
+      "activity_019_trace",
+      "activity_019_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_020",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 20,
+    "order": 1,
+    "title": "A letra V",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_020_tap",
+      "activity_020_match",
+      "activity_020_trace",
+      "activity_020_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_021",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 21,
+    "order": 2,
+    "title": "A letra X",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_021_tap",
+      "activity_021_match",
+      "activity_021_trace",
+      "activity_021_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_022",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 22,
+    "order": 3,
+    "title": "A letra Z",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_022_tap",
+      "activity_022_match",
+      "activity_022_trace",
+      "activity_022_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_023",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 23,
+    "order": 4,
+    "title": "A letra A",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_023_tap",
+      "activity_023_match",
+      "activity_023_trace",
+      "activity_023_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_024",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 24,
+    "order": 5,
+    "title": "A letra B",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_024_tap",
+      "activity_024_match",
+      "activity_024_trace",
+      "activity_024_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_025",
+    "courseId": "course_001",
+    "moduleId": "module_005",
+    "number": 25,
+    "order": 6,
+    "title": "A letra C",
+    "theme": "Ler palavrinhas",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_025_tap",
+      "activity_025_match",
+      "activity_025_trace",
+      "activity_025_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_026",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 26,
+    "order": 1,
+    "title": "A letra D",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_026_tap",
+      "activity_026_match",
+      "activity_026_trace",
+      "activity_026_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_027",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 27,
+    "order": 2,
+    "title": "A letra E",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_027_tap",
+      "activity_027_match",
+      "activity_027_trace",
+      "activity_027_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_028",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 28,
+    "order": 3,
+    "title": "A letra F",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_028_tap",
+      "activity_028_match",
+      "activity_028_trace",
+      "activity_028_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_029",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 29,
+    "order": 4,
+    "title": "A letra G",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_029_tap",
+      "activity_029_match",
+      "activity_029_trace",
+      "activity_029_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_030",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 30,
+    "order": 5,
+    "title": "A letra J",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_030_tap",
+      "activity_030_match",
+      "activity_030_trace",
+      "activity_030_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_031",
+    "courseId": "course_001",
+    "moduleId": "module_006",
+    "number": 31,
+    "order": 6,
+    "title": "A letra L",
+    "theme": "Juntar palavras",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_031_tap",
+      "activity_031_match",
+      "activity_031_trace",
+      "activity_031_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_032",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 32,
+    "order": 1,
+    "title": "A letra M",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_032_tap",
+      "activity_032_match",
+      "activity_032_trace",
+      "activity_032_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_033",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 33,
+    "order": 2,
+    "title": "A letra N",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_033_tap",
+      "activity_033_match",
+      "activity_033_trace",
+      "activity_033_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_034",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 34,
+    "order": 3,
+    "title": "A letra O",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_034_tap",
+      "activity_034_match",
+      "activity_034_trace",
+      "activity_034_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_035",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 35,
+    "order": 4,
+    "title": "A letra P",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_035_tap",
+      "activity_035_match",
+      "activity_035_trace",
+      "activity_035_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_036",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 36,
+    "order": 5,
+    "title": "A letra R",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_036_tap",
+      "activity_036_match",
+      "activity_036_trace",
+      "activity_036_listen"
+    ],
+    "published": true
+  },
+  {
+    "id": "lesson_037",
+    "courseId": "course_001",
+    "moduleId": "module_007",
+    "number": 37,
+    "order": 6,
+    "title": "A letra S",
+    "theme": "Ler uma história",
+    "estimatedMinutes": 15,
+    "activityIds": [
+      "activity_037_tap",
+      "activity_037_match",
+      "activity_037_trace",
+      "activity_037_listen"
+    ],
+    "published": true
+  }
+]
