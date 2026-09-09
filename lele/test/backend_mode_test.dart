@@ -59,7 +59,7 @@ void main() {
     // to, which would tear the stream down before it emits.
     final subscription = container.listen(
       premiumActiveProvider,
-      (_, __) {},
+      (_, _) {},
     );
     addTearDown(subscription.close);
 

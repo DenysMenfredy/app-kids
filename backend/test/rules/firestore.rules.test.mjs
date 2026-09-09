@@ -178,6 +178,87 @@ describe("learning data", () => {
   });
 });
 
+describe("gamification & assessment results (server-owned, ADR 0003)", () => {
+  it("owner can read their own XP/coins/streak", async () => {
+    await asAdmin((ctx) =>
+      ctx
+        .firestore()
+        .doc(`users/${PARENT}/gamification/primary`)
+        .set({ xp: 50, coins: 10, streak: 1 }),
+    );
+    await assertSucceeds(
+      asParent().doc(`users/${PARENT}/gamification/primary`).get(),
+    );
+  });
+
+  it("client can NEVER mint XP, coins or streak", async () => {
+    await assertFails(
+      asParent()
+        .doc(`users/${PARENT}/gamification/primary`)
+        .set({ xp: 999999, coins: 999999, streak: 365 }),
+    );
+    await asAdmin((ctx) =>
+      ctx
+        .firestore()
+        .doc(`users/${PARENT}/gamification/primary`)
+        .set({ xp: 50, coins: 10, streak: 1 }),
+    );
+    await assertFails(
+      asParent().doc(`users/${PARENT}/gamification/primary`).update({ xp: 999999 }),
+    );
+  });
+
+  it("client cannot self-assign a placement", async () => {
+    await assertFails(
+      asParent()
+        .doc(`users/${PARENT}/assessmentResults/primary`)
+        .set({ score: 6, placement: { moduleNumber: 7 } }),
+    );
+  });
+
+  it("stranger cannot read another family's progress", async () => {
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/gamification/primary`).set({ xp: 50 }),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/gamification/primary`).get(),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/assessmentResults/primary`).get(),
+    );
+  });
+});
+
+describe("assessment content", () => {
+  it("authenticated users read the published assessment", async () => {
+    await asAdmin(async (ctx) => {
+      await ctx
+        .firestore()
+        .doc("assessments/assessment_pre_literacy_v1")
+        .set({ title: "Avaliação inicial", published: true, questions: [] });
+      await ctx
+        .firestore()
+        .doc("assessments/draft_v2")
+        .set({ title: "Rascunho", published: false });
+    });
+    await assertSucceeds(
+      asParent().doc("assessments/assessment_pre_literacy_v1").get(),
+    );
+    await assertFails(asParent().doc("assessments/draft_v2").get());
+    await assertFails(
+      asAnon().doc("assessments/assessment_pre_literacy_v1").get(),
+    );
+  });
+
+  it("clients cannot edit assessments or their weights", async () => {
+    await assertFails(
+      asParent()
+        .doc("assessments/assessment_pre_literacy_v1")
+        .set({ published: true, questions: [] }),
+    );
+  });
+});
+
 describe("educational content", () => {
   it("authenticated users read only published content", async () => {
     await asAdmin(async (ctx) => {

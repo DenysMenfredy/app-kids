@@ -1,6 +1,7 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 
 import { isWithinReminderWindow } from "../domain/reminders";
+import { localDateIso } from "../domain/time";
 import { DEFAULT_PREFERENCES_ID, db, paths } from "../lib/firestore";
 import { log } from "../lib/logger";
 import { sendNotificationToUser } from "./send_notification";
@@ -42,9 +43,7 @@ export const sendDailyReminders = onSchedule(
 
       if (await hasCompletedLessonToday(uid, timezone, now)) continue;
 
-      const localDate = new Intl.DateTimeFormat("en-CA", {
-        timeZone: timezone,
-      }).format(now);
+      const localDate = localDateIso(now, timezone);
       const delivered = await sendNotificationToUser(
         uid,
         {
@@ -70,9 +69,7 @@ async function hasCompletedLessonToday(
   timezone: string,
   now: Date,
 ): Promise<boolean> {
-  const localDate = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-  }).format(now); // YYYY-MM-DD
+  const localDate = localDateIso(now, timezone);
   const startOfDayUtc = new Date(`${localDate}T00:00:00Z`);
   // Widest possible UTC range covering the local day (±14h zone offsets).
   const rangeStart = new Date(startOfDayUtc.getTime() - 14 * 3600_000);
@@ -86,9 +83,6 @@ async function hasCompletedLessonToday(
   return snapshot.docs.some((doc) => {
     const completedAt = doc.get("completedAt")?.toDate?.() as Date | undefined;
     if (!completedAt) return false;
-    const completedLocalDate = new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-    }).format(completedAt);
-    return completedLocalDate === localDate;
+    return localDateIso(completedAt, timezone) === localDate;
   });
 }

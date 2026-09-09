@@ -17,4 +17,7 @@ abstract final class AppConfig {
 
   /// Single-child MVP: the one child profile lives under a fixed doc id.
   static const String primaryChildId = 'primary';
+
+  /// Assessment document served during onboarding (backend `assessments/`).
+  static const String defaultAssessmentId = 'assessment_pre_literacy_v1';
 }

@@ -15,6 +15,7 @@ const CONTENT_COLLECTIONS = new Set([
   "modules",
   "lessons",
   "activities",
+  "assessments",
 ]);
 
 type Action = "upsert" | "publish" | "unpublish";

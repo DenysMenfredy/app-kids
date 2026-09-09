@@ -23,6 +23,7 @@ export { sendDailyReminders } from "./notifications/send_daily_reminders";
 
 // learning/
 export { completeLesson } from "./learning/complete_lesson";
+export { submitAssessment } from "./learning/submit_assessment";
 export { updateProgress } from "./learning/update_progress";
 
 // admin/

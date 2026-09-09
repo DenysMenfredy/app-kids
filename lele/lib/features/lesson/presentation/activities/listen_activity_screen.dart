@@ -39,24 +39,31 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
         _picked = word;
         _done = true;
       });
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        if (mounted) {
-          // Lesson finished: grant local rewards, report to the backend,
-          // then celebrate.
-          ref.read(sessionProvider.notifier).completeLesson();
-          final stats = ref.read(lessonStatsProvider);
-          ref.read(lessonSyncServiceProvider).lessonCompleted(
-                todaysLessonId,
-                durationSeconds: stats.durationSeconds(DateTime.now()),
-                score: stats.score,
-                attempts: stats.attempts,
-                correctAnswers: stats.correctAnswers,
-                wrongAnswers: stats.wrongAnswers,
-              );
-          context.goNamed(
-            ref.read(lessonFlowProvider).nextRoute(ActivityType.listen),
-          );
-        }
+      // Report the finished lesson right away; the backend decides the
+      // reward (ADR 0003). The celebration animation covers the round trip,
+      // and a slow network can't hold the child on this screen.
+      final stats = ref.read(lessonStatsProvider);
+      final rewardFuture = ref
+          .read(lessonSyncServiceProvider)
+          .lessonCompleted(
+            todaysLessonId,
+            durationSeconds: stats.durationSeconds(DateTime.now()),
+            score: stats.score,
+            attempts: stats.attempts,
+            correctAnswers: stats.correctAnswers,
+            wrongAnswers: stats.wrongAnswers,
+          )
+          .timeout(const Duration(seconds: 3), onTimeout: () => null);
+      // Demo mode only — a no-op once the backend owns the totals.
+      ref.read(sessionProvider.notifier).completeLesson();
+
+      Future.delayed(const Duration(milliseconds: 1000), () async {
+        final reward = await rewardFuture;
+        if (!mounted) return;
+        ref.read(lastLessonRewardProvider.notifier).set(reward);
+        context.goNamed(
+          ref.read(lessonFlowProvider).nextRoute(ActivityType.listen),
+        );
       });
     } else {
       ref.read(lessonStatsProvider.notifier).recordWrong();

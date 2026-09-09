@@ -9,6 +9,7 @@ import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../paywall/application/entitlement_provider.dart';
+import '../../session/application/progress_provider.dart';
 import '../../session/application/session_controller.dart';
 
 class _DayActivity {
@@ -35,6 +36,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
+    final progress = ref.watch(progressProvider);
     final currentModule = learningJourney.firstWhere(
       (m) => m.status == ModuleStatus.current,
     );
@@ -114,7 +116,7 @@ class DashboardScreen extends ConsumerWidget {
                     _ChildCard(
                       childName: session.child.name,
                       childAge: session.child.age,
-                      streak: session.streak,
+                      streak: progress.streak,
                       moduleTitle: currentModule.title,
                       progress: currentModule.progress,
                     ),

@@ -17,15 +17,18 @@ backend/
 │       ├── config.ts          # Secret Manager + per-env params
 │       ├── lib/               # firestore paths, guards, idempotency, logging
 │       ├── domain/            # pure logic: plans, subscription, entitlement,
-│       │                      # reminders (fully unit-tested)
+│       │                      # reminders, assessment, gamification
+│       │                      # (fully unit-tested)
 │       ├── auth/              # onUserCreated bootstrap
 │       ├── payments/          # provider abstraction, Stripe checkout/portal,
 │       │                      # webhook (signature + idempotency)
 │       ├── subscriptions/     # syncEntitlement trigger (single writer)
 │       ├── notifications/     # registerDevice, sendDailyReminders, FCM fan-out
-│       ├── learning/          # updateProgress, completeLesson (validated)
+│       ├── learning/          # updateProgress, completeLesson (rewards),
+│       │                      # submitAssessment (server-side placement)
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
 │       └── admin/             # setUserRole (custom claims), manageContent
+├── seed/                      # content imported into dev/staging Firestore
 ├── test/rules/                # Security Rules tests (emulator)
 └── docs/adr/                  # architecture decision records
 ```
@@ -41,8 +44,26 @@ The mobile client is untrusted. It may only:
 
 Everything privileged — checkout creation, webhook processing, entitlement
 activation, role assignment, content publishing, device registration,
-notification fan-out — happens in Cloud Functions guarded by auth + role
-checks and App Check.
+notification fan-out, assessment scoring and reward granting — happens in
+Cloud Functions guarded by auth + role checks and App Check.
+
+## Learning flow (§5, ADR 0003)
+
+```
+Flutter → reads assessments/{id}          (labels only; weights ignored)
+        → submitAssessment {questionId: optionId}
+        → backend scores from the STORED weights → placement band
+        → writes child learningLevel/currentCourseId/currentLessonId
+          + users/{uid}/assessmentResults/{childId}
+
+Flutter → completeLesson {lessonId, childId, stats}
+        → transaction: already completed? → no reward
+        → else applyLessonReward (XP, coins, local-calendar streak)
+        → users/{uid}/gamification/{childId}   (client-read-only)
+```
+
+XP, coins and streak are never written by the client; the app reads that
+document and displays what it is told.
 
 ## Payments flow (§8)
 
@@ -62,7 +83,11 @@ integer cents (R$149,90 = 14990).
 ```bash
 cd functions
 npm install
-npm test                # tsc build + 21 domain unit tests (node --test)
+npm test                # tsc build + 44 domain unit tests (node --test)
+
+# Seed educational content (assessment questions, weights, placement bands)
+FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
+GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
 # Security Rules tests (needs firebase-tools + Java 11+ for the emulator)
 cd ../test/rules
@@ -91,6 +116,9 @@ firebase deploy --project production
 6. BigQuery: create a Cloud Logging sink filtered on
    `jsonPayload.message="letrando_event"` (server events) and enable the
    Firebase Analytics BigQuery export (client events).
+7. Seed the onboarding assessment (`npm run seed` above). Without it,
+   `submitAssessment` returns "Avaliação indisponível" and the app shows its
+   offline fallback placement.
 
 Never use production payment credentials or production data during
 development (spec §21).
@@ -99,6 +127,11 @@ development (spec §21).
 
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
+- Courses/modules/lessons/activities content: the collections and rules
+  exist, but only the assessment is seeded, so the app's curriculum is
+  still static.
+- Multi-child aggregation for the parent dashboard (gamification is stored
+  per child, the app uses a single fixed child id).
 - Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must
   land before public launch).
 - Achievement and weekly-report notification jobs (sender infra is in place).

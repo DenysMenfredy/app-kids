@@ -147,6 +147,18 @@ service cloud.firestore {
         allow create: if isOwner(uid) && validActivityAttempt();
         allow update, delete: if false; // attempts are immutable facts
       }
+
+      match /gamification/{childId} {
+        // XP, coins and streak are minted by completeLesson only (ADR 0003).
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /assessmentResults/{childId} {
+        // Placement is scored server-side from stored weights (ADR 0003).
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
     }
 
     // ---------- global/shared educational content (read-only) ----------
@@ -167,6 +179,13 @@ service cloud.firestore {
     }
 
     match /activities/{activityId} {
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /assessments/{assessmentId} {
+      // Questions and option labels are readable; the weights and placement
+      // bands they carry are only ever interpreted by the backend.
       allow read: if signedIn() && isPublished();
       allow write: if false;
     }

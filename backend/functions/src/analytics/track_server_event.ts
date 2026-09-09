@@ -12,7 +12,8 @@ export type ServerEventName =
   | "subscription_canceled"
   | "payment_failed"
   | "notification_sent"
-  | "lesson_completed";
+  | "lesson_completed"
+  | "assessment_completed";
 
 export function trackServerEvent(
   event: ServerEventName,

@@ -1,38 +1,58 @@
 import 'package:equatable/equatable.dart';
 
-class AssessmentQuestion extends Equatable {
-  const AssessmentQuestion({required this.question, required this.options});
+/// Assessment content as served by the backend (`assessments/{id}`).
+///
+/// The app renders labels and reports which option was chosen. Option
+/// weights and placement thresholds are stored alongside in Firestore but
+/// are deliberately not modelled here: scoring happens server-side, so the
+/// client has no rule it could apply to place itself (ADR 0003).
+class AssessmentOption extends Equatable {
+  const AssessmentOption({required this.id, required this.label});
 
-  /// May contain `{name}` which is replaced with the child's name.
-  final String question;
-  final List<String> options;
-
-  String questionFor(String childName) =>
-      question.replaceAll('{name}', childName);
+  final String id;
+  final String label;
 
   @override
-  List<Object?> get props => [question, options];
+  List<Object?> get props => [id, label];
 }
 
-const assessmentQuestions = [
-  AssessmentQuestion(
-    question: '{name} já reconhece algumas letras?',
-    options: ['Ainda não', 'Algumas letras', 'Quase todas'],
-  ),
-  AssessmentQuestion(
-    question: '{name} consegue escrever o próprio nome?',
-    options: ['Ainda não', 'Com ajuda', 'Sozinho(a)'],
-  ),
-  AssessmentQuestion(
-    question: 'Com que frequência vocês leem juntos?',
-    options: ['Raramente', 'Algumas vezes por semana', 'Todos os dias'],
-  ),
-];
+class AssessmentQuestion extends Equatable {
+  const AssessmentQuestion({
+    required this.id,
+    required this.prompt,
+    required this.options,
+  });
 
-/// Placement produced by the assessment. Static for the MVP: everyone starts
-/// at module 3, matching the prototype.
-class AssessmentResult extends Equatable {
-  const AssessmentResult({
+  final String id;
+
+  /// May contain `{name}`, replaced with the child's name for display.
+  final String prompt;
+  final List<AssessmentOption> options;
+
+  String promptFor(String childName) => prompt.replaceAll('{name}', childName);
+
+  @override
+  List<Object?> get props => [id, prompt, options];
+}
+
+class Assessment extends Equatable {
+  const Assessment({
+    required this.id,
+    required this.title,
+    required this.questions,
+  });
+
+  final String id;
+  final String title;
+  final List<AssessmentQuestion> questions;
+
+  @override
+  List<Object?> get props => [id, title, questions];
+}
+
+/// Where the child starts on the learning journey, decided by the backend.
+class AssessmentPlacement extends Equatable {
+  const AssessmentPlacement({
     required this.moduleNumber,
     required this.moduleTitle,
     required this.description,
@@ -44,7 +64,10 @@ class AssessmentResult extends Equatable {
   final String description;
   final List<String> tags;
 
-  static const placement = AssessmentResult(
+  /// Shown in demo mode, and when the backend can't be reached — onboarding
+  /// never dead-ends on a network problem. The real placement is written on
+  /// the next successful submission.
+  static const fallback = AssessmentPlacement(
     moduleNumber: 3,
     moduleTitle: 'Consciência Fonológica',
     description:
@@ -52,6 +75,17 @@ class AssessmentResult extends Equatable {
         'primeiras palavras.',
     tags: ['15 min/dia', '6 semanas'],
   );
+
+  factory AssessmentPlacement.fromMap(Map<String, dynamic> map) {
+    return AssessmentPlacement(
+      moduleNumber: (map['moduleNumber'] as num?)?.toInt() ??
+          fallback.moduleNumber,
+      moduleTitle: map['moduleTitle'] as String? ?? fallback.moduleTitle,
+      description: map['description'] as String? ?? fallback.description,
+      tags: (map['tags'] as List?)?.whereType<String>().toList() ??
+          const <String>[],
+    );
+  }
 
   @override
   List<Object?> get props => [moduleNumber, moduleTitle, description, tags];

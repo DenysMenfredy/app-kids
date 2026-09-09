@@ -3,13 +3,15 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/storage/local_storage.dart';
 import '../data/profile_sync_service.dart';
 import '../domain/child_profile.dart';
 
 /// Everything the app knows about the current family: parent, child profile
-/// and the child's gamification progress. Persisted locally so progress
-/// survives restarts; a backend sync layer can replace the storage later.
+/// and — in demo mode only — the gamification totals. With the backend
+/// enabled, XP/coins/streak come from [progressProvider] instead; the
+/// fields here stay as the offline fallback.
 class SessionState extends Equatable {
   const SessionState({
     required this.parentName,
@@ -99,8 +101,14 @@ class SessionController extends Notifier<SessionState> {
     unawaited(sync.syncOnboardingState('child_profile_created'));
   }
 
-  /// Rewards granted when the daily lesson is completed.
+  /// Demo-mode rewards for finishing the daily lesson.
+  ///
+  /// In Firebase mode this is a no-op: XP, coins and the streak are minted
+  /// by the completeLesson callable and read back through
+  /// [progressProvider], so the client never adds to its own balance
+  /// (ADR 0003).
   void completeLesson({int xpEarned = 50, int coinsEarned = 10}) {
+    if (AppConfig.useFirebase) return;
     state = state.copyWith(
       xp: state.xp + xpEarned,
       coins: state.coins + coinsEarned,

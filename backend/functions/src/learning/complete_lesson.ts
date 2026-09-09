@@ -2,14 +2,24 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { trackServerEvent } from "../analytics/track_server_event";
+import {
+  applyLessonReward,
+  GamificationState,
+  initialGamification,
+} from "../domain/gamification";
+import { localDateIso } from "../domain/time";
 import { db, paths } from "../lib/firestore";
 import { requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
- * Marks a lesson completed with validated, server-timestamped data
- * (spec §15, §16). Safe to retry: completing the same lesson twice for the
- * same child on the same document id is an idempotent merge.
+ * Marks a lesson completed and grants its rewards (spec §15, §16).
+ *
+ * XP, coins and the daily streak are server-owned: the client reports what
+ * happened in the lesson, the backend decides what it is worth (ADR 0003).
+ * The reward is applied inside a transaction that first checks whether this
+ * lesson was already completed, so retries and replays never mint extra XP
+ * (spec §20: progress updates must be safe to retry).
  */
 export const completeLesson = onCall(
   { enforceAppCheck: true },
@@ -22,20 +32,53 @@ export const completeLesson = onCall(
       maxLength: 64,
     });
 
-    const child = await db()
-      .collection(paths.children(uid))
-      .doc(childId)
-      .get();
+    const [child, user] = await Promise.all([
+      db().collection(paths.children(uid)).doc(childId).get(),
+      db().doc(paths.user(uid)).get(),
+    ]);
     if (!child.exists) {
       throw new HttpsError("not-found", "Perfil da criança não encontrado.");
     }
 
     const stats = validateStats(request.data);
+    const timezone =
+      (user.get("timezone") as string | undefined) ?? "America/Sao_Paulo";
+    let today: string;
+    try {
+      today = localDateIso(new Date(), timezone);
+    } catch {
+      today = localDateIso(new Date(), "America/Sao_Paulo");
+    }
 
-    await db()
+    const progressRef = db()
       .collection(paths.learningProgress(uid))
-      .doc(`${childId}_${lessonId}`)
-      .set(
+      .doc(`${childId}_${lessonId}`);
+    const gamificationRef = db()
+      .collection(paths.gamification(uid))
+      .doc(childId);
+
+    const result = await db().runTransaction(async (tx) => {
+      const [progressSnap, gamificationSnap] = await Promise.all([
+        tx.get(progressRef),
+        tx.get(gamificationRef),
+      ]);
+
+      const current: GamificationState = gamificationSnap.exists
+        ? {
+            xp: gamificationSnap.get("xp") ?? 0,
+            coins: gamificationSnap.get("coins") ?? 0,
+            streak: gamificationSnap.get("streak") ?? 0,
+            lastCompletionDate:
+              gamificationSnap.get("lastCompletionDate") ?? null,
+          }
+        : initialGamification;
+
+      // Only a first-time completion earns rewards; re-submitting the same
+      // lesson refreshes the stats but leaves the wallet untouched.
+      const alreadyCompleted = progressSnap.get("status") === "completed";
+
+      tx.set(
+        progressRef,
         {
           lessonId,
           childId,
@@ -51,14 +94,59 @@ export const completeLesson = onCall(
         { merge: true },
       );
 
-    trackServerEvent("lesson_completed", uid, {
-      lessonId,
-      childId,
-      score: stats.score,
-      durationSeconds: stats.durationSeconds,
+      if (alreadyCompleted) {
+        return { awarded: false, xpEarned: 0, coinsEarned: 0, ...current };
+      }
+
+      const next = applyLessonReward(current, today);
+      tx.set(
+        gamificationRef,
+        {
+          childId,
+          xp: next.xp,
+          coins: next.coins,
+          streak: next.streak,
+          lastCompletionDate: next.lastCompletionDate,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+      return {
+        awarded: true,
+        xpEarned: next.xp - current.xp,
+        coinsEarned: next.coins - current.coins,
+        ...next,
+      };
     });
-    log("learning", "lesson_completed", { uid, childId, lessonId });
-    return { ok: true };
+
+    if (result.awarded) {
+      trackServerEvent("lesson_completed", uid, {
+        lessonId,
+        childId,
+        score: stats.score,
+        durationSeconds: stats.durationSeconds,
+        streak: result.streak,
+      });
+    }
+    log("learning", "lesson_completed", {
+      uid,
+      childId,
+      lessonId,
+      awarded: result.awarded,
+      streak: result.streak,
+    });
+
+    // Totals are the source of truth for the UI; the deltas let the reward
+    // screen show what this lesson actually granted.
+    return {
+      ok: true,
+      awarded: result.awarded,
+      xpEarned: result.xpEarned,
+      coinsEarned: result.coinsEarned,
+      xp: result.xp,
+      coins: result.coins,
+      streak: result.streak,
+    };
   },
 );
 

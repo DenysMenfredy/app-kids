@@ -9,6 +9,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../lesson/data/lesson_sync_service.dart';
+import '../../session/application/progress_provider.dart';
 import '../../session/application/session_controller.dart';
 
 class RewardScreen extends ConsumerWidget {
@@ -16,7 +18,13 @@ class RewardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(sessionProvider);
+    final childName = ref.watch(sessionProvider.select((s) => s.child.name));
+    final progress = ref.watch(progressProvider);
+    // What the backend actually granted. Null means the call is still in
+    // flight or didn't land; the standard reward is the honest default.
+    final reward = ref.watch(lastLessonRewardProvider);
+    final xpEarned = reward?.xpEarned ?? LessonReward.demo.xpEarned;
+    final coinsEarned = reward?.coinsEarned ?? LessonReward.demo.coinsEarned;
 
     return Scaffold(
       body: Container(
@@ -48,7 +56,7 @@ class RewardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Parabéns, ${session.child.name}!',
+                      'Parabéns, $childName!',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.baloo(32),
                     ),
@@ -66,18 +74,18 @@ class RewardScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 12,
                       children: [
-                        const _RewardStat(
-                          value: '+50',
+                        _RewardStat(
+                          value: '+$xpEarned',
                           label: '★ XP',
                           color: AppColors.purple,
                         ),
-                        const _RewardStat(
-                          value: '+10',
+                        _RewardStat(
+                          value: '+$coinsEarned',
                           label: 'moedas',
                           color: AppColors.yellowDark,
                         ),
                         _RewardStat(
-                          value: '⚡ ${session.streak}',
+                          value: '⚡ ${progress.streak}',
                           label: 'dias',
                           color: AppColors.orangeDark,
                         ),

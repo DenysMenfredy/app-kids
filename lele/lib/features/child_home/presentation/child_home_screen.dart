@@ -7,14 +7,14 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../learning/domain/learning_module.dart';
-import '../../session/application/session_controller.dart';
+import '../../session/application/progress_provider.dart';
 
 class ChildHomeScreen extends ConsumerWidget {
   const ChildHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(sessionProvider);
+    final progress = ref.watch(progressProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -44,7 +44,7 @@ class ChildHomeScreen extends ConsumerWidget {
                     color: AppColors.orangeDark,
                     icon: const Icon(Icons.bolt_rounded,
                         size: 16, color: AppColors.orangeDark),
-                    value: '${session.streak}',
+                    value: '${progress.streak}',
                   ),
                   _StatPill(
                     color: AppColors.yellowDark,
@@ -60,13 +60,13 @@ class ChildHomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    value: '${session.coins}',
+                    value: '${progress.coins}',
                   ),
                   _StatPill(
                     color: AppColors.purple,
                     icon: const Icon(Icons.star_rounded,
                         size: 16, color: AppColors.purple),
-                    value: '${session.xp}',
+                    value: '${progress.xp}',
                   ),
                 ],
               ),
