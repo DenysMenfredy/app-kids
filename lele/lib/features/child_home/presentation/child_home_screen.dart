@@ -6,6 +6,7 @@ import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../session/application/progress_provider.dart';
 
@@ -15,6 +16,8 @@ class ChildHomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
+    final journey = ref.watch(journeyProvider);
+    final currentModule = ref.watch(currentModuleProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -78,12 +81,13 @@ class ChildHomeScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _TodayLessonCard(
+                      theme: currentModule.lessonTheme,
                       onTap: () => context.goNamed(AppRoutes.lessonIntro),
                     ),
                     const SizedBox(height: 22),
                     Text('Sua jornada', style: AppTextStyles.baloo(17)),
                     const SizedBox(height: 6),
-                    for (final (i, module) in learningJourney.indexed)
+                    for (final (i, module) in journey.indexed)
                       _JourneyRow(
                         module: module,
                         indented: i.isOdd,
@@ -138,8 +142,10 @@ class _StatPill extends StatelessWidget {
 }
 
 class _TodayLessonCard extends StatelessWidget {
-  const _TodayLessonCard({required this.onTap});
+  const _TodayLessonCard({required this.theme, required this.onTap});
 
+  /// Theme of the module the child is on, e.g. "Sons e rimas".
+  final String theme;
   final VoidCallback onTap;
 
   @override
@@ -171,7 +177,7 @@ class _TodayLessonCard extends StatelessWidget {
                       style: AppTextStyles.baloo(19, color: Colors.white),
                     ),
                     Text(
-                      'Sons e rimas · 15 min',
+                      '$theme · 15 min',
                       style: AppTextStyles.nunito(
                         13,
                         weight: FontWeight.w700,

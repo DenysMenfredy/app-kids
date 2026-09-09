@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
+import '../../../learning/application/journey_provider.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
 import '../../data/lesson_sync_service.dart';
@@ -46,7 +47,7 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       final rewardFuture = ref
           .read(lessonSyncServiceProvider)
           .lessonCompleted(
-            todaysLessonId,
+            ref.read(currentLessonIdProvider),
             durationSeconds: stats.durationSeconds(DateTime.now()),
             score: stats.score,
             attempts: stats.attempts,

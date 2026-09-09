@@ -10,7 +10,8 @@ children ages 3–7, built from the Claude Design handoff
 **Parent flow:** Splash → Welcome carousel → Register/Login → Child profile →
 Assessment (3 questions) → Parent dashboard → Paywall (founder pricing).
 
-**Child flow:** Child home (journey map, streak/coins/XP) → Today's lesson →
+**Child flow:** Child home (journey map anchored on the child's current
+lesson, streak/coins/XP) → Today's lesson →
 4 activities (tap the letter, match upper/lowercase, trace with the finger,
 listen and choose) → Reward (confetti, +XP/+coins/streak) → Book library.
 
@@ -64,6 +65,7 @@ The app runs against either an offline stub or the real Letrando backend
 | Profile/child | SharedPreferences only | + Firestore `users/{uid}` mirror |
 | Assessment | bundled copy of the questions | `assessments/{id}` from Firestore |
 | Placement | fixed fallback (module 3) | scored server-side by `submitAssessment` |
+| Journey position | demo lesson (`lesson_010`) | child's `currentLessonId` from Firestore |
 | Lesson progress | local only | + `updateProgress` / `completeLesson` callables |
 | XP / coins / streak | computed on device | streamed from `gamification/{childId}` |
 | Premium | always false | streams `entitlements/premium` |
@@ -86,7 +88,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 40 tests
+flutter test           # 56 tests
 flutter analyze        # zero issues
 ```
 
@@ -106,13 +108,14 @@ Firestore.
 
 ## Known MVP simplifications
 
-- The curriculum is still static in the app (`learningJourney`,
-  `bookLibrary`, `todaysLessonId = 'lesson_008'`); only the assessment comes
-  from the backend's content collections so far.
+- The curriculum *shape* is still static in the app (`curriculum` in
+  `features/learning/domain`, `bookLibrary`): the app knows which lessons
+  belong to which module, but only the assessment is served from the
+  backend's content collections so far.
+- Every lesson plays the same four activities — lesson content isn't
+  fetched, so the journey position changes the labels and progress, not the
+  exercises themselves.
 - One child profile per account (`AppConfig.primaryChildId`), though the
   backend data model supports several.
-- The placement the backend computes is stored on the child profile, but the
-  app's journey screens still render the static module list rather than
-  starting from `currentLessonId`.
 - FCM device registration (`registerDevice`) is not called from the app yet,
   so daily reminders won't reach a device.

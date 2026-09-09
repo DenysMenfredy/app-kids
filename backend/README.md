@@ -128,8 +128,9 @@ development (spec §21).
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
 - Courses/modules/lessons/activities content: the collections and rules
-  exist, but only the assessment is seeded, so the app's curriculum is
-  still static.
+  exist, but only the assessment is seeded. The app reads the child's
+  `currentLessonId` to place them on the journey, yet the lesson ranges and
+  the activities themselves are still described in app code.
 - Multi-child aggregation for the parent dashboard (gamification is stored
   per child, the app uses a single fixed child id).
 - Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must

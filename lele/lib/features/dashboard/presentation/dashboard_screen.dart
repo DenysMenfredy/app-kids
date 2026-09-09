@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../paywall/application/entitlement_provider.dart';
 import '../../session/application/progress_provider.dart';
@@ -37,9 +38,8 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
     final progress = ref.watch(progressProvider);
-    final currentModule = learningJourney.firstWhere(
-      (m) => m.status == ModuleStatus.current,
-    );
+    final journey = ref.watch(journeyProvider);
+    final currentModule = ref.watch(currentModuleProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -126,7 +126,7 @@ class DashboardScreen extends ConsumerWidget {
                     Text('Jornada de aprendizado',
                         style: AppTextStyles.sectionTitle),
                     const SizedBox(height: 10),
-                    for (final module in learningJourney) ...[
+                    for (final module in journey) ...[
                       _ModuleRow(module: module),
                       const SizedBox(height: 10),
                     ],

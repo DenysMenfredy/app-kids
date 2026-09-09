@@ -6,10 +6,6 @@ import '../../../core/theme/app_colors.dart';
 /// The four activity types of the MVP daily lesson, in play order.
 enum ActivityType { tap, match, trace, listen }
 
-/// Backend id of today's lesson ("Lição 8 · Sons e rimas"). Becomes dynamic
-/// once the curriculum is served from Firestore content collections.
-const todaysLessonId = 'lesson_008';
-
 class LessonActivity extends Equatable {
   const LessonActivity({
     required this.type,

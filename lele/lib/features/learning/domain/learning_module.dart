@@ -2,18 +2,103 @@ import 'package:equatable/equatable.dart';
 
 enum ModuleStatus { done, current, locked }
 
-/// One step of the 7-module learning journey
-/// (fine motor skills → stories).
+/// Shape of the curriculum: which lessons belong to which module.
+///
+/// Static for now. The backend already stores the child's position
+/// (`currentLessonId`, written by submitAssessment), so this only has to
+/// describe the lesson ranges until courses/modules/lessons are served from
+/// Firestore too. Lesson ids match the backend's placement bands
+/// (`backend/seed/assessments/`).
+class CurriculumModule extends Equatable {
+  const CurriculumModule({
+    required this.number,
+    required this.title,
+    required this.lessonTheme,
+    required this.firstLessonId,
+    required this.lessonCount,
+  });
+
+  final int number;
+  final String title;
+
+  /// Short subtitle for the daily lesson, e.g. "Sons e rimas".
+  final String lessonTheme;
+  final String firstLessonId;
+  final int lessonCount;
+
+  int get firstLessonNumber => lessonNumberOf(firstLessonId) ?? 1;
+
+  int get lastLessonNumber => firstLessonNumber + lessonCount - 1;
+
+  @override
+  List<Object?> get props => [number, title, firstLessonId, lessonCount];
+}
+
+const curriculum = [
+  CurriculumModule(
+    number: 1,
+    title: 'Coordenação Motora',
+    lessonTheme: 'Traçados e formas',
+    firstLessonId: 'lesson_001',
+    lessonCount: 3,
+  ),
+  CurriculumModule(
+    number: 2,
+    title: 'Reconhecimento Visual',
+    lessonTheme: 'Achar as letras',
+    firstLessonId: 'lesson_004',
+    lessonCount: 4,
+  ),
+  CurriculumModule(
+    number: 3,
+    title: 'Consciência Fonológica',
+    lessonTheme: 'Sons e rimas',
+    firstLessonId: 'lesson_008',
+    lessonCount: 6,
+  ),
+  CurriculumModule(
+    number: 4,
+    title: 'Fônica',
+    lessonTheme: 'Juntar os sons',
+    firstLessonId: 'lesson_014',
+    lessonCount: 6,
+  ),
+  CurriculumModule(
+    number: 5,
+    title: 'Palavras',
+    lessonTheme: 'Ler palavrinhas',
+    firstLessonId: 'lesson_020',
+    lessonCount: 6,
+  ),
+  CurriculumModule(
+    number: 6,
+    title: 'Frases',
+    lessonTheme: 'Juntar palavras',
+    firstLessonId: 'lesson_026',
+    lessonCount: 6,
+  ),
+  CurriculumModule(
+    number: 7,
+    title: 'Histórias',
+    lessonTheme: 'Ler uma história',
+    firstLessonId: 'lesson_032',
+    lessonCount: 6,
+  ),
+];
+
+/// One step of the journey, resolved for a particular child.
 class LearningModule extends Equatable {
   const LearningModule({
     required this.number,
     required this.title,
+    required this.lessonTheme,
     required this.status,
     this.progress = 0,
   });
 
   final int number;
   final String title;
+  final String lessonTheme;
   final ModuleStatus status;
 
   /// 0..1 completion, only meaningful for the current module.
@@ -23,21 +108,54 @@ class LearningModule extends Equatable {
   List<Object?> get props => [number, title, status, progress];
 }
 
-/// MVP journey snapshot. Later this comes from the curriculum backend keyed
-/// by the child's assessment result.
-const learningJourney = [
-  LearningModule(
-      number: 1, title: 'Coordenação Motora', status: ModuleStatus.done),
-  LearningModule(
-      number: 2, title: 'Reconhecimento Visual', status: ModuleStatus.done),
-  LearningModule(
-    number: 3,
-    title: 'Consciência Fonológica',
-    status: ModuleStatus.current,
-    progress: 0.42,
-  ),
-  LearningModule(number: 4, title: 'Fônica', status: ModuleStatus.locked),
-  LearningModule(number: 5, title: 'Palavras', status: ModuleStatus.locked),
-  LearningModule(number: 6, title: 'Frases', status: ModuleStatus.locked),
-  LearningModule(number: 7, title: 'Histórias', status: ModuleStatus.locked),
-];
+/// Parses the numeric suffix of a lesson id (`lesson_008` → 8). Null when the
+/// id isn't in that shape.
+int? lessonNumberOf(String lessonId) {
+  final match = RegExp(r'^lesson_(\d+)$').firstMatch(lessonId);
+  return match == null ? null : int.tryParse(match.group(1)!);
+}
+
+/// The module a lesson belongs to, or null when it falls outside the
+/// curriculum.
+CurriculumModule? moduleForLesson(String lessonId) {
+  final number = lessonNumberOf(lessonId);
+  if (number == null) return null;
+  for (final module in curriculum) {
+    if (number >= module.firstLessonNumber &&
+        number <= module.lastLessonNumber) {
+      return module;
+    }
+  }
+  return null;
+}
+
+/// Builds the journey around the child's current lesson: everything before
+/// its module is done, its module is current, the rest are locked.
+///
+/// An unknown id starts the child at the beginning, and an id past the last
+/// lesson keeps them on the final module — so there is always exactly one
+/// current module for the screens to anchor on.
+List<LearningModule> resolveJourney(String currentLessonId) {
+  final last = curriculum.last;
+  final lessonNumber = (lessonNumberOf(currentLessonId) ??
+          curriculum.first.firstLessonNumber)
+      .clamp(curriculum.first.firstLessonNumber, last.lastLessonNumber);
+
+  return [
+    for (final module in curriculum)
+      LearningModule(
+        number: module.number,
+        title: module.title,
+        lessonTheme: module.lessonTheme,
+        status: lessonNumber > module.lastLessonNumber
+            ? ModuleStatus.done
+            : lessonNumber >= module.firstLessonNumber
+                ? ModuleStatus.current
+                : ModuleStatus.locked,
+        progress: lessonNumber >= module.firstLessonNumber &&
+                lessonNumber <= module.lastLessonNumber
+            ? (lessonNumber - module.firstLessonNumber) / module.lessonCount
+            : 0,
+      ),
+  ];
+}

@@ -20,4 +20,10 @@ abstract final class AppConfig {
 
   /// Assessment document served during onboarding (backend `assessments/`).
   static const String defaultAssessmentId = 'assessment_pre_literacy_v1';
+
+  /// Lesson the journey opens on in demo mode: partway through module 3,
+  /// like the design prototype's child. The mockup's "Lição 8" and "42%"
+  /// were independent placeholders; both are derived from this id now, so
+  /// the demo picks the mid-module position the screens were drawn around.
+  static const String demoLessonId = 'lesson_010';
 }

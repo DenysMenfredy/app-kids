@@ -7,6 +7,7 @@ import '../../../core/services/tts_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
+import '../../learning/application/journey_provider.dart';
 import '../application/lesson_controller.dart';
 import '../application/lesson_stats_controller.dart';
 import '../data/lesson_sync_service.dart';
@@ -17,6 +18,8 @@ class LessonIntroScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final module = ref.watch(currentModuleProvider);
+    final lessonNumber = ref.watch(currentLessonNumberProvider);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -43,7 +46,7 @@ class LessonIntroScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'LIÇÃO 8 · SONS E RIMAS',
+                'LIÇÃO $lessonNumber · ${module.lessonTheme.toUpperCase()}',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.eyebrow(AppColors.teal),
               ),
@@ -74,7 +77,7 @@ class LessonIntroScreen extends ConsumerWidget {
                   ref.read(lessonStatsProvider.notifier).start();
                   ref
                       .read(lessonSyncServiceProvider)
-                      .lessonStarted(todaysLessonId);
+                      .lessonStarted(ref.read(currentLessonIdProvider));
                   ref
                       .read(ttsServiceProvider)
                       .speak('Toque na letra Bê');
