@@ -33,7 +33,7 @@ backend/
 │   ├── lessons/               # 37 lessons (4 activities each)
 │   ├── activities/            # 148 tap/match/trace/listen exercises
 │   └── assessments/           # onboarding placement questionnaire
-├── test/rules/                # Security Rules tests (emulator)
+├── test/rules/                # Security Rules tests (Firestore emulator)
 └── docs/adr/                  # architecture decision records
 ```
 
@@ -129,7 +129,8 @@ npm test                # tsc build + 59 unit tests (domain + seed integrity)
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests (needs firebase-tools + Java 11+ for the emulator)
+# Security Rules tests — 24 tests against the Firestore emulator.
+# firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
 npm test                # firebase emulators:exec → node --test

@@ -33,7 +33,8 @@ boundaries or security architecture must be documented as ADRs in
 - Cloud Functions: `backend/functions` (TypeScript, Node 20, v2 API).
   `npm test` compiles and runs the domain unit tests.
 - Security Rules: `backend/firestore.rules` + tests in `backend/test/rules`
-  (needs firebase-tools and Java 11+ for the emulator).
+  (`npm test` there runs the Firestore emulator; firebase-tools is a local
+  devDependency and the emulator needs Java 11+).
 - Environments: `letrando-dev` / `letrando-staging` / `letrando-production`
   (`backend/.firebaserc`). Never use production payment credentials or
   production data during development.
