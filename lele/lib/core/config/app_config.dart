@@ -9,8 +9,21 @@
 ///
 /// Enable Firebase mode after running `flutterfire configure`:
 ///   flutter run --dart-define=USE_FIREBASE=true
+///
+/// To run against the local emulators instead of a real project (see
+/// `backend/dev.sh`), add USE_EMULATOR — no `flutterfire configure` needed:
+///   flutter run --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATOR=true
 abstract final class AppConfig {
   static const bool useFirebase = bool.fromEnvironment('USE_FIREBASE');
+
+  /// Point Firebase at the local emulator suite. Implies [useFirebase].
+  static const bool useEmulator = bool.fromEnvironment('USE_EMULATOR');
+
+  /// Host the emulators are reachable on. The Android emulator reaches the
+  /// host machine at 10.0.2.2 rather than localhost; override for a physical
+  /// device with `--dart-define=EMULATOR_HOST=<your LAN ip>`.
+  static const String emulatorHostOverride =
+      String.fromEnvironment('EMULATOR_HOST');
 
   /// Region where all Letrando Cloud Functions are deployed.
   static const String functionsRegion = 'southamerica-east1';

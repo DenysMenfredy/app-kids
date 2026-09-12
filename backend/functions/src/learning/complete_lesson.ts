@@ -9,7 +9,7 @@ import {
 } from "../domain/gamification";
 import { localDateIso } from "../domain/time";
 import { db, paths } from "../lib/firestore";
-import { requireAuth, requireString } from "../lib/guards";
+import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -22,7 +22,7 @@ import { log } from "../lib/logger";
  * (spec §20: progress updates must be safe to retry).
  */
 export const completeLesson = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
     const lessonId = requireString(request.data?.lessonId, "lessonId", {

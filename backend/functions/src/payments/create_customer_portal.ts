@@ -2,7 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { checkoutReturnUrl, stripeSecretKey } from "../config";
 import { db, paths } from "../lib/firestore";
-import { requireAuth } from "../lib/guards";
+import { enforceAppCheck, requireAuth } from "../lib/guards";
 import { log } from "../lib/logger";
 import { stripeProvider } from "./stripe_provider";
 
@@ -13,7 +13,7 @@ import { stripeProvider } from "./stripe_provider";
  */
 export const createCustomerPortal = onCall(
   {
-    enforceAppCheck: true,
+    enforceAppCheck,
     secrets: [stripeSecretKey],
   },
   async (request) => {

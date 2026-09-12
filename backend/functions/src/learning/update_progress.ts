@@ -2,7 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { db, paths } from "../lib/firestore";
-import { requireAuth, requireString } from "../lib/guards";
+import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -11,7 +11,7 @@ import { log } from "../lib/logger";
  * keyed by child+lesson so retries merge instead of duplicating (§20).
  */
 export const updateProgress = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
     const lessonId = requireString(request.data?.lessonId, "lessonId", {

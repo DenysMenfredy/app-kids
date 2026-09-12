@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'core/config/app_config.dart';
+import 'core/firebase/firebase_emulators.dart';
 import 'core/storage/local_storage.dart';
 import 'firebase_options.dart';
 
@@ -16,8 +17,13 @@ Future<void> main() async {
   ]);
   if (AppConfig.useFirebase) {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      // Emulator runs use throwaway demo credentials, so local development
+      // needs no `flutterfire configure` and can't reach a real project.
+      options: AppConfig.useEmulator
+          ? demoFirebaseOptions
+          : DefaultFirebaseOptions.currentPlatform,
     );
+    if (AppConfig.useEmulator) await connectToEmulators();
   }
   final prefs = await SharedPreferences.getInstance();
   runApp(

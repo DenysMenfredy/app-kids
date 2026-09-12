@@ -3,7 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { checkoutReturnUrl, stripeSecretKey } from "../config";
 import { isKnownPlan } from "../domain/plans";
 import { db, paths } from "../lib/firestore";
-import { requireAuth, requireString } from "../lib/guards";
+import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log, logError } from "../lib/logger";
 import { stripeProvider } from "./stripe_provider";
 
@@ -15,7 +15,7 @@ import { stripeProvider } from "./stripe_provider";
  */
 export const createCheckoutSession = onCall(
   {
-    enforceAppCheck: true,
+    enforceAppCheck,
     secrets: [stripeSecretKey],
   },
   async (request) => {

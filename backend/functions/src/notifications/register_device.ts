@@ -2,7 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { onCall } from "firebase-functions/v2/https";
 
 import { db, paths } from "../lib/firestore";
-import { requireAuth, requireString } from "../lib/guards";
+import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -11,7 +11,7 @@ import { log } from "../lib/logger";
  * consistent and validated in one place.
  */
 export const registerDevice = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
     const deviceId = requireString(request.data?.deviceId, "deviceId", {

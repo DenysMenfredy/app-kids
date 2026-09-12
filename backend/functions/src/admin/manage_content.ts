@@ -2,7 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { db } from "../lib/firestore";
-import { requireRole, requireString } from "../lib/guards";
+import { enforceAppCheck, requireRole, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -21,7 +21,7 @@ const CONTENT_COLLECTIONS = new Set([
 type Action = "upsert" | "publish" | "unpublish";
 
 export const manageContent = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const editorUid = requireRole(request, "content_editor", "admin");
     const collection = requireString(request.data?.collection, "collection", {

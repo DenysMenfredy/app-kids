@@ -4,7 +4,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { isRole } from "../domain/roles";
 import { db } from "../lib/firestore";
-import { requireRole, requireString } from "../lib/guards";
+import { enforceAppCheck, requireRole, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -13,7 +13,7 @@ import { log } from "../lib/logger";
  * access). The client can never self-assign: this is the single write path.
  */
 export const setUserRole = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const adminUid = requireRole(request, "admin");
     const targetUid = requireString(request.data?.uid, "uid", {

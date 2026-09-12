@@ -28,6 +28,8 @@ backend/
 │       │                      # submitAssessment (server-side placement)
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
 │       └── admin/             # setUserRole (custom claims), manageContent
+├── dev.sh                     # run the whole backend on emulators
+├── smoke.sh                   # end-to-end check against those emulators
 ├── seed/                      # curriculum content, imported into Firestore
 │   ├── courses/ modules/      # 1 course, 7 modules
 │   ├── lessons/               # 37 lessons (4 activities each)
@@ -118,6 +120,23 @@ Flutter → createCheckoutSession (callable, App Check, plan validation)
 Premium is never activated from the checkout redirect. BRL is stored as
 integer cents (R$149,90 = 14990).
 
+## Running it locally
+
+```bash
+./dev.sh          # build functions + start Auth/Firestore/Functions emulators,
+                  # seeding backend/seed/ on first run. UI: localhost:4000
+./dev.sh --reseed # start from a clean database
+./smoke.sh        # end-to-end check against the running emulators
+```
+
+`dev.sh` runs under the throwaway project `demo-letrando`, so no credentials
+are involved and nothing can reach a real project. See the root README for
+pointing the Flutter app at it.
+
+`smoke.sh` walks the slice the unit suites can't: sign-up → the profile
+bootstrap trigger → a rules-enforced child write → server-side assessment
+scoring → reward granting and its idempotency → a denied client XP write.
+
 ## Commands
 
 ```bash
@@ -166,6 +185,10 @@ development (spec §21).
 
 ## Not yet wired (deliberate MVP cuts)
 
+- **Release blocker:** the app has no App Check integration, so every
+  callable would reject it against a real project. Enforcement is on
+  everywhere except the emulator (ADR 0004); the client must add
+  `firebase_app_check` before a deployment real devices talk to.
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
 - Only the module *ranges* are still mirrored in app code (`curriculum` in

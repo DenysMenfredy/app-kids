@@ -11,7 +11,7 @@ import {
   scoreAnswers,
 } from "../domain/assessment";
 import { DEFAULT_ASSESSMENT_ID, db, paths } from "../lib/firestore";
-import { requireAuth, requireString } from "../lib/guards";
+import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
 /**
@@ -22,7 +22,7 @@ import { log } from "../lib/logger";
  * module can't be chosen on-device (spec §22 constraints 1 and 6).
  */
 export const submitAssessment = onCall(
-  { enforceAppCheck: true },
+  { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
     const childId = requireString(request.data?.childId, "childId", {

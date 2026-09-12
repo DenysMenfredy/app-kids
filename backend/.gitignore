@@ -4,7 +4,10 @@ lib/
 .env
 .env.*
 !.env.example
+# Fake params so the emulator starts without prompting — no secrets here.
+!.env.demo-letrando
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .firebase/
+.emulator-data/
