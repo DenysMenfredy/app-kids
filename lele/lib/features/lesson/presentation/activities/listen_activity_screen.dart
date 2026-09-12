@@ -11,12 +11,10 @@ import '../../../../core/widgets/lele_mascot.dart';
 import '../../../learning/application/journey_provider.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
+import '../../data/lesson_repository.dart';
 import '../../data/lesson_sync_service.dart';
 import '../../domain/lesson.dart';
 import '../../../session/application/session_controller.dart';
-
-const _answer = 'BOLA';
-const _words = ['GATO', 'BOLA', 'CASA'];
 
 class ListenActivityScreen extends ConsumerStatefulWidget {
   const ListenActivityScreen({super.key});
@@ -31,9 +29,9 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
   bool _done = false;
   int _wrongAttempts = 0;
 
-  void _onTap(String word) {
+  void _onTap(ListenActivity activity, String word) {
     if (_done) return;
-    if (word == _answer) {
+    if (word == activity.answer) {
       ref.read(lessonStatsProvider.notifier).recordCorrect();
       ref.read(ttsServiceProvider).speak('Parabéns!');
       setState(() {
@@ -80,6 +78,9 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final content = ref.watch(currentLessonContentProvider).value;
+    if (content == null) return const ActivityLoading();
+    final activity = content.listen;
     final flow = ref.watch(lessonFlowProvider);
     return ActivityScaffold(
       progress: flow.progressOf(ActivityType.listen),
@@ -93,11 +94,12 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       child: Column(
         children: [
           const SizedBox(height: 18),
-          Text('Qual palavra você ouviu?', style: AppTextStyles.baloo(23)),
+          Text(activity.instruction, style: AppTextStyles.baloo(23)),
           const SizedBox(height: 16),
           PulsingWidget(
             child: GestureDetector(
-              onTap: () => ref.read(ttsServiceProvider).speak('bola'),
+              onTap: () =>
+                  ref.read(ttsServiceProvider).speak(activity.speech),
               child: Container(
                 width: 110,
                 height: 110,
@@ -132,13 +134,13 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (final word in _words) ...[
+                for (final word in activity.options) ...[
                   _WordCard(
                     word: word,
                     picked: _picked == word,
-                    correct: word == _answer,
+                    correct: word == activity.answer,
                     wrongAttempts: _wrongAttempts,
-                    onTap: () => _onTap(word),
+                    onTap: () => _onTap(activity, word),
                   ),
                   const SizedBox(height: 12),
                 ],

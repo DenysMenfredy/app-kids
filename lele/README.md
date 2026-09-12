@@ -11,9 +11,10 @@ children ages 3–7, built from the Claude Design handoff
 Assessment (3 questions) → Parent dashboard → Paywall (founder pricing).
 
 **Child flow:** Child home (journey map anchored on the child's current
-lesson, streak/coins/XP) → Today's lesson →
-4 activities (tap the letter, match upper/lowercase, trace with the finger,
-listen and choose) → Reward (confetti, +XP/+coins/streak) → Book library.
+lesson, streak/coins/XP) → Today's lesson → its 4 activities, with the
+letters and words served by the backend (tap the letter, match
+upper/lowercase, trace with the finger, listen and choose) → Reward
+(confetti, +XP/+coins/streak) → Book library.
 
 All copy is pt-BR; child activities speak through the device TTS voice
 (`pt-BR`).
@@ -66,6 +67,7 @@ The app runs against either an offline stub or the real Letrando backend
 | Assessment | bundled copy of the questions | `assessments/{id}` from Firestore |
 | Placement | fixed fallback (module 3) | scored server-side by `submitAssessment` |
 | Journey position | demo lesson (`lesson_010`) | child's `currentLessonId` from Firestore |
+| Lesson content | one bundled sample lesson | `lessons/{id}` + `activities` from Firestore |
 | Lesson progress | local only | + `updateProgress` / `completeLesson` callables |
 | XP / coins / streak | computed on device | streamed from `gamification/{childId}` |
 | Premium | always false | streams `entitlements/premium` |
@@ -88,7 +90,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 56 tests
+flutter test           # 71 tests
 flutter analyze        # zero issues
 ```
 
@@ -109,11 +111,14 @@ Firestore.
 ## Known MVP simplifications
 
 - The curriculum *shape* is still duplicated in the app (`curriculum` in
-  `features/learning/domain`, `bookLibrary`). The backend now seeds the same
-  7 modules / 37 lessons / 148 activities (`backend/seed/`), but the app
-  doesn't fetch them yet — so the journey position changes the labels and
-  progress while every lesson still plays the same four hardcoded exercises.
-  Tests on both sides assert the two copies agree.
+  `features/learning/domain`, `bookLibrary`) even though the backend seeds
+  the same 7 modules. Exercises themselves are no longer duplicated: the
+  lesson the child plays is fetched from `lessons/{id}` + `activities`.
+  Tests on both sides assert the two copies of the module ranges agree, and
+  the offline sample lesson is checked against the seed so demo mode can't
+  drift from production.
+- Demo mode ships a single sample lesson, so offline play repeats it
+  regardless of the journey position.
 - One child profile per account (`AppConfig.primaryChildId`), though the
   backend data model supports several.
 - FCM device registration (`registerDevice`) is not called from the app yet,

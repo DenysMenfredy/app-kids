@@ -10,6 +10,7 @@ import '../../../core/widgets/lele_button.dart';
 import '../../learning/application/journey_provider.dart';
 import '../application/lesson_controller.dart';
 import '../application/lesson_stats_controller.dart';
+import '../data/lesson_repository.dart';
 import '../data/lesson_sync_service.dart';
 import '../domain/lesson.dart';
 
@@ -18,8 +19,7 @@ class LessonIntroScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final module = ref.watch(currentModuleProvider);
-    final lessonNumber = ref.watch(currentLessonNumberProvider);
+    final content = ref.watch(currentLessonContentProvider);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -44,45 +44,18 @@ class LessonIntroScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'LIÇÃO $lessonNumber · ${module.lessonTheme.toUpperCase()}',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.eyebrow(AppColors.teal),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Vamos brincar com as letras!',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.baloo(28, height: 1.2),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '4 atividades · cerca de 15 minutos',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.nunito(15, color: AppColors.textMuted),
-              ),
-              const SizedBox(height: 20),
-              for (final activity in todaysLesson) ...[
-                _ActivityRow(activity: activity),
-                const SizedBox(height: 10),
-              ],
-              const Spacer(),
-              LeleButton(
-                label: 'Começar!',
-                height: 60,
-                fontSize: 21,
-                onPressed: () {
-                  final flow = ref.read(lessonFlowProvider);
-                  ref.read(lessonStatsProvider.notifier).start();
-                  ref
-                      .read(lessonSyncServiceProvider)
-                      .lessonStarted(ref.read(currentLessonIdProvider));
-                  ref
-                      .read(ttsServiceProvider)
-                      .speak('Toque na letra Bê');
-                  context.goNamed(flow.firstRoute);
-                },
+              Expanded(
+                child: content.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(color: AppColors.teal),
+                  ),
+                  error: (error, _) => _LoadFailed(
+                    onRetry: () => ref.invalidate(
+                      lessonContentProvider(ref.read(currentLessonIdProvider)),
+                    ),
+                  ),
+                  data: (lesson) => _Lesson(lesson: lesson),
+                ),
               ),
             ],
           ),
@@ -92,10 +65,100 @@ class LessonIntroScreen extends ConsumerWidget {
   }
 }
 
-class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({required this.activity});
+class _Lesson extends ConsumerWidget {
+  const _Lesson({required this.lesson});
 
-  final LessonActivity activity;
+  final LessonContent lesson;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessonNumber = ref.watch(currentLessonNumberProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 16),
+        Text(
+          'LIÇÃO $lessonNumber · ${lesson.theme.toUpperCase()}',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.eyebrow(AppColors.teal),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          lesson.title,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.baloo(28, height: 1.2),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${ActivityType.values.length} atividades · cerca de '
+          '${lesson.estimatedMinutes} minutos',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 20),
+        for (final type in ActivityType.values) ...[
+          _ActivityRow(presentation: activityPresentation[type]!),
+          const SizedBox(height: 10),
+        ],
+        const Spacer(),
+        LeleButton(
+          label: 'Começar!',
+          height: 60,
+          fontSize: 21,
+          onPressed: () {
+            final flow = ref.read(lessonFlowProvider);
+            ref.read(lessonStatsProvider.notifier).start();
+            ref
+                .read(lessonSyncServiceProvider)
+                .lessonStarted(ref.read(currentLessonIdProvider));
+            ref.read(ttsServiceProvider).speak(lesson.tap.speech);
+            context.goNamed(flow.firstRoute);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _LoadFailed extends StatelessWidget {
+  const _LoadFailed({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Não conseguimos carregar a lição',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.baloo(22, height: 1.25),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Verifique sua conexão e tente de novo.',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 20),
+        TextButton(
+          onPressed: onRetry,
+          child: Text(
+            'Tentar de novo',
+            style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivityRow extends StatelessWidget {
+  const _ActivityRow({required this.presentation});
+
+  final ActivityPresentation presentation;
 
   @override
   Widget build(BuildContext context) {
@@ -114,18 +177,18 @@ class _ActivityRow extends StatelessWidget {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: activity.chipColor,
+              color: presentation.chipColor,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(activity.icon, size: 22, color: Colors.white),
+            child: Icon(presentation.icon, size: 22, color: Colors.white),
           ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(activity.title, style: AppTextStyles.baloo(16)),
+                Text(presentation.title, style: AppTextStyles.baloo(16)),
                 Text(
-                  activity.subtitle,
+                  presentation.subtitle,
                   style: AppTextStyles.nunito(
                     12,
                     weight: FontWeight.w700,
@@ -136,7 +199,7 @@ class _ActivityRow extends StatelessWidget {
             ),
           ),
           Text(
-            activity.duration,
+            presentation.duration,
             style: AppTextStyles.nunito(
               12,
               weight: FontWeight.w700,

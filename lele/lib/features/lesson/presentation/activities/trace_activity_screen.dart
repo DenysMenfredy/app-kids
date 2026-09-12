@@ -10,9 +10,9 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_button.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
+import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
-
-const _letter = 'A';
+import '../widgets/highlighted_instruction.dart';
 
 class TraceActivityScreen extends ConsumerStatefulWidget {
   const TraceActivityScreen({super.key});
@@ -38,20 +38,24 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
 
   void _clear() => setState(_strokes.clear);
 
-  void _finish() {
+  void _finish(LessonContent content) {
     if (!_hasTraced) return;
     ref.read(lessonStatsProvider.notifier).recordCorrect();
     ref.read(ttsServiceProvider).speak('Que capricho!');
     context.goNamed(
       ref.read(lessonFlowProvider).nextRoute(ActivityType.trace),
     );
+    // Hand off to the next activity by speaking its word.
     Future.delayed(const Duration(milliseconds: 700), () {
-      ref.read(ttsServiceProvider).speak('bola');
+      ref.read(ttsServiceProvider).speak(content.listen.speech);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final content = ref.watch(currentLessonContentProvider).value;
+    if (content == null) return const ActivityLoading();
+    final activity = content.trace;
     final flow = ref.watch(lessonFlowProvider);
     return ActivityScaffold(
       progress: flow.progressOf(ActivityType.trace),
@@ -59,21 +63,9 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
       child: Column(
         children: [
           const SizedBox(height: 18),
-          Text.rich(
-            TextSpan(
-              text: 'Trace a letra ',
-              style: AppTextStyles.baloo(23),
-              children: [
-                TextSpan(
-                  text: _letter,
-                  style: AppTextStyles.baloo(23, color: AppColors.orangeDark),
-                ),
-                TextSpan(
-                  text: ' com o dedo',
-                  style: AppTextStyles.baloo(23),
-                ),
-              ],
-            ),
+          HighlightedInstruction(
+            instruction: activity.instruction,
+            token: activity.letter,
           ),
           Expanded(
             child: Center(
@@ -95,7 +87,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                     children: [
                       Center(
                         child: Text(
-                          _letter,
+                          activity.letter,
                           style: TextStyle(
                             fontFamily: 'Baloo 2',
                             fontSize: 240,
@@ -158,7 +150,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                   shadowColor:
                       _hasTraced ? AppColors.tealDark : AppColors.textDisabled,
                   enabled: _hasTraced,
-                  onPressed: _finish,
+                  onPressed: () => _finish(content),
                 ),
               ),
             ],

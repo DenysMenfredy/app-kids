@@ -10,10 +10,9 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
+import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
-
-const _target = 'B';
-const _letters = ['B', 'R', 'D', 'P'];
+import '../widgets/highlighted_instruction.dart';
 
 class TapActivityScreen extends ConsumerStatefulWidget {
   const TapActivityScreen({super.key});
@@ -27,11 +26,11 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
   bool _done = false;
   int _wrongAttempts = 0;
 
-  void _onTap(String letter) {
+  void _onTap(TapActivity activity, String letter) {
     if (_done) return;
     final tts = ref.read(ttsServiceProvider);
     final stats = ref.read(lessonStatsProvider.notifier);
-    if (letter == _target) {
+    if (letter == activity.target) {
       stats.recordCorrect();
       tts.speak('Muito bem!');
       setState(() {
@@ -60,6 +59,9 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final content = ref.watch(currentLessonContentProvider).value;
+    if (content == null) return const ActivityLoading();
+    final activity = content.tap;
     final flow = ref.watch(lessonFlowProvider);
     return ActivityScaffold(
       progress: flow.progressOf(ActivityType.tap),
@@ -79,22 +81,11 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
             children: [
               _SpeakButton(
                 onTap: () =>
-                    ref.read(ttsServiceProvider).speak('Toque na letra Bê'),
+                    ref.read(ttsServiceProvider).speak(activity.speech),
               ),
-              Text.rich(
-                TextSpan(
-                  text: 'Toque na letra ',
-                  style: AppTextStyles.baloo(23),
-                  children: [
-                    TextSpan(
-                      text: _target,
-                      style: AppTextStyles.baloo(
-                        23,
-                        color: AppColors.orangeDark,
-                      ),
-                    ),
-                  ],
-                ),
+              HighlightedInstruction(
+                instruction: activity.instruction,
+                token: activity.target,
               ),
             ],
           ),
@@ -108,13 +99,13 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
                 crossAxisSpacing: 16,
                 childAspectRatio: 1.35,
                 children: [
-                  for (final letter in _letters)
+                  for (final letter in activity.options)
                     _LetterCard(
                       letter: letter,
                       picked: _picked == letter,
-                      correct: letter == _target,
+                      correct: letter == activity.target,
                       wrongAttempts: _wrongAttempts,
-                      onTap: () => _onTap(letter),
+                      onTap: () => _onTap(activity, letter),
                     ),
                 ],
               ),

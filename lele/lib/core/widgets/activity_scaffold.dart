@@ -97,3 +97,18 @@ class _CloseButton extends StatelessWidget {
     );
   }
 }
+
+/// Shown if an activity is reached before its content has resolved. The
+/// lesson intro loads and caches the lesson, so this is a safety net rather
+/// than part of the normal flow.
+class ActivityLoading extends StatelessWidget {
+  const ActivityLoading({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator(color: AppColors.teal)),
+    );
+  }
+}
+

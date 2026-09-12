@@ -168,9 +168,10 @@ development (spec §21).
 
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
-- The app doesn't fetch lessons or activities yet: it reads the child's
-  `currentLessonId` to place them on the journey, but still plays the four
-  exercises hardcoded in app code rather than the seeded ones.
+- Only the module *ranges* are still mirrored in app code (`curriculum` in
+  the Flutter app); lessons and activities themselves are fetched. The app
+  keeps one bundled sample lesson for offline/demo play, checked against
+  this seed by a test so the two can't drift.
 - Multi-child aggregation for the parent dashboard (gamification is stored
   per child, the app uses a single fixed child id).
 - Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must

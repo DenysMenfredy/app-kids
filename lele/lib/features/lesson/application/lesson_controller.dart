@@ -4,8 +4,8 @@ import '../../../app/router/app_router.dart';
 import '../domain/lesson.dart';
 
 /// Orders the daily lesson activities and maps each one to its route and
-/// progress-bar value. Adding a new activity only requires extending
-/// [todaysLesson] and this table.
+/// progress-bar value. The play order is [ActivityType]'s own order, which
+/// the backend's seed content is validated against.
 class LessonFlow {
   const LessonFlow();
 
@@ -23,17 +23,17 @@ class LessonFlow {
     ActivityType.listen: 0.95,
   };
 
-  String get firstRoute => _routes[todaysLesson.first.type]!;
+  String get firstRoute => _routes[ActivityType.values.first]!;
 
   double progressOf(ActivityType type) => _progress[type]!;
 
   /// Route of the activity after [type], or the reward screen at the end.
   String nextRoute(ActivityType type) {
-    final index = todaysLesson.indexWhere((a) => a.type == type);
-    final isLast = index == todaysLesson.length - 1;
+    final index = ActivityType.values.indexOf(type);
+    final isLast = index == ActivityType.values.length - 1;
     return isLast
         ? AppRoutes.reward
-        : _routes[todaysLesson[index + 1].type]!;
+        : _routes[ActivityType.values[index + 1]]!;
   }
 }
 

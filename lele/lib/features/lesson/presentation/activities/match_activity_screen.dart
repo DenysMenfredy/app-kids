@@ -10,10 +10,8 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_mascot.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
+import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
-
-const _uppercase = ['A', 'B', 'C'];
-const _lowercase = ['b', 'a', 'c'];
 
 class MatchActivityScreen extends ConsumerStatefulWidget {
   const MatchActivityScreen({super.key});
@@ -36,11 +34,11 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
     setState(() => _selected = letter);
   }
 
-  void _onLowercaseTap(String letter) {
+  void _onLowercaseTap(MatchActivity activity, String letter) {
     final upper = letter.toUpperCase();
     if (_matched.contains(upper) || _selected == null) return;
     if (upper == _selected) {
-      final all = _matched.length + 1 == _uppercase.length;
+      final all = _matched.length + 1 == activity.uppercase.length;
       ref.read(lessonStatsProvider.notifier).recordCorrect();
       ref.read(ttsServiceProvider).speak(all ? 'Incrível!' : 'Isso!');
       setState(() {
@@ -71,6 +69,9 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final content = ref.watch(currentLessonContentProvider).value;
+    if (content == null) return const ActivityLoading();
+    final activity = content.match;
     final flow = ref.watch(lessonFlowProvider);
     return ActivityScaffold(
       progress: flow.progressOf(ActivityType.match),
@@ -84,10 +85,10 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
       child: Column(
         children: [
           const SizedBox(height: 20),
-          Text('Ligue as letras iguais', style: AppTextStyles.baloo(23)),
+          Text(activity.instruction, style: AppTextStyles.baloo(23)),
           const SizedBox(height: 4),
           Text(
-            'Toque na letra grande e depois na pequena',
+            activity.hint,
             style: AppTextStyles.nunito(14, color: AppColors.textMuted),
           ),
           Expanded(
@@ -100,7 +101,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   spacing: 14,
                   children: [
-                    for (final letter in _uppercase)
+                    for (final letter in activity.uppercase)
                       _MatchCard(
                         letter: letter,
                         color: AppColors.orangeDark,
@@ -116,7 +117,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   spacing: 14,
                   children: [
-                    for (final letter in _lowercase)
+                    for (final letter in activity.lowercase)
                       _MatchCard(
                         letter: letter,
                         color: AppColors.teal,
@@ -124,7 +125,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
                         selected: false,
                         wrong: _wrong == letter,
                         wrongAttempts: _wrongAttempts,
-                        onTap: () => _onLowercaseTap(letter),
+                        onTap: () => _onLowercaseTap(activity, letter),
                       ),
                   ],
                 ),
