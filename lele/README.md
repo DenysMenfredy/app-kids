@@ -46,6 +46,12 @@ web it becomes `SpeechSynthesisUtterance.rate`, where **1.0** is normal. One
 shared value ran browser speech at 0.45x — slurred, and half the reason it
 sounded wrong.
 
+On Android 11+ the app also has to declare the `TTS_SERVICE` intent in the
+manifest's `queries` block. Without it, package-visibility rules hide the
+speech engine entirely, the voice list comes back empty and every
+instruction is read by the system default voice — the same failure as the
+web race, from a different cause.
+
 **If speech still sounds off**, the device is probably missing the voice:
 
 - Android: Settings › Language & input › Text-to-speech → install the
@@ -135,7 +141,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 109 tests
+flutter test           # 117 tests
 flutter analyze        # zero issues
 ```
 

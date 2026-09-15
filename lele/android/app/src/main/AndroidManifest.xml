@@ -37,6 +37,13 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <!-- Without this the app cannot see the text-to-speech engine at all
+             on Android 11+ (package visibility), so the voice list comes back
+             empty and every spoken instruction falls back to the system
+             default voice. Required by flutter_tts. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
