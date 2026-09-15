@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
 import 'package:lele/features/learning/application/journey_provider.dart';
+import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/learning/domain/learning_module.dart';
 
 List<int> _numbersWith(List<LearningModule> journey, ModuleStatus status) =>
@@ -139,20 +141,26 @@ void main() {
   });
 
   group('journey providers (local mode)', () {
-    ProviderContainer makeContainer() {
-      final container = ProviderContainer();
+    // The demo position is persisted, so these need the same SharedPreferences
+    // the app installs at startup.
+    Future<ProviderContainer> makeContainer() async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
       addTearDown(container.dispose);
       return container;
     }
 
-    test('demo mode opens on the prototype lesson', () {
-      final container = makeContainer();
+    test('demo mode opens on the prototype lesson', () async {
+      final container = await makeContainer();
       expect(container.read(currentLessonIdProvider), AppConfig.demoLessonId);
       expect(container.read(currentLessonNumberProvider), 10);
     });
 
-    test('the current module matches the demo lesson', () {
-      final container = makeContainer();
+    test('the current module matches the demo lesson', () async {
+      final container = await makeContainer();
       final module = container.read(currentModuleProvider);
       expect(module.number, 3);
       expect(module.title, 'Consciência Fonológica');
@@ -160,8 +168,8 @@ void main() {
       expect(module.progress, greaterThan(0));
     });
 
-    test('journey and current module agree', () {
-      final container = makeContainer();
+    test('journey and current module agree', () async {
+      final container = await makeContainer();
       final journey = container.read(journeyProvider);
       final current = container.read(currentModuleProvider);
       expect(journey, hasLength(curriculum.length));

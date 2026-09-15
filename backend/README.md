@@ -68,6 +68,8 @@ Flutter → completeLesson {lessonId, childId, stats}
         → transaction: already completed? → no reward
         → else applyLessonReward (XP, coins, local-calendar streak)
         → users/{uid}/gamification/{childId}   (client-read-only)
+        → and, when this was the lesson the child was on,
+          currentLessonId moves to the next one in the course
 ```
 
 XP, coins and streak are never written by the client; the app reads that

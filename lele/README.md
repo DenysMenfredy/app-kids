@@ -74,7 +74,8 @@ The app runs against either an offline stub or the real Letrando backend
 | Profile/child | SharedPreferences only | + Firestore `users/{uid}` mirror |
 | Assessment | bundled copy of the questions | `assessments/{id}` from Firestore |
 | Placement | fixed fallback (module 3) | scored server-side by `submitAssessment` |
-| Journey position | demo lesson (`lesson_010`) | child's `currentLessonId` from Firestore |
+| Journey position | advances on device, persisted | `currentLessonId`, advanced by `completeLesson` |
+| Child name/age/avatar | on-device session | `children/{id}` from Firestore |
 | Lesson content | one bundled sample lesson | `lessons/{id}` + `activities` from Firestore |
 | Lesson progress | local only | + `updateProgress` / `completeLesson` callables |
 | XP / coins / streak | computed on device | streamed from `gamification/{childId}` |
@@ -98,7 +99,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 83 tests
+flutter test           # 98 tests
 flutter analyze        # zero issues
 ```
 
@@ -120,15 +121,13 @@ Firestore.
 
 - The curriculum *shape* is still duplicated in the app (`curriculum` in
   `features/learning/domain`, `bookLibrary`) even though the backend seeds
-  the same 7 modules. Module titles now live in two places and can drift —
-  the app's copy says "Fônica" where the backend says "Juntar Sons e
-  Sílabas". Exercises themselves are no longer duplicated: the
-  lesson the child plays is fetched from `lessons/{id}` + `activities`.
-  Tests on both sides assert the two copies of the module ranges agree, and
-  the offline sample lesson is checked against the seed so demo mode can't
-  drift from production.
-- Demo mode ships a single sample lesson, so offline play repeats it
-  regardless of the journey position.
+  the same 7 modules. Exercises are not duplicated — the lesson the child
+  plays is fetched from `lessons/{id}` + `activities`. A test compares the
+  app's module list against `backend/seed/modules/`, and another checks the
+  offline sample lesson against the seed, so neither copy can drift.
+- Demo mode ships a single sample lesson. The journey position still
+  advances as lessons are finished — the map and dashboard move — but the
+  exercises themselves repeat, because there is only one lesson bundled.
 - Sign-in validates and reports errors per field, but there is no e-mail
   verification step and no account deletion yet (the latter is an LGPD
   requirement tracked in the backend README).

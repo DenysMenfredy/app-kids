@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
+import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/lesson/data/lesson_repository.dart';
 import 'package:lele/features/lesson/domain/lesson.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Documents in the shape the backend stores them (`backend/seed/lessons` +
 /// `backend/seed/activities`). The values are representative rather than a
@@ -211,7 +213,11 @@ void main() {
 
   group('lesson content providers (local mode)', () {
     test('the current lesson resolves to the demo content', () async {
-      final container = ProviderContainer();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
       addTearDown(container.dispose);
 
       expect(container.read(lessonRepositoryProvider),

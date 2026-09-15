@@ -42,10 +42,11 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       // reward (ADR 0003). The celebration animation covers the round trip,
       // and a slow network can't hold the child on this screen.
       final stats = ref.read(lessonStatsProvider);
+      final finishedLessonId = ref.read(currentLessonIdProvider);
       final rewardFuture = ref
           .read(lessonSyncServiceProvider)
           .lessonCompleted(
-            ref.read(currentLessonIdProvider),
+            finishedLessonId,
             durationSeconds: stats.durationSeconds(DateTime.now()),
             score: stats.score,
             attempts: stats.attempts,
@@ -53,8 +54,9 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
             wrongAnswers: stats.wrongAnswers,
           )
           .timeout(const Duration(seconds: 3), onTimeout: () => null);
-      // Demo mode only — a no-op once the backend owns the totals.
+      // Demo mode only — the backend owns both of these once it is on.
       ref.read(sessionProvider.notifier).completeLesson();
+      ref.read(demoLessonProvider.notifier).completed(finishedLessonId);
 
       Future.delayed(const Duration(milliseconds: 1000), () async {
         final reward = await rewardFuture;

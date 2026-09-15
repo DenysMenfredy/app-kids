@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
-import '../../session/application/session_controller.dart';
+import '../../session/application/child_provider.dart';
 import '../application/assessment_controller.dart';
 import '../domain/assessment.dart';
 
@@ -16,7 +16,7 @@ class AssessmentResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final childName = ref.watch(sessionProvider.select((s) => s.child.name));
+    final childName = ref.watch(childProvider).name;
     // Placement decided by the backend; the fallback only appears when the
     // submission couldn't reach it (ADR 0003).
     final result = ref.watch(

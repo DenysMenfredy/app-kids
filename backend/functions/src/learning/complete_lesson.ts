@@ -9,6 +9,7 @@ import {
 } from "../domain/gamification";
 import { localDateIso } from "../domain/time";
 import { db, paths } from "../lib/firestore";
+import { findNextLessonId } from "./next_lesson";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 
@@ -50,6 +51,11 @@ export const completeLesson = onCall(
       today = localDateIso(new Date(), "America/Sao_Paulo");
     }
 
+    // Resolved before the transaction: a query can't be part of one, and
+    // the curriculum is static content that won't change underneath us.
+    const nextLessonId = await findNextLessonId(db(), lessonId);
+
+    const childRef = db().collection(paths.children(uid)).doc(childId);
     const progressRef = db()
       .collection(paths.learningProgress(uid))
       .doc(`${childId}_${lessonId}`);
@@ -58,9 +64,10 @@ export const completeLesson = onCall(
       .doc(childId);
 
     const result = await db().runTransaction(async (tx) => {
-      const [progressSnap, gamificationSnap] = await Promise.all([
+      const [progressSnap, gamificationSnap, childSnap] = await Promise.all([
         tx.get(progressRef),
         tx.get(gamificationRef),
+        tx.get(childRef),
       ]);
 
       const current: GamificationState = gamificationSnap.exists
@@ -76,6 +83,22 @@ export const completeLesson = onCall(
       // Only a first-time completion earns rewards; re-submitting the same
       // lesson refreshes the stats but leaves the wallet untouched.
       const alreadyCompleted = progressSnap.get("status") === "completed";
+
+      // Move the child on, but only when they finished the lesson they were
+      // actually on. Replaying an earlier lesson must not drag them
+      // backwards, and finishing the last lesson leaves them where they are.
+      const onThisLesson = childSnap.get("currentLessonId") === lessonId;
+      const advanceTo = onThisLesson ? nextLessonId : null;
+      if (advanceTo) {
+        tx.set(
+          childRef,
+          {
+            currentLessonId: advanceTo,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
+      }
 
       tx.set(
         progressRef,
@@ -95,7 +118,13 @@ export const completeLesson = onCall(
       );
 
       if (alreadyCompleted) {
-        return { awarded: false, xpEarned: 0, coinsEarned: 0, ...current };
+        return {
+          awarded: false,
+          xpEarned: 0,
+          coinsEarned: 0,
+          nextLessonId: advanceTo,
+          ...current,
+        };
       }
 
       const next = applyLessonReward(current, today);
@@ -115,6 +144,7 @@ export const completeLesson = onCall(
         awarded: true,
         xpEarned: next.xp - current.xp,
         coinsEarned: next.coins - current.coins,
+        nextLessonId: advanceTo,
         ...next,
       };
     });
@@ -134,6 +164,7 @@ export const completeLesson = onCall(
       lessonId,
       awarded: result.awarded,
       streak: result.streak,
+      nextLessonId: result.nextLessonId,
     });
 
     // Totals are the source of truth for the UI; the deltas let the reward
@@ -146,6 +177,9 @@ export const completeLesson = onCall(
       xp: result.xp,
       coins: result.coins,
       streak: result.streak,
+      // Null when the child replayed an older lesson, or finished the last
+      // one. The app also sees this through the child profile stream.
+      nextLessonId: result.nextLessonId,
     };
   },
 );

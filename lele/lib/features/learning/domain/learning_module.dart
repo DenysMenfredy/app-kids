@@ -115,6 +115,16 @@ int? lessonNumberOf(String lessonId) {
   return match == null ? null : int.tryParse(match.group(1)!);
 }
 
+/// The lesson that follows this one, or null at the end of the curriculum.
+/// Mirrors the backend's rule: lessons run in one unbroken sequence.
+String? nextLessonId(String lessonId) {
+  final number = lessonNumberOf(lessonId);
+  if (number == null || number >= curriculum.last.lastLessonNumber) {
+    return null;
+  }
+  return 'lesson_${(number + 1).toString().padLeft(3, '0')}';
+}
+
 /// The module a lesson belongs to, or null when it falls outside the
 /// curriculum.
 CurriculumModule? moduleForLesson(String lessonId) {

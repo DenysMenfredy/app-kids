@@ -7,15 +7,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
+import '../../session/application/child_provider.dart';
 import '../../session/application/session_controller.dart';
 import '../../session/domain/child_profile.dart';
-
-const _avatarColors = {
-  ChildAvatar.orange: AppColors.orangeSoft,
-  ChildAvatar.teal: AppColors.teal,
-  ChildAvatar.purple: AppColors.purple,
-  ChildAvatar.yellow: AppColors.yellow,
-};
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -33,7 +27,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void initState() {
     super.initState();
-    final child = ref.read(sessionProvider).child;
+    final child = ref.read(childProvider);
     _nameController = TextEditingController(text: child.name);
     _age = child.age;
     _avatar = child.avatar;
@@ -160,7 +154,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: _avatarColors[avatar],
+            color: avatar.color,
             shape: BoxShape.circle,
             border: Border.all(
               color: selected ? AppColors.textDark : Colors.transparent,

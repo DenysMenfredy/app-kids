@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
-import '../../session/application/session_controller.dart';
+import '../../session/application/child_provider.dart';
 import '../application/assessment_controller.dart';
 
 class AssessmentIntroScreen extends ConsumerWidget {
@@ -15,9 +15,7 @@ class AssessmentIntroScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final childName = ref.watch(
-      sessionProvider.select((s) => s.child.name),
-    );
+    final childName = ref.watch(childProvider).name;
     return Scaffold(
       body: SafeArea(
         child: Padding(

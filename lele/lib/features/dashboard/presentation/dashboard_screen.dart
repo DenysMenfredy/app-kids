@@ -11,9 +11,10 @@ import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../paywall/application/entitlement_provider.dart';
+import '../../session/application/child_provider.dart';
 import '../../session/application/parent_provider.dart';
 import '../../session/application/progress_provider.dart';
-import '../../session/application/session_controller.dart';
+import '../../session/domain/child_profile.dart';
 
 class _DayActivity {
   const _DayActivity(this.label, this.minutes);
@@ -38,7 +39,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(sessionProvider);
+    final child = ref.watch(childProvider);
     final progress = ref.watch(progressProvider);
     // Whoever actually registered, per the backend — not the sample name.
     final parentName = ref.watch(parentNameProvider);
@@ -127,8 +128,7 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16),
                     _ChildCard(
-                      childName: session.child.name,
-                      childAge: session.child.age,
+                      child: child,
                       streak: progress.streak,
                       moduleTitle: currentModule.title,
                       progress: currentModule.progress,
@@ -197,15 +197,13 @@ class _SignOutButton extends StatelessWidget {
 
 class _ChildCard extends StatelessWidget {
   const _ChildCard({
-    required this.childName,
-    required this.childAge,
+    required this.child,
     required this.streak,
     required this.moduleTitle,
     required this.progress,
   });
 
-  final String childName;
-  final int childAge;
+  final ChildProfile child;
   final int streak;
   final String moduleTitle;
   final double progress;
@@ -225,13 +223,17 @@ class _ChildCard extends StatelessWidget {
           Row(
             spacing: 14,
             children: [
-              const LeleMascot(size: 54, color: AppColors.orangeSoft),
+              LeleMascot(
+                size: 54,
+                color: child.avatar.color,
+                mouthColor: child.avatar.mouthColor,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$childName · $childAge anos',
+                      '${child.name} · ${child.age} anos',
                       style: AppTextStyles.baloo(19),
                     ),
                     Text(

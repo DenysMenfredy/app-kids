@@ -64,9 +64,16 @@ check "premium starts inactive" "$r"
 
 CHILD=$(curl -s -X PATCH "${FS}/users/${UID_}/children/primary" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"fields":{"name":{"stringValue":"Sofia"},"age":{"integerValue":"5"},"avatarId":{"stringValue":"orange"}}}')
+  -d '{"fields":{"name":{"stringValue":"Sofia"},"age":{"integerValue":"5"},"avatarId":{"stringValue":"purple"}}}')
 grep -q '"name"' <<<"$CHILD" && r=ok || r=no
 check "child profile passes Security Rules" "$r"
+
+# Deliberately not the default avatar, so a pass can't be the default
+# leaking through.
+STORED=$(curl -s "${FS}/users/${UID_}/children/primary" -H "Authorization: Bearer $TOKEN" \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['fields'].get('avatarId',{}).get('stringValue',''))")
+[ "$STORED" = "purple" ] && r=ok || r=no
+check "the chosen avatar is stored and reads back" "$r" "($STORED)"
 
 # Forbidden by the child-data constraint (spec §19).
 PII=$(curl -s -X PATCH "${FS}/users/${UID_}/children/primary" \
@@ -99,12 +106,25 @@ r=json.load(sys.stdin).get('result',{})
 sys.exit(0 if r.get('awarded') and r.get('xpEarned')==50 and r.get('streak')==1 else 1)" <<<"$FIRST" && r=ok || r=no
 check "completeLesson granted the reward" "$r" "$(python3 -c "import sys,json;r=json.load(sys.stdin).get('result',{});print('xp=%s streak=%s'%(r.get('xp'),r.get('streak')))" <<<"$FIRST")"
 
+NEXT=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('nextLessonId') or '')" <<<"$FIRST")
+AFTER=$(curl -s "${FS}/users/${UID_}/children/primary" -H "Authorization: Bearer $TOKEN" \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['fields'].get('currentLessonId',{}).get('stringValue',''))")
+[ -n "$NEXT" ] && [ "$AFTER" = "$NEXT" ] && [ "$AFTER" != "$LESSON" ] && r=ok || r=no
+check "finishing a lesson moves the child to the next one" "$r" "($LESSON -> $AFTER)"
+
 SECOND=$(reward)
 python3 -c "
 import sys,json
 r=json.load(sys.stdin).get('result',{})
 sys.exit(0 if r.get('awarded') is False and r.get('xpEarned')==0 and r.get('xp')==50 else 1)" <<<"$SECOND" && r=ok || r=no
 check "replaying the lesson grants nothing extra" "$r"
+
+# The child has already moved on, so replaying an old lesson must not drag
+# them backwards or push them forward again.
+STILL=$(curl -s "${FS}/users/${UID_}/children/primary" -H "Authorization: Bearer $TOKEN" \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['fields'].get('currentLessonId',{}).get('stringValue',''))")
+[ "$STILL" = "$AFTER" ] && r=ok || r=no
+check "replaying an old lesson leaves the position alone" "$r" "($STILL)"
 
 MINT=$(curl -s -X PATCH "${FS}/users/${UID_}/gamification/primary" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \

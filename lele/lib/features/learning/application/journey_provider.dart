@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
+import '../../../core/storage/local_storage.dart';
 import '../domain/learning_module.dart';
 
 /// Streams `currentLessonId` from the child profile — the field
@@ -21,6 +22,35 @@ final remoteCurrentLessonIdProvider = StreamProvider<String?>((ref) {
   });
 });
 
+/// Where the child is in demo mode.
+///
+/// With the backend on, completeLesson moves them on and the profile stream
+/// reports it. Offline there is nobody to do that, so the position is kept
+/// on the device — otherwise finishing a lesson would hand back the same one
+/// forever.
+class DemoLessonController extends Notifier<String> {
+  static const _key = 'learning.demoLessonId';
+
+  @override
+  String build() {
+    return ref.watch(sharedPreferencesProvider).getString(_key) ??
+        AppConfig.demoLessonId;
+  }
+
+  /// Advances past [lessonId], but only when that is where the child is —
+  /// replaying an earlier lesson must not skip them forward.
+  void completed(String lessonId) {
+    if (AppConfig.useFirebase || state != lessonId) return;
+    final next = nextLessonId(lessonId);
+    if (next == null) return; // end of the curriculum
+    state = next;
+    ref.read(sharedPreferencesProvider).setString(_key, next);
+  }
+}
+
+final demoLessonProvider =
+    NotifierProvider<DemoLessonController, String>(DemoLessonController.new);
+
 /// The lesson the child should play next.
 ///
 /// With the backend on, this is the placement it computed; a child who
@@ -29,7 +59,7 @@ final remoteCurrentLessonIdProvider = StreamProvider<String?>((ref) {
 /// While the first snapshot is in flight the journey briefly shows the
 /// opening module, the same way progress starts at zero.
 final currentLessonIdProvider = Provider<String>((ref) {
-  if (!AppConfig.useFirebase) return AppConfig.demoLessonId;
+  if (!AppConfig.useFirebase) return ref.watch(demoLessonProvider);
   return ref.watch(remoteCurrentLessonIdProvider).value ??
       curriculum.first.firstLessonId;
 });

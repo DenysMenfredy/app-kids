@@ -10,15 +10,16 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../lesson/data/lesson_sync_service.dart';
+import '../../session/application/child_provider.dart';
 import '../../session/application/progress_provider.dart';
-import '../../session/application/session_controller.dart';
+import '../../session/domain/child_profile.dart';
 
 class RewardScreen extends ConsumerWidget {
   const RewardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final childName = ref.watch(sessionProvider.select((s) => s.child.name));
+    final child = ref.watch(childProvider);
     final progress = ref.watch(progressProvider);
     // What the backend actually granted. Null means the call is still in
     // flight or didn't land; the standard reward is the honest default.
@@ -45,18 +46,19 @@ class RewardScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(
+                    Center(
                       child: PopIn(
                         child: LeleMascot(
                           size: 130,
-                          color: AppColors.orangeSoft,
+                          color: child.avatar.color,
+                          mouthColor: child.avatar.mouthColor,
                           withEars: true,
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Parabéns, $childName!',
+                      'Parabéns, ${child.name}!',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.baloo(32),
                     ),
