@@ -94,6 +94,15 @@ lib/
 - **Navigation**: `go_router` with named routes (`AppRoutes`).
 - **Fonts**: Baloo 2 + Nunito bundled as assets (offline-first, no runtime
   fetch).
+- **App icon**: `store/app-icon-master.png` is the source of truth;
+  `tool/generate_icons.py` regenerates every launcher and store asset from
+  it. The master is a pre-rounded squircle on black, which neither store
+  wants — iOS masks the icon itself and rejects an alpha channel, Android
+  masks adaptive icons to the OEM's shape — so the artwork is lifted off its
+  background and each platform gets the shape it expects. The Android
+  adaptive foreground sits inside the 66dp safe circle so the "Lelê"
+  wordmark survives a circular mask; run the script again after replacing
+  the master.
 - **Illustrations**: the three onboarding images in
   `assets/images/onboarding/`. Source art arrives at ~1250px and ~1.2 MB
   each; it is resized to 750px on the long side (the slide renders at 260)
