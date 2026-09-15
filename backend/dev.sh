@@ -52,9 +52,11 @@ fi
 echo "==> Building Cloud Functions"
 npm --prefix functions run build
 
-# Seed once, in the background, as soon as Firestore answers. A pre-existing
-# data directory already holds the content, so this only runs on a fresh one.
-if [ ! -d "$DATA_DIR" ]; then
+# Seed once, in the background, as soon as Firestore answers. The metadata
+# file is what an export actually writes, so a run that was interrupted before
+# it could export gets reseeded instead of starting with an empty database.
+if [ ! -f "$DATA_DIR/firebase-export-metadata.json" ]; then
+  rm -rf "$DATA_DIR"
   (
     for _ in $(seq 1 60); do
       if curl -sf "http://localhost:${FIRESTORE_PORT}/" >/dev/null 2>&1; then

@@ -15,6 +15,13 @@ import {
   assertSucceeds,
   initializeTestEnvironment,
 } from "@firebase/rules-unit-testing";
+import {
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 
 /** @type {import('@firebase/rules-unit-testing').RulesTestEnvironment} */
 let env;
@@ -279,6 +286,68 @@ describe("educational content", () => {
   it("clients cannot write content", async () => {
     await assertFails(
       asParent().doc("lessons/published1").set({ title: "hack" }),
+    );
+  });
+});
+
+describe("content queries (list, not just get)", () => {
+  // Rules evaluate a list against the *query*, not each result, so a
+  // `published` rule is only satisfiable when the query says so. Reading one
+  // document proves nothing about this — which is how the app shipped a
+  // query the rules rejected.
+  beforeEach(async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "activities/a1"), {
+        lessonId: "lesson_014", type: "tap", order: 1, published: true,
+      });
+      await setDoc(doc(db, "activities/a2"), {
+        lessonId: "lesson_014", type: "match", order: 2, published: true,
+      });
+      await setDoc(doc(db, "activities/draft"), {
+        lessonId: "lesson_014", type: "trace", order: 3, published: false,
+      });
+    });
+  });
+
+  it("a lesson's activities can be queried when the query filters on published",
+    async () => {
+      const db = asParent();
+      const snapshot = await assertSucceeds(
+        getDocs(
+          query(
+            collection(db, "activities"),
+            where("lessonId", "==", "lesson_014"),
+            where("published", "==", true),
+            orderBy("order"),
+          ),
+        ),
+      );
+      assert.equal(snapshot.size, 2, "unpublished activity must be excluded");
+    });
+
+  it("an unfiltered query over the same collection is denied", async () => {
+    const db = asParent();
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, "activities"),
+          where("lessonId", "==", "lesson_014"),
+          orderBy("order"),
+        ),
+      ),
+    );
+  });
+
+  it("an anonymous visitor cannot query content at all", async () => {
+    await assertFails(
+      getDocs(
+        query(
+          collection(asAnon(), "activities"),
+          where("published", "==", true),
+        ),
+      ),
     );
   });
 });

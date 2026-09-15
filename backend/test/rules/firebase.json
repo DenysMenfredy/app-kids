@@ -1,0 +1,17 @@
+{
+  "_comment": "Ports for the rules tests only, so `npm test` here can run alongside a live ./dev.sh stack. The rules under test are loaded by the test file itself from ../../firestore.rules.",
+  "emulators": {
+    "firestore": {
+      "port": 8085
+    },
+    "hub": {
+      "port": 4410
+    },
+    "logging": {
+      "port": 4510
+    },
+    "ui": {
+      "enabled": false
+    }
+  }
+}

@@ -4,32 +4,60 @@
       "collectionGroup": "activityAttempts",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "lessonId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "lessonId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "learningProgress",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "childId", "order": "ASCENDING" },
-        { "fieldPath": "completedAt", "order": "DESCENDING" }
+        {
+          "fieldPath": "childId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "completedAt",
+          "order": "DESCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "lessons",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "moduleId", "order": "ASCENDING" },
-        { "fieldPath": "order", "order": "ASCENDING" }
+        {
+          "fieldPath": "moduleId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "order",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "activities",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "lessonId", "order": "ASCENDING" },
-        { "fieldPath": "order", "order": "ASCENDING" }
+        {
+          "fieldPath": "lessonId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "published",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "order",
+          "order": "ASCENDING"
+        }
       ]
     }
   ],
@@ -38,14 +66,20 @@
       "collectionGroup": "notificationPreferences",
       "fieldPath": "preferredTime",
       "indexes": [
-        { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "devices",
       "fieldPath": "notificationsEnabled",
       "indexes": [
-        { "queryScope": "COLLECTION_GROUP", "order": "ASCENDING" }
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
       ]
     }
   ]

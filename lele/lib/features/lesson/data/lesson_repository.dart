@@ -64,9 +64,13 @@ class FirestoreLessonRepository implements LessonRepository {
   Future<LessonContent> loadLesson(String lessonId) async {
     final results = await Future.wait([
       _firestore.doc('lessons/$lessonId').get(),
+      // `published` has to be part of the query, not just the rule: Firestore
+      // evaluates a list against the query itself, so without this filter the
+      // read is denied even though every document is published.
       _firestore
           .collection('activities')
           .where('lessonId', isEqualTo: lessonId)
+          .where('published', isEqualTo: true)
           .orderBy('order')
           .get(),
     ]);
