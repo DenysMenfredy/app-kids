@@ -44,8 +44,9 @@ String get emulatorHost {
 Future<void> connectToEmulators() async {
   final host = emulatorHost;
   FirebaseFirestore.instance.useFirestoreEmulator(host, _firestorePort);
-  FirebaseFunctions.instanceFor(region: AppConfig.functionsRegion)
-      .useFunctionsEmulator(host, _functionsPort);
+  FirebaseFunctions.instanceFor(
+    region: AppConfig.functionsRegion,
+  ).useFunctionsEmulator(host, _functionsPort);
   await FirebaseAuth.instance.useAuthEmulator(host, _authPort);
   debugPrint('Firebase: using emulators on $host');
 }

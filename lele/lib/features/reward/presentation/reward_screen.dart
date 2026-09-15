@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
@@ -40,7 +41,7 @@ class RewardScreen extends ConsumerWidget {
           children: [
             const Positioned.fill(child: _ConfettiLayer()),
             SafeArea(
-              child: Padding(
+              child: AdaptivePage(
                 padding: const EdgeInsets.fromLTRB(28, 24, 28, 24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -76,20 +77,28 @@ class RewardScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 12,
                       children: [
-                        _RewardStat(
-                          value: '+$xpEarned',
-                          label: '★ XP',
-                          color: AppColors.purple,
+                        // An equal share each, so the three tiles shrink
+                        // together rather than pushing the last one off.
+                        Expanded(
+                          child: _RewardStat(
+                            value: '+$xpEarned',
+                            label: '★ XP',
+                            color: AppColors.purple,
+                          ),
                         ),
-                        _RewardStat(
-                          value: '+$coinsEarned',
-                          label: 'moedas',
-                          color: AppColors.yellowDark,
+                        Expanded(
+                          child: _RewardStat(
+                            value: '+$coinsEarned',
+                            label: 'moedas',
+                            color: AppColors.yellowDark,
+                          ),
                         ),
-                        _RewardStat(
-                          value: '⚡ ${progress.streak}',
-                          label: 'dias',
-                          color: AppColors.orangeDark,
+                        Expanded(
+                          child: _RewardStat(
+                            value: '⚡ ${progress.streak}',
+                            label: 'dias',
+                            color: AppColors.orangeDark,
+                          ),
                         ),
                       ],
                     ),
@@ -197,10 +206,7 @@ class _UnlockedBookBanner extends StatelessWidget {
                 children: [
                   Text(
                     'Novo livro desbloqueado!',
-                    style: AppTextStyles.baloo(
-                      15,
-                      color: AppColors.purpleDark,
-                    ),
+                    style: AppTextStyles.baloo(15, color: AppColors.purpleDark),
                   ),
                   Text(
                     '"O Sapo Bocudo" te espera',
@@ -213,8 +219,11 @@ class _UnlockedBookBanner extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                size: 26, color: AppColors.purple),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 26,
+              color: AppColors.purple,
+            ),
           ],
         ),
       ),
@@ -232,12 +241,12 @@ class _ConfettiLayer extends StatefulWidget {
 
 class _ConfettiPiece {
   _ConfettiPiece(int i)
-      : x = (4 + (i * 6.7) % 92) / 100,
-        size = 8.0 + (i % 3) * 4,
-        color = _colors[i % _colors.length],
-        isCircle = i.isOdd,
-        duration = 2.6 + (i % 4) * 0.5,
-        delay = i * 0.23;
+    : x = (4 + (i * 6.7) % 92) / 100,
+      size = 8.0 + (i % 3) * 4,
+      color = _colors[i % _colors.length],
+      isCircle = i.isOdd,
+      duration = 2.6 + (i % 4) * 0.5,
+      delay = i * 0.23;
 
   static const _colors = [
     AppColors.orange,
@@ -312,8 +321,7 @@ class _ConfettiPainter extends CustomPainter {
       final t = (local % piece.duration) / piece.duration;
       final y = -40 + t * (size.height + 100);
       final opacity = (1 - t).clamp(0.0, 1.0);
-      final paint = Paint()
-        ..color = piece.color.withValues(alpha: opacity);
+      final paint = Paint()..color = piece.color.withValues(alpha: opacity);
       canvas.save();
       canvas.translate(piece.x * size.width, y);
       canvas.rotate(t * 3 * math.pi);

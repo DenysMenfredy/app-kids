@@ -42,9 +42,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
     if (!_hasTraced) return;
     ref.read(lessonStatsProvider.notifier).recordCorrect();
     ref.read(ttsServiceProvider).speak('Que capricho!');
-    context.goNamed(
-      ref.read(lessonFlowProvider).nextRoute(ActivityType.trace),
-    );
+    context.goNamed(ref.read(lessonFlowProvider).nextRoute(ActivityType.trace));
     // Hand off to the next activity by speaking its word.
     Future.delayed(const Duration(milliseconds: 700), () {
       ref.read(ttsServiceProvider).speak(content.listen.speech);
@@ -147,8 +145,9 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                   fontSize: 19,
                   borderRadius: 20,
                   color: _hasTraced ? AppColors.teal : AppColors.borderMuted,
-                  shadowColor:
-                      _hasTraced ? AppColors.tealDark : AppColors.textDisabled,
+                  shadowColor: _hasTraced
+                      ? AppColors.tealDark
+                      : AppColors.textDisabled,
                   enabled: _hasTraced,
                   onPressed: () => _finish(content),
                 ),

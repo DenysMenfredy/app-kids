@@ -20,17 +20,17 @@ final remoteChildProvider = StreamProvider<ChildProfile?>((ref) {
         .doc('users/${user.uid}/children/${AppConfig.primaryChildId}')
         .snapshots()
         .map((snapshot) {
-      final data = snapshot.data();
-      if (data == null) return null;
-      const fallback = ChildProfile.defaultProfile;
-      return ChildProfile(
-        name: (data['name'] as String?)?.trim().isNotEmpty == true
-            ? (data['name'] as String).trim()
-            : fallback.name,
-        age: (data['age'] as num?)?.toInt() ?? fallback.age,
-        avatar: childAvatarFromId(data['avatarId'] as String?),
-      );
-    });
+          final data = snapshot.data();
+          if (data == null) return null;
+          const fallback = ChildProfile.defaultProfile;
+          return ChildProfile(
+            name: (data['name'] as String?)?.trim().isNotEmpty == true
+                ? (data['name'] as String).trim()
+                : fallback.name,
+            age: (data['age'] as num?)?.toInt() ?? fallback.age,
+            avatar: childAvatarFromId(data['avatarId'] as String?),
+          );
+        });
   });
 });
 

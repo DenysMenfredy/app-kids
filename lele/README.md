@@ -102,6 +102,14 @@ lib/
   on the welcome screen so no slide opens with an empty gap.
 - **Accessibility**: looping decoration animations respect the platform
   reduce-motion setting; large touch targets throughout.
+- **Responsive**: `core/layout/adaptive_page.dart`. `AdaptivePage` fills the
+  screen when the content fits and scrolls when it does not, so a layout
+  designed for a tall phone degrades instead of stranding its button off the
+  bottom; `AdaptiveWidth` caps the column so a tablet or unfolded foldable
+  shows a readable measure rather than one stretched line. `test/responsive_test.dart`
+  mounts all 18 screens at 12 real device sizes — 320x568 up to iPad Pro,
+  both folds, and landscape — and fails on any overflow or on a primary
+  button that lands off-screen with nothing to scroll.
 
 ## Backend modes
 
@@ -141,7 +149,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 117 tests
+flutter test           # 129 tests
 flutter analyze        # zero issues
 ```
 

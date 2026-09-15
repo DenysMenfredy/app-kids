@@ -22,8 +22,9 @@ abstract final class AppConfig {
   /// Host the emulators are reachable on. The Android emulator reaches the
   /// host machine at 10.0.2.2 rather than localhost; override for a physical
   /// device with `--dart-define=EMULATOR_HOST=<your LAN ip>`.
-  static const String emulatorHostOverride =
-      String.fromEnvironment('EMULATOR_HOST');
+  static const String emulatorHostOverride = String.fromEnvironment(
+    'EMULATOR_HOST',
+  );
 
   /// Region where all Letrando Cloud Functions are deployed.
   static const String functionsRegion = 'southamerica-east1';

@@ -63,8 +63,7 @@ class LocalAssessmentRepository implements AssessmentRepository {
   Future<AssessmentPlacement> submit({
     required String childId,
     required Map<String, String> answers,
-  }) async =>
-      AssessmentPlacement.fallback;
+  }) async => AssessmentPlacement.fallback;
 }
 
 class BackendAssessmentRepository implements AssessmentRepository {
@@ -90,12 +89,13 @@ class BackendAssessmentRepository implements AssessmentRepository {
     required String childId,
     required Map<String, String> answers,
   }) async {
-    final result =
-        await _functions.httpsCallable('submitAssessment').call<dynamic>({
-      'childId': childId,
-      'assessmentId': AppConfig.defaultAssessmentId,
-      'answers': answers,
-    });
+    final result = await _functions
+        .httpsCallable('submitAssessment')
+        .call<dynamic>({
+          'childId': childId,
+          'assessmentId': AppConfig.defaultAssessmentId,
+          'answers': answers,
+        });
     final placement = (result.data as Map)['placement'];
     if (placement is! Map) {
       throw StateError('submitAssessment returned no placement');
@@ -107,13 +107,16 @@ class BackendAssessmentRepository implements AssessmentRepository {
 }
 
 Assessment _assessmentFromMap(String id, Map<String, dynamic> data) {
-  final rawQuestions = (data['questions'] as List? ?? const [])
-      .whereType<Map>()
-      .map((q) => q.map((key, value) => MapEntry(key.toString(), value)))
-      .toList()
-    // The document carries an explicit order; don't rely on array order.
-    ..sort((a, b) =>
-        ((a['order'] as num?) ?? 0).compareTo((b['order'] as num?) ?? 0));
+  final rawQuestions =
+      (data['questions'] as List? ?? const [])
+          .whereType<Map>()
+          .map((q) => q.map((key, value) => MapEntry(key.toString(), value)))
+          .toList()
+        // The document carries an explicit order; don't rely on array order.
+        ..sort(
+          (a, b) =>
+              ((a['order'] as num?) ?? 0).compareTo((b['order'] as num?) ?? 0),
+        );
 
   return Assessment(
     id: data['id'] as String? ?? id,
@@ -124,8 +127,8 @@ Assessment _assessmentFromMap(String id, Map<String, dynamic> data) {
           id: question['id'] as String? ?? '',
           prompt: question['prompt'] as String? ?? '',
           options: [
-            for (final option in (question['options'] as List? ?? const [])
-                .whereType<Map>())
+            for (final option
+                in (question['options'] as List? ?? const []).whereType<Map>())
               AssessmentOption(
                 id: option['id']?.toString() ?? '',
                 label: option['label']?.toString() ?? '',

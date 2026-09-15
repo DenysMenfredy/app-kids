@@ -117,8 +117,7 @@ class LeleMascot extends StatelessWidget {
 extension on AnimationController {
   /// Starts or stops a looping decoration animation depending on the
   /// platform's reduce-motion setting.
-  void syncLoopWithReducedMotion(BuildContext context,
-      {bool reverse = false}) {
+  void syncLoopWithReducedMotion(BuildContext context, {bool reverse = false}) {
     final disable = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     if (disable) {
       stop();
@@ -207,9 +206,10 @@ class _PulsingWidgetState extends State<PulsingWidget>
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: Tween(begin: 1.0, end: 1.05).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
+      scale: Tween(
+        begin: 1.0,
+        end: 1.05,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
       child: widget.child,
     );
   }

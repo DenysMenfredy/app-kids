@@ -79,9 +79,10 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
       message: _done
           ? 'Incrível! ★'
           : _selected != null
-              ? 'Agora toque na letra "${_selected!.toLowerCase()}"'
-              : 'Toque numa letra grande',
+          ? 'Agora toque na letra "${_selected!.toLowerCase()}"'
+          : 'Toque numa letra grande',
       messageColor: _done ? AppColors.green : AppColors.textFaint,
+      scrollableContent: true,
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -162,22 +163,22 @@ class _MatchCard extends StatelessWidget {
     final background = matched
         ? AppColors.greenPale
         : selected
-            ? AppColors.orange
-            : AppColors.surface;
+        ? AppColors.orange
+        : AppColors.surface;
     final borderColor = matched
         ? AppColors.greenBorder
         : selected
-            ? AppColors.orangeDark
-            : wrong
-                ? AppColors.red
-                : AppColors.border;
+        ? AppColors.orangeDark
+        : wrong
+        ? AppColors.red
+        : AppColors.border;
     final textColor = matched
         ? AppColors.greenMuted
         : selected
-            ? Colors.white
-            : wrong
-                ? AppColors.red
-                : color;
+        ? Colors.white
+        : wrong
+        ? AppColors.red
+        : color;
 
     return GestureDetector(
       onTap: onTap,
@@ -203,8 +204,8 @@ class _MatchCard extends StatelessWidget {
                     color: matched
                         ? AppColors.greenBorder
                         : selected
-                            ? AppColors.orangeDark
-                            : AppColors.border,
+                        ? AppColors.orangeDark
+                        : AppColors.border,
                     offset: const Offset(0, 5),
                   ),
                 ],

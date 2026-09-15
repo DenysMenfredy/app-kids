@@ -136,8 +136,10 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     const _WeekCard(),
                     const SizedBox(height: 16),
-                    Text('Jornada de aprendizado',
-                        style: AppTextStyles.sectionTitle),
+                    Text(
+                      'Jornada de aprendizado',
+                      style: AppTextStyles.sectionTitle,
+                    ),
                     const SizedBox(height: 10),
                     for (final module in journey) ...[
                       _ModuleRow(module: module),
@@ -187,8 +189,11 @@ class _SignOutButton extends StatelessWidget {
             color: AppColors.panel,
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Icon(Icons.logout_rounded,
-              size: 18, color: AppColors.textMuted),
+          child: const Icon(
+            Icons.logout_rounded,
+            size: 18,
+            color: AppColors.textMuted,
+          ),
         ),
       ),
     );
@@ -249,14 +254,14 @@ class _ChildCard extends StatelessWidget {
               Row(
                 spacing: 4,
                 children: [
-                  const Icon(Icons.bolt_rounded,
-                      size: 18, color: AppColors.orangeDark),
+                  const Icon(
+                    Icons.bolt_rounded,
+                    size: 18,
+                    color: AppColors.orangeDark,
+                  ),
                   Text(
                     '$streak',
-                    style: AppTextStyles.baloo(
-                      15,
-                      color: AppColors.orangeDark,
-                    ),
+                    style: AppTextStyles.baloo(15, color: AppColors.orangeDark),
                   ),
                 ],
               ),
@@ -266,12 +271,14 @@ class _ChildCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Progresso do módulo',
-                style: AppTextStyles.nunito(
-                  13,
-                  weight: FontWeight.w700,
-                  color: AppColors.textMuted,
+              Flexible(
+                child: Text(
+                  'Progresso do módulo',
+                  style: AppTextStyles.nunito(
+                    13,
+                    weight: FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
               Text(
@@ -306,8 +313,7 @@ class _WeekCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lessons = _week.where((d) => d.minutes > 0).length;
-    final minutes =
-        _week.fold<int>(0, (total, day) => total + day.minutes);
+    final minutes = _week.fold<int>(0, (total, day) => total + day.minutes);
     final maxMinutes = _week
         .map((d) => d.minutes)
         .reduce((a, b) => a > b ? a : b)
@@ -345,8 +351,8 @@ class _WeekCard extends StatelessWidget {
                             color: _week[i].minutes == 0
                                 ? AppColors.panel
                                 : i == today
-                                    ? AppColors.orange
-                                    : AppColors.teal,
+                                ? AppColors.orange
+                                : AppColors.teal,
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(8),
                               bottom: Radius.circular(4),
@@ -389,21 +395,17 @@ class _ModuleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (chipColor, statusLabel, statusColor) = switch (module.status) {
-      ModuleStatus.done => (
-          AppColors.teal,
-          'Completo',
-          AppColors.teal,
-        ),
+      ModuleStatus.done => (AppColors.teal, 'Completo', AppColors.teal),
       ModuleStatus.current => (
-          AppColors.orange,
-          '${(module.progress * 100).round()}%',
-          AppColors.orangeDark,
-        ),
+        AppColors.orange,
+        '${(module.progress * 100).round()}%',
+        AppColors.orangeDark,
+      ),
       ModuleStatus.locked => (
-          AppColors.borderMuted,
-          'Bloqueado',
-          AppColors.textDisabled,
-        ),
+        AppColors.borderMuted,
+        'Bloqueado',
+        AppColors.textDisabled,
+      ),
     };
     final isCurrent = module.status == ModuleStatus.current;
     final titleColor = module.status == ModuleStatus.locked

@@ -15,8 +15,7 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
 
   @override
-  ConsumerState<ProfileSetupScreen> createState() =>
-      _ProfileSetupScreenState();
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
 class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
@@ -41,7 +40,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   void _continue() {
     final name = _nameController.text.trim();
-    ref.read(sessionProvider.notifier).saveChildProfile(
+    ref
+        .read(sessionProvider.notifier)
+        .saveChildProfile(
           ChildProfile(
             name: name.isEmpty ? ChildProfile.defaultProfile.name : name,
             age: _age,
@@ -63,8 +64,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Quem vai aprender?',
-                        style: AppTextStyles.screenTitle),
+                    Text(
+                      'Quem vai aprender?',
+                      style: AppTextStyles.screenTitle,
+                    ),
                     const SizedBox(height: 20),
                     LeleTextField(
                       hint: 'Nome da criança',
@@ -82,12 +85,17 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text('Escolha o amiguinho',
-                        style: AppTextStyles.sectionTitle),
+                    Text(
+                      'Escolha o amiguinho',
+                      style: AppTextStyles.sectionTitle,
+                    ),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    // Wrap: the avatars need a second row on a 320px phone
+                    // rather than running off the edge.
+                    Wrap(
+                      alignment: WrapAlignment.center,
                       spacing: 14,
+                      runSpacing: 14,
                       children: [
                         for (final avatar in ChildAvatar.values)
                           _avatarChip(avatar),
@@ -174,22 +182,22 @@ class _AvatarFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget eye() => Container(
-          width: 12,
-          height: 12,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: AppColors.textDark,
-              shape: BoxShape.circle,
-            ),
-          ),
-        );
+      width: 12,
+      height: 12,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+      child: Container(
+        width: 6,
+        height: 6,
+        decoration: const BoxDecoration(
+          color: AppColors.textDark,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -218,8 +226,9 @@ class _AvatarFace extends StatelessWidget {
                 width: 3,
               ),
             ),
-            borderRadius:
-                const BorderRadius.vertical(bottom: Radius.circular(16)),
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(16),
+            ),
           ),
         ),
       ],

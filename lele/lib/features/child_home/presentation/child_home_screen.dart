@@ -38,38 +38,58 @@ class ChildHomeScreen extends ConsumerWidget {
                         color: AppColors.panel,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.menu_rounded,
-                          size: 20, color: AppColors.textMuted),
-                    ),
-                  ),
-                  const Spacer(),
-                  _StatPill(
-                    color: AppColors.orangeDark,
-                    icon: const Icon(Icons.bolt_rounded,
-                        size: 16, color: AppColors.orangeDark),
-                    value: '${progress.streak}',
-                  ),
-                  _StatPill(
-                    color: AppColors.yellowDark,
-                    icon: Container(
-                      width: 15,
-                      height: 15,
-                      decoration: BoxDecoration(
-                        color: AppColors.yellow,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.yellowDark,
-                          width: 2.5,
-                        ),
+                      child: const Icon(
+                        Icons.menu_rounded,
+                        size: 20,
+                        color: AppColors.textMuted,
                       ),
                     ),
-                    value: '${progress.coins}',
                   ),
-                  _StatPill(
-                    color: AppColors.purple,
-                    icon: const Icon(Icons.star_rounded,
-                        size: 16, color: AppColors.purple),
-                    value: '${progress.xp}',
+                  const SizedBox(width: 8),
+                  // The stat pills wrap to a second line rather than
+                  // pushing each other off the edge of a small phone.
+                  Expanded(
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _StatPill(
+                          color: AppColors.orangeDark,
+                          icon: const Icon(
+                            Icons.bolt_rounded,
+                            size: 16,
+                            color: AppColors.orangeDark,
+                          ),
+                          value: '${progress.streak}',
+                        ),
+                        _StatPill(
+                          color: AppColors.yellowDark,
+                          icon: Container(
+                            width: 15,
+                            height: 15,
+                            decoration: BoxDecoration(
+                              color: AppColors.yellow,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.yellowDark,
+                                width: 2.5,
+                              ),
+                            ),
+                          ),
+                          value: '${progress.coins}',
+                        ),
+                        _StatPill(
+                          color: AppColors.purple,
+                          icon: const Icon(
+                            Icons.star_rounded,
+                            size: 16,
+                            color: AppColors.purple,
+                          ),
+                          value: '${progress.xp}',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -96,9 +116,7 @@ class ChildHomeScreen extends ConsumerWidget {
                             : null,
                       ),
                     const SizedBox(height: 14),
-                    _BooksCard(
-                      onTap: () => context.goNamed(AppRoutes.books),
-                    ),
+                    _BooksCard(onTap: () => context.goNamed(AppRoutes.books)),
                   ],
                 ),
               ),
@@ -187,8 +205,11 @@ class _TodayLessonCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  size: 32, color: Colors.white),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 32,
+                color: Colors.white,
+              ),
             ],
           ),
         ),
@@ -198,11 +219,7 @@ class _TodayLessonCard extends StatelessWidget {
 }
 
 class _JourneyRow extends StatelessWidget {
-  const _JourneyRow({
-    required this.module,
-    required this.indented,
-    this.onTap,
-  });
+  const _JourneyRow({required this.module, required this.indented, this.onTap});
 
   final LearningModule module;
   final bool indented;
@@ -210,37 +227,38 @@ class _JourneyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (bg, borderColor, textColor, subColor, statusLabel) =
-        switch (module.status) {
+    final (
+      bg,
+      borderColor,
+      textColor,
+      subColor,
+      statusLabel,
+    ) = switch (module.status) {
       ModuleStatus.done => (
-          AppColors.teal,
-          AppColors.tealDark,
-          AppColors.textDark,
-          AppColors.textFaint,
-          'Completo',
-        ),
+        AppColors.teal,
+        AppColors.tealDark,
+        AppColors.textDark,
+        AppColors.textFaint,
+        'Completo',
+      ),
       ModuleStatus.current => (
-          AppColors.orange,
-          AppColors.orangeDark,
-          AppColors.textDark,
-          AppColors.orangeDark,
-          'Você está aqui!',
-        ),
+        AppColors.orange,
+        AppColors.orangeDark,
+        AppColors.textDark,
+        AppColors.orangeDark,
+        'Você está aqui!',
+      ),
       ModuleStatus.locked => (
-          AppColors.panel,
-          AppColors.borderDark,
-          AppColors.textFaint,
-          AppColors.textFaint,
-          'Em breve',
-        ),
+        AppColors.panel,
+        AppColors.borderDark,
+        AppColors.textFaint,
+        AppColors.textFaint,
+        'Em breve',
+      ),
     };
 
     return Padding(
-      padding: EdgeInsets.only(
-        top: 9,
-        bottom: 9,
-        left: indented ? 44 : 0,
-      ),
+      padding: EdgeInsets.only(top: 9, bottom: 9, left: indented ? 44 : 0),
       child: Row(
         spacing: 14,
         children: [
@@ -259,30 +277,40 @@ class _JourneyRow extends StatelessWidget {
                 ],
               ),
               child: switch (module.status) {
-                ModuleStatus.done => const Icon(Icons.check_rounded,
-                    size: 30, color: Colors.white),
-                ModuleStatus.current => const Icon(Icons.star_rounded,
-                    size: 30, color: Colors.white),
+                ModuleStatus.done => const Icon(
+                  Icons.check_rounded,
+                  size: 30,
+                  color: Colors.white,
+                ),
+                ModuleStatus.current => const Icon(
+                  Icons.star_rounded,
+                  size: 30,
+                  color: Colors.white,
+                ),
                 ModuleStatus.locked => const SizedBox.shrink(),
               },
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                module.title,
-                style: AppTextStyles.baloo(15, color: textColor),
-              ),
-              Text(
-                statusLabel,
-                style: AppTextStyles.nunito(
-                  12,
-                  weight: FontWeight.w700,
-                  color: subColor,
+          // Bounded, so a long module title wraps instead of running off
+          // the side of a narrow phone.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  module.title,
+                  style: AppTextStyles.baloo(15, color: textColor),
                 ),
-              ),
-            ],
+                Text(
+                  statusLabel,
+                  style: AppTextStyles.nunito(
+                    12,
+                    weight: FontWeight.w700,
+                    color: subColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -345,8 +373,11 @@ class _BooksCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
-                size: 28, color: AppColors.textFaint),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 28,
+              color: AppColors.textFaint,
+            ),
           ],
         ),
       ),

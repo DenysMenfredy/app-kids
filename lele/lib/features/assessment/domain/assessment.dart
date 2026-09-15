@@ -78,11 +78,12 @@ class AssessmentPlacement extends Equatable {
 
   factory AssessmentPlacement.fromMap(Map<String, dynamic> map) {
     return AssessmentPlacement(
-      moduleNumber: (map['moduleNumber'] as num?)?.toInt() ??
-          fallback.moduleNumber,
+      moduleNumber:
+          (map['moduleNumber'] as num?)?.toInt() ?? fallback.moduleNumber,
       moduleTitle: map['moduleTitle'] as String? ?? fallback.moduleTitle,
       description: map['description'] as String? ?? fallback.description,
-      tags: (map['tags'] as List?)?.whereType<String>().toList() ??
+      tags:
+          (map['tags'] as List?)?.whereType<String>().toList() ??
           const <String>[],
     );
   }

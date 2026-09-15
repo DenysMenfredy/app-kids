@@ -95,8 +95,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     refreshListenable: refresh,
-    redirect:
-        auth == null ? null : (context, state) => _authRedirect(auth, state),
+    redirect: auth == null
+        ? null
+        : (context, state) => _authRedirect(auth, state),
     routes: [
       GoRoute(
         path: '/',

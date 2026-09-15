@@ -74,7 +74,8 @@ class FirestoreLessonRepository implements LessonRepository {
           .orderBy('order')
           .get(),
     ]);
-    final lesson = (results[0] as DocumentSnapshot<Map<String, dynamic>>).data();
+    final lesson = (results[0] as DocumentSnapshot<Map<String, dynamic>>)
+        .data();
     if (lesson == null) {
       throw StateError('Lesson $lessonId not found');
     }
@@ -118,9 +119,11 @@ LessonContent lessonContentFromMaps(
   final listen = activityOf('listen');
 
   final pairs = (match['pairs'] as List? ?? const []).whereType<Map>().toList();
-  final uppercase =
-      pairs.map((pair) => pair['upper']?.toString() ?? '').toList();
-  final lowercase = (match['lowercaseOrder'] as List?)
+  final uppercase = pairs
+      .map((pair) => pair['upper']?.toString() ?? '')
+      .toList();
+  final lowercase =
+      (match['lowercaseOrder'] as List?)
           ?.map((letter) => letter.toString())
           .toList() ??
       uppercase.map((letter) => letter.toLowerCase()).toList();
@@ -170,8 +173,10 @@ final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
 /// Content for one lesson, cached for the whole run of that lesson: the
 /// activities hand off to each other, and a dropped connection mid-lesson
 /// must not strand the child on a spinner.
-final lessonContentProvider =
-    FutureProvider.family<LessonContent, String>((ref, lessonId) {
+final lessonContentProvider = FutureProvider.family<LessonContent, String>((
+  ref,
+  lessonId,
+) {
   ref.keepAlive();
   return ref.watch(lessonRepositoryProvider).loadLesson(lessonId);
 });

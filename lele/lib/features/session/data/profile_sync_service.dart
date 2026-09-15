@@ -57,11 +57,11 @@ class FirestoreProfileSyncService implements ProfileSyncService {
       await _firestore
           .doc('users/$uid/children/${AppConfig.primaryChildId}')
           .set({
-        'name': child.name,
-        'age': child.age,
-        'avatarId': child.avatar.name,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+            'name': child.name,
+            'age': child.age,
+            'avatarId': child.avatar.name,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
     });
   }
 

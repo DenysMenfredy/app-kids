@@ -51,9 +51,7 @@ class AssessmentController extends Notifier<AssessmentState> {
 
   /// Records the chosen option for a question.
   void record(String questionId, String optionId) {
-    state = state.copyWith(
-      answers: {...state.answers, questionId: optionId},
-    );
+    state = state.copyWith(answers: {...state.answers, questionId: optionId});
   }
 
   /// Sends the answers for server-side scoring. Never throws: if the backend
@@ -62,11 +60,9 @@ class AssessmentController extends Notifier<AssessmentState> {
   Future<AssessmentPlacement> submit({required String childId}) async {
     state = state.copyWith(submitting: true);
     try {
-      final placement =
-          await ref.read(assessmentRepositoryProvider).submit(
-                childId: childId,
-                answers: state.answers,
-              );
+      final placement = await ref
+          .read(assessmentRepositoryProvider)
+          .submit(childId: childId, answers: state.answers);
       state = state.copyWith(
         submitting: false,
         placement: placement,
@@ -89,5 +85,5 @@ class AssessmentController extends Notifier<AssessmentState> {
 
 final assessmentProvider =
     NotifierProvider<AssessmentController, AssessmentState>(
-  AssessmentController.new,
-);
+      AssessmentController.new,
+    );

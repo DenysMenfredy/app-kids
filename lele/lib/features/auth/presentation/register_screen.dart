@@ -58,7 +58,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _busy = true);
     final name = _nameController.text.trim();
     try {
-      await ref.read(authRepositoryProvider).signUp(
+      await ref
+          .read(authRepositoryProvider)
+          .signUp(
             name: name,
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -149,8 +151,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     color: AppColors.textFaint,
                     size: 22,
                   ),
-                  tooltip:
-                      _obscurePassword ? 'Mostrar senha' : 'Esconder senha',
+                  tooltip: _obscurePassword
+                      ? 'Mostrar senha'
+                      : 'Esconder senha',
                 ),
               ),
               const SizedBox(height: 18),
@@ -160,8 +163,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 label: _busy ? 'Criando conta...' : 'Criar conta',
                 enabled: !_busy,
                 color: _busy ? AppColors.borderMuted : AppColors.orange,
-                shadowColor:
-                    _busy ? AppColors.textDisabled : AppColors.orangeDark,
+                shadowColor: _busy
+                    ? AppColors.textDisabled
+                    : AppColors.orangeDark,
                 onPressed: _signUp,
               ),
               const SizedBox(height: 40),
@@ -169,10 +173,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 child: Text.rich(
                   TextSpan(
                     text: 'Já tem conta? ',
-                    style: AppTextStyles.nunito(
-                      15,
-                      color: AppColors.textMuted,
-                    ),
+                    style: AppTextStyles.nunito(15, color: AppColors.textMuted),
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
@@ -224,8 +225,11 @@ class _LgpdNotice extends StatelessWidget {
               color: AppColors.teal,
               borderRadius: BorderRadius.circular(7),
             ),
-            child: const Icon(Icons.check_rounded, size: 14,
-                color: Colors.white),
+            child: const Icon(
+              Icons.check_rounded,
+              size: 14,
+              color: Colors.white,
+            ),
           ),
           Expanded(
             child: Text(

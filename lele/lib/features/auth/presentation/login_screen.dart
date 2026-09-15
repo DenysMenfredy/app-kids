@@ -61,7 +61,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _signIn() async {
     if (!_validate()) return;
     await _run(() async {
-      await ref.read(authRepositoryProvider).signIn(
+      await ref
+          .read(authRepositoryProvider)
+          .signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
@@ -70,9 +72,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signInWithGoogle() => _run(() async {
-        await ref.read(authRepositoryProvider).signInWithGoogle();
-        if (mounted) context.goNamed(AppRoutes.dashboard);
-      });
+    await ref.read(authRepositoryProvider).signInWithGoogle();
+    if (mounted) context.goNamed(AppRoutes.dashboard);
+  });
 
   /// A reset needs only the e-mail, so the password error is cleared first.
   Future<void> _resetPassword() async {
@@ -178,8 +180,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 label: _busy ? 'Entrando...' : 'Entrar',
                 enabled: !_busy,
                 color: _busy ? AppColors.borderMuted : AppColors.orange,
-                shadowColor:
-                    _busy ? AppColors.textDisabled : AppColors.orangeDark,
+                shadowColor: _busy
+                    ? AppColors.textDisabled
+                    : AppColors.orangeDark,
                 onPressed: _signIn,
               ),
               const SizedBox(height: 12),
@@ -191,10 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Text.rich(
                   TextSpan(
                     text: 'Não tem conta? ',
-                    style: AppTextStyles.nunito(
-                      15,
-                      color: AppColors.textMuted,
-                    ),
+                    style: AppTextStyles.nunito(15, color: AppColors.textMuted),
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
@@ -303,9 +303,11 @@ class _GoogleButton extends StatelessWidget {
                 ),
               ),
             ),
-            Text(
-              'Continuar com Google',
-              style: AppTextStyles.nunito(16, weight: FontWeight.w700),
+            Flexible(
+              child: Text(
+                'Continuar com Google',
+                style: AppTextStyles.nunito(16, weight: FontWeight.w700),
+              ),
             ),
           ],
         ),

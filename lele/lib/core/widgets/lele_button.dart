@@ -50,7 +50,9 @@ class _LeleButtonState extends State<LeleButton> {
       label: widget.label,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTapDown: widget.enabled ? (_) => setState(() => _pressed = true) : null,
+        onTapDown: widget.enabled
+            ? (_) => setState(() => _pressed = true)
+            : null,
         onTapCancel: () => setState(() => _pressed = false),
         onTapUp: widget.enabled
             ? (_) {
@@ -68,13 +70,11 @@ class _LeleButtonState extends State<LeleButton> {
               color: widget.color,
               borderRadius: BorderRadius.circular(widget.borderRadius),
               boxShadow: [
-                BoxShadow(
-                  color: widget.shadowColor,
-                  offset: Offset(0, depth),
-                ),
+                BoxShadow(color: widget.shadowColor, offset: Offset(0, depth)),
               ],
             ),
-            child: widget.child ??
+            child:
+                widget.child ??
                 Text(
                   widget.label!,
                   style: TextStyle(

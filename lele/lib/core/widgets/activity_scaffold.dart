@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../layout/adaptive_page.dart';
 import '../theme/app_colors.dart';
 
 /// Shared chrome for child activities: close button + rounded progress bar,
@@ -12,6 +13,7 @@ class ActivityScaffold extends StatelessWidget {
     required this.child,
     this.message,
     this.messageColor = AppColors.textMuted,
+    this.scrollableContent = false,
   });
 
   final double progress;
@@ -19,6 +21,13 @@ class ActivityScaffold extends StatelessWidget {
   final Widget child;
   final String? message;
   final Color messageColor;
+
+  /// Lets the activity body scroll when it cannot fit — a phone in
+  /// landscape has barely 390px of height, and these layouts were drawn for
+  /// three times that. Opt-in, because an activity whose body is a viewport
+  /// (the tap grid) cannot report an intrinsic height and must not be
+  /// measured this way.
+  final bool scrollableContent;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +60,18 @@ class ActivityScaffold extends StatelessWidget {
                   ),
                 ],
               ),
-              Expanded(child: child),
+              Expanded(
+                child: scrollableContent
+                    ? AdaptivePage(
+                        padding: EdgeInsets.zero,
+                        maxContentWidth: 640,
+                        hasFlexibleChild: true,
+                        child: child,
+                      )
+                    // Capped either way, so letters do not sprawl across a
+                    // tablet.
+                    : AdaptiveWidth(maxWidth: 640, child: child),
+              ),
               SizedBox(
                 height: 52,
                 child: Center(
@@ -91,8 +111,11 @@ class _CloseButton extends StatelessWidget {
           color: AppColors.panel,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.close_rounded, size: 20,
-            color: AppColors.textMuted),
+        child: const Icon(
+          Icons.close_rounded,
+          size: 20,
+          color: AppColors.textMuted,
+        ),
       ),
     );
   }
@@ -111,4 +134,3 @@ class ActivityLoading extends StatelessWidget {
     );
   }
 }
-

@@ -51,8 +51,7 @@ class FakeAuthRepository implements AuthRepository {
     required String name,
     required String email,
     required String password,
-  }) =>
-      Future.delayed(_latency);
+  }) => Future.delayed(_latency);
 
   @override
   Future<void> signInWithGoogle() => Future.delayed(_latency);

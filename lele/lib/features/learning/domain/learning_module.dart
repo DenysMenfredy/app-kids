@@ -147,9 +147,9 @@ CurriculumModule? moduleForLesson(String lessonId) {
 /// current module for the screens to anchor on.
 List<LearningModule> resolveJourney(String currentLessonId) {
   final last = curriculum.last;
-  final lessonNumber = (lessonNumberOf(currentLessonId) ??
-          curriculum.first.firstLessonNumber)
-      .clamp(curriculum.first.firstLessonNumber, last.lastLessonNumber);
+  final lessonNumber =
+      (lessonNumberOf(currentLessonId) ?? curriculum.first.firstLessonNumber)
+          .clamp(curriculum.first.firstLessonNumber, last.lastLessonNumber);
 
   return [
     for (final module in curriculum)
@@ -160,9 +160,10 @@ List<LearningModule> resolveJourney(String currentLessonId) {
         status: lessonNumber > module.lastLessonNumber
             ? ModuleStatus.done
             : lessonNumber >= module.firstLessonNumber
-                ? ModuleStatus.current
-                : ModuleStatus.locked,
-        progress: lessonNumber >= module.firstLessonNumber &&
+            ? ModuleStatus.current
+            : ModuleStatus.locked,
+        progress:
+            lessonNumber >= module.firstLessonNumber &&
                 lessonNumber <= module.lastLessonNumber
             ? (lessonNumber - module.firstLessonNumber) / module.lessonCount
             : 0,

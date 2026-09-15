@@ -31,9 +31,7 @@ class LessonFlow {
   String nextRoute(ActivityType type) {
     final index = ActivityType.values.indexOf(type);
     final isLast = index == ActivityType.values.length - 1;
-    return isLast
-        ? AppRoutes.reward
-        : _routes[ActivityType.values[index + 1]]!;
+    return isLast ? AppRoutes.reward : _routes[ActivityType.values[index + 1]]!;
   }
 }
 

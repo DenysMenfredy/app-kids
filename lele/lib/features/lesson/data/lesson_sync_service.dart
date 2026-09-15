@@ -49,7 +49,14 @@ class LessonReward extends Equatable {
   }
 
   @override
-  List<Object?> get props => [awarded, xpEarned, coinsEarned, xp, coins, streak];
+  List<Object?> get props => [
+    awarded,
+    xpEarned,
+    coinsEarned,
+    xp,
+    coins,
+    streak,
+  ];
 }
 
 /// Reports lesson lifecycle to the backend through the validated callables
@@ -84,8 +91,7 @@ class NoopLessonSyncService implements LessonSyncService {
     int attempts = 0,
     int correctAnswers = 0,
     int wrongAnswers = 0,
-  }) async =>
-      LessonReward.demo;
+  }) async => LessonReward.demo;
 }
 
 class CallableLessonSyncService implements LessonSyncService {
@@ -128,7 +134,9 @@ class CallableLessonSyncService implements LessonSyncService {
 
   Future<Object?> _call(String callable, Map<String, dynamic> data) async {
     try {
-      final result = await _functions.httpsCallable(callable).call<dynamic>(data);
+      final result = await _functions
+          .httpsCallable(callable)
+          .call<dynamic>(data);
       return result.data;
     } catch (error) {
       debugPrint('lesson sync failed ($callable): $error');

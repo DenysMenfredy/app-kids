@@ -12,9 +12,7 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   if (AppConfig.useFirebase) {
     await Firebase.initializeApp(
       // Emulator runs use throwaway demo credentials, so local development

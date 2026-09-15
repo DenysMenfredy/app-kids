@@ -174,8 +174,16 @@ class LessonContent extends Equatable {
   final ListenActivity listen;
 
   @override
-  List<Object?> get props =>
-      [id, title, theme, estimatedMinutes, tap, match, trace, listen];
+  List<Object?> get props => [
+    id,
+    title,
+    theme,
+    estimatedMinutes,
+    tap,
+    match,
+    trace,
+    listen,
+  ];
 }
 
 /// Splits [instruction] around the first standalone occurrence of [token],

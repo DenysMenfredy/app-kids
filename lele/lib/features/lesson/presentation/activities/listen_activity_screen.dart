@@ -90,9 +90,10 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       message: _done
           ? 'Parabéns! ★'
           : _picked != null
-              ? 'Escute de novo!'
-              : null,
+          ? 'Escute de novo!'
+          : null,
       messageColor: _done ? AppColors.green : AppColors.red,
+      scrollableContent: true,
       child: Column(
         children: [
           const SizedBox(height: 18),
@@ -100,8 +101,7 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
           const SizedBox(height: 16),
           PulsingWidget(
             child: GestureDetector(
-              onTap: () =>
-                  ref.read(ttsServiceProvider).speak(activity.speech),
+              onTap: () => ref.read(ttsServiceProvider).speak(activity.speech),
               child: Container(
                 width: 110,
                 height: 110,
@@ -118,8 +118,11 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.volume_up_rounded,
-                        size: 40, color: Colors.white),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    ),
                     Text(
                       'ouvir',
                       style: AppTextStyles.baloo(
@@ -186,8 +189,8 @@ class _WordCard extends StatelessWidget {
           color: isRight
               ? AppColors.greenDark
               : isWrong
-                  ? AppColors.red
-                  : AppColors.border,
+              ? AppColors.red
+              : AppColors.border,
           width: 3,
         ),
         boxShadow: [
@@ -204,8 +207,8 @@ class _WordCard extends StatelessWidget {
           color: isRight
               ? Colors.white
               : isWrong
-                  ? AppColors.red
-                  : AppColors.textDark,
+              ? AppColors.red
+              : AppColors.textDark,
           letterSpacing: 3.4,
         ),
       ),
@@ -215,10 +218,7 @@ class _WordCard extends StatelessWidget {
       onTap: onTap,
       child: isRight
           ? PopIn(child: card)
-          : ShakeWidget(
-              trigger: isWrong ? wrongAttempts : null,
-              child: card,
-            ),
+          : ShakeWidget(trigger: isWrong ? wrongAttempts : null, child: card),
     );
   }
 }

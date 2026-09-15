@@ -7,11 +7,7 @@ import 'session_controller.dart';
 
 /// The child's gamification totals as displayed in the app.
 class Progress extends Equatable {
-  const Progress({
-    required this.xp,
-    required this.coins,
-    required this.streak,
-  });
+  const Progress({required this.xp, required this.coins, required this.streak});
 
   final int xp;
   final int coins;
@@ -39,14 +35,14 @@ final remoteProgressProvider = StreamProvider<Progress>((ref) {
         .doc('users/${user.uid}/gamification/${AppConfig.primaryChildId}')
         .snapshots()
         .map((snapshot) {
-      final data = snapshot.data();
-      if (data == null) return Progress.zero;
-      return Progress(
-        xp: (data['xp'] as num?)?.toInt() ?? 0,
-        coins: (data['coins'] as num?)?.toInt() ?? 0,
-        streak: (data['streak'] as num?)?.toInt() ?? 0,
-      );
-    });
+          final data = snapshot.data();
+          if (data == null) return Progress.zero;
+          return Progress(
+            xp: (data['xp'] as num?)?.toInt() ?? 0,
+            coins: (data['coins'] as num?)?.toInt() ?? 0,
+            streak: (data['streak'] as num?)?.toInt() ?? 0,
+          );
+        });
   });
 });
 

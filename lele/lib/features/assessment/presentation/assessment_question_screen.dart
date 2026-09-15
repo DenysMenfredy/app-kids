@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../session/application/child_provider.dart';
@@ -70,8 +71,9 @@ class _Questions extends ConsumerWidget {
 
     return Stack(
       children: [
-        Padding(
+        AdaptivePage(
           padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
+          hasFlexibleChild: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -108,11 +110,11 @@ class _Questions extends ConsumerWidget {
                   onTap: state.submitting
                       ? null
                       : () => _choose(
-                            context,
-                            ref,
-                            question,
-                            question.options[i].id,
-                          ),
+                          context,
+                          ref,
+                          question,
+                          question.options[i].id,
+                        ),
                 ),
                 const SizedBox(height: 12),
               ],

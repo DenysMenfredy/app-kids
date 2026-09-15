@@ -48,8 +48,9 @@ class DemoLessonController extends Notifier<String> {
   }
 }
 
-final demoLessonProvider =
-    NotifierProvider<DemoLessonController, String>(DemoLessonController.new);
+final demoLessonProvider = NotifierProvider<DemoLessonController, String>(
+  DemoLessonController.new,
+);
 
 /// The lesson the child should play next.
 ///

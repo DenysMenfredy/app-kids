@@ -84,8 +84,10 @@ Future<List<TtsVoice>> awaitVoices(
 
 /// Text-to-speech for the child-facing activities, pinned to pt-BR.
 class TtsService {
-  TtsService([FlutterTts? tts, this.voiceWait = const Duration(milliseconds: 150)])
-      : _tts = tts ?? FlutterTts();
+  TtsService([
+    FlutterTts? tts,
+    this.voiceWait = const Duration(milliseconds: 150),
+  ]) : _tts = tts ?? FlutterTts();
 
   final FlutterTts _tts;
 
@@ -108,10 +110,12 @@ class TtsService {
       final raw = await _tts.getVoices as List<dynamic>?;
       return (raw ?? [])
           .whereType<Map>()
-          .map((v) => TtsVoice(
-                name: v['name']?.toString() ?? '',
-                locale: v['locale']?.toString() ?? '',
-              ))
+          .map(
+            (v) => TtsVoice(
+              name: v['name']?.toString() ?? '',
+              locale: v['locale']?.toString() ?? '',
+            ),
+          )
           .where((v) => v.name.isNotEmpty)
           .toList();
     } catch (_) {

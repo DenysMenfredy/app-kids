@@ -69,8 +69,8 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
       message: _done
           ? 'Muito bem! ★'
           : _picked != null
-              ? 'Quase! Tente de novo'
-              : null,
+          ? 'Quase! Tente de novo'
+          : null,
       messageColor: _done ? AppColors.green : AppColors.red,
       child: Column(
         children: [
@@ -83,9 +83,11 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
                 onTap: () =>
                     ref.read(ttsServiceProvider).speak(activity.speech),
               ),
-              HighlightedInstruction(
-                instruction: activity.instruction,
-                token: activity.target,
+              Flexible(
+                child: HighlightedInstruction(
+                  instruction: activity.instruction,
+                  token: activity.target,
+                ),
               ),
             ],
           ),
@@ -137,8 +139,11 @@ class _SpeakButton extends StatelessWidget {
             BoxShadow(color: AppColors.tealDark, offset: Offset(0, 4)),
           ],
         ),
-        child: const Icon(Icons.volume_up_rounded,
-            size: 26, color: Colors.white),
+        child: const Icon(
+          Icons.volume_up_rounded,
+          size: 26,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -174,8 +179,8 @@ class _LetterCard extends StatelessWidget {
           color: isRight
               ? AppColors.greenDark
               : isWrong
-                  ? AppColors.red
-                  : AppColors.border,
+              ? AppColors.red
+              : AppColors.border,
           width: 3,
         ),
         boxShadow: [
@@ -183,8 +188,8 @@ class _LetterCard extends StatelessWidget {
             color: isRight
                 ? AppColors.greenDark
                 : isWrong
-                    ? AppColors.redPale
-                    : AppColors.border,
+                ? AppColors.redPale
+                : AppColors.border,
             offset: const Offset(0, 6),
           ),
         ],
@@ -196,8 +201,8 @@ class _LetterCard extends StatelessWidget {
           color: isRight
               ? Colors.white
               : isWrong
-                  ? AppColors.red
-                  : AppColors.textDark,
+              ? AppColors.red
+              : AppColors.textDark,
         ),
       ),
     );
@@ -206,10 +211,7 @@ class _LetterCard extends StatelessWidget {
       onTap: onTap,
       child: isRight
           ? PopIn(child: card)
-          : ShakeWidget(
-              trigger: isWrong ? wrongAttempts : null,
-              child: card,
-            ),
+          : ShakeWidget(trigger: isWrong ? wrongAttempts : null, child: card),
     );
   }
 }

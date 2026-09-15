@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/services/tts_service.dart';
+import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
@@ -22,42 +23,49 @@ class LessonIntroScreen extends ConsumerWidget {
     final content = ref.watch(currentLessonContentProvider);
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: GestureDetector(
-                  onTap: () => context.goNamed(AppRoutes.childHome),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.panel,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(Icons.close_rounded,
-                        size: 22, color: AppColors.textMuted),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: content.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: AppColors.teal),
-                  ),
-                  error: (error, _) => _LoadFailed(
-                    onRetry: () => ref.invalidate(
-                      lessonContentProvider(ref.read(currentLessonIdProvider)),
+        child: AdaptiveWidth(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () => context.goNamed(AppRoutes.childHome),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.panel,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ),
-                  data: (lesson) => _Lesson(lesson: lesson),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: content.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(color: AppColors.teal),
+                    ),
+                    error: (error, _) => _LoadFailed(
+                      onRetry: () => ref.invalidate(
+                        lessonContentProvider(
+                          ref.read(currentLessonIdProvider),
+                        ),
+                      ),
+                    ),
+                    data: (lesson) => _Lesson(lesson: lesson),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -77,31 +85,44 @@ class _Lesson extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 16),
-        Text(
-          'LIÇÃO $lessonNumber · ${lesson.theme.toUpperCase()}',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.eyebrow(AppColors.teal),
+        // The lesson summary scrolls; "Começar!" stays on screen at every
+        // size. A child should never have to hunt for the button that
+        // starts the lesson — on a 320px phone it used to sit 515px below
+        // the fold with nothing to scroll.
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  'LIÇÃO $lessonNumber · ${lesson.theme.toUpperCase()}',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.eyebrow(AppColors.teal),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  lesson.title,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.baloo(28, height: 1.2),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${ActivityType.values.length} atividades · cerca de '
+                  '${lesson.estimatedMinutes} minutos',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 20),
+                for (final type in ActivityType.values) ...[
+                  _ActivityRow(presentation: activityPresentation[type]!),
+                  const SizedBox(height: 10),
+                ],
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          lesson.title,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.baloo(28, height: 1.2),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${ActivityType.values.length} atividades · cerca de '
-          '${lesson.estimatedMinutes} minutos',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.nunito(15, color: AppColors.textMuted),
-        ),
-        const SizedBox(height: 20),
-        for (final type in ActivityType.values) ...[
-          _ActivityRow(presentation: activityPresentation[type]!),
-          const SizedBox(height: 10),
-        ],
-        const Spacer(),
+        const SizedBox(height: 12),
         LeleButton(
           label: 'Começar!',
           height: 60,

@@ -55,5 +55,5 @@ class LessonStatsController extends Notifier<LessonStats> {
 
 final lessonStatsProvider =
     NotifierProvider<LessonStatsController, LessonStats>(
-  LessonStatsController.new,
-);
+      LessonStatsController.new,
+    );
