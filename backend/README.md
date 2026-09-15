@@ -12,7 +12,7 @@ backend/
 ├── firestore.rules            # client trust boundary (§12–§14)
 ├── firestore.indexes.json
 ├── storage.rules              # binary content assets only (§6)
-├── functions/                 # Cloud Functions — TypeScript, Node 20, v2 API
+├── functions/                 # Cloud Functions — TypeScript, Node 22, v2 API
 │   └── src/
 │       ├── config.ts          # Secret Manager + per-env params
 │       ├── lib/               # firestore paths, guards, idempotency, logging

@@ -30,7 +30,9 @@ boundaries or security architecture must be documented as ADRs in
 
 ## Working on the backend
 
-- Cloud Functions: `backend/functions` (TypeScript, Node 20, v2 API).
+- Cloud Functions: `backend/functions` (TypeScript, Node 22, v2 API —
+  `nvm use` in `backend/`; the emulator otherwise falls back to the host's
+  node and local stops matching production).
   `npm test` compiles and runs the domain unit tests.
 - Security Rules: `backend/firestore.rules` + tests in `backend/test/rules`
   (`npm test` there runs the Firestore emulator; firebase-tools is a local

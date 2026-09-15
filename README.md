@@ -16,13 +16,19 @@ and the Firebase backend behind it.
 | Need | For |
 | --- | --- |
 | Flutter SDK (`~/development/flutter`, not on PATH by default) | the app |
-| Node 20+ | Cloud Functions, seeding |
+| Node 22 (`nvm use` in `backend/`) | Cloud Functions, seeding |
 | Java 11+ | the Firebase emulators |
 | Chrome, or an Android emulator/device | somewhere to run the app |
 
 ```bash
 export PATH="$HOME/development/flutter/bin:$PATH"
+cd backend && nvm use     # Node 22 — the Cloud Functions runtime
 ```
+
+Node matters more than it looks: the Functions emulator silently falls back
+to whatever `node` is on PATH, so running a different major than the deploy
+runtime means local behaviour can differ from production. `backend/.nvmrc`
+pins it, and `dev.sh` warns when they don't match.
 
 ### Option 1 — app only, no backend (fastest)
 

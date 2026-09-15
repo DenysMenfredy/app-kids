@@ -38,6 +38,17 @@ if [ "${1:-}" = "--reseed" ]; then
   rm -rf "$DATA_DIR"
 fi
 
+# The emulator silently falls back to whatever node is on PATH, so a mismatch
+# here means local behaviour can differ from the deployed runtime.
+REQUIRED_NODE="$(sed -n 's/.*"node": "\([0-9]*\)".*/\1/p' functions/package.json)"
+CURRENT_NODE="$(node -p 'process.versions.node.split(".")[0]')"
+if [ "$CURRENT_NODE" != "$REQUIRED_NODE" ]; then
+  echo "!! Running Node $CURRENT_NODE, but the functions target Node $REQUIRED_NODE."
+  echo "   The emulator will fall back to Node $CURRENT_NODE, so what you see"
+  echo "   locally may not match production. Fix with:  nvm use"
+  echo
+fi
+
 echo "==> Building Cloud Functions"
 npm --prefix functions run build
 

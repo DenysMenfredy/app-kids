@@ -4,7 +4,7 @@
   "private": true,
   "description": "Letrando backend — Cloud Functions for Firebase",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "scripts": {
