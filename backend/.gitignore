@@ -14,3 +14,7 @@ ui-debug.log
 
 # Content bundles are unpacked into seed/; the archives are provenance only.
 *.zip
+
+# Source art dropped here for processing; the optimised copies live in
+# lele/assets/images/ and are what ships.
+*.png

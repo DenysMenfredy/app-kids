@@ -52,6 +52,12 @@ lib/
 - **Navigation**: `go_router` with named routes (`AppRoutes`).
 - **Fonts**: Baloo 2 + Nunito bundled as assets (offline-first, no runtime
   fetch).
+- **Illustrations**: the three onboarding images in
+  `assets/images/onboarding/`. Source art arrives at ~1250px and ~1.2 MB
+  each; it is resized to 750px on the long side (the slide renders at 260)
+  and quantised to a 256-colour palette, which is visually lossless on flat
+  illustration and takes the three from 3.6 MB to 172 KB. They are precached
+  on the welcome screen so no slide opens with an empty gap.
 - **Accessibility**: looping decoration animations respect the platform
   reduce-motion setting; large touch targets throughout.
 
