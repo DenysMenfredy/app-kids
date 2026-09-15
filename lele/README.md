@@ -16,8 +16,33 @@ letters and words served by the backend (tap the letter, match
 upper/lowercase, trace with the finger, listen and choose) → Reward
 (confetti, +XP/+coins/streak) → Book library.
 
-All copy is pt-BR; child activities speak through the device TTS voice
-(`pt-BR`).
+All copy is pt-BR; child activities speak through the device TTS voice.
+
+### Speech (pt-BR)
+
+`TtsService` names the voice rather than only setting the language. Setting
+the language alone leaves the engine free to keep its default voice — on a
+machine whose default is German, that reads Portuguese with German
+phonetics, which is exactly what it sounds like.
+
+It picks an exact pt-BR voice, falls back to European Portuguese (wrong
+accent, right language), and logs loudly when the device has no Portuguese
+at all rather than mispronouncing everything in silence.
+
+The speech rate is per-platform on purpose: flutter_tts doubles the value on
+Android and passes it straight through on iOS, where 0.5 is normal, but on
+web it becomes `SpeechSynthesisUtterance.rate`, where **1.0** is normal. One
+shared value ran browser speech at 0.45x — slurred, and half the reason it
+sounded wrong.
+
+**If speech still sounds off**, the device is probably missing the voice:
+
+- Android: Settings › Language & input › Text-to-speech → install the
+  Português (Brasil) voice data for the Google engine.
+- Chrome on Linux: voices come from speech-dispatcher; install a pt-BR one
+  (`espeak-ng` ships one) or test in Chrome with Google's cloud voices.
+- iOS: Settings › Accessibility › Spoken Content › Voices → Português
+  (Brasil).
 
 ## Architecture
 
@@ -99,7 +124,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 98 tests
+flutter test           # 109 tests
 flutter analyze        # zero issues
 ```
 
