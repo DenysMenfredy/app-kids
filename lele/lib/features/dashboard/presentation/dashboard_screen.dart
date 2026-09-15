@@ -78,47 +78,14 @@ class DashboardScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        if (ref.watch(isPremiumProvider))
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 9,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.greenPale,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              'Premium ativo',
-                              style: AppTextStyles.baloo(
-                                13,
-                                color: AppColors.greenDark,
-                              ),
-                            ),
-                          )
-                        else
-                          GestureDetector(
+                        // Flexible: on a 320px phone at a large text scale the chip has
+                        // to give way rather than push the row past the edge.
+                        Flexible(
+                          child: _StatusChip(
+                            premium: ref.watch(isPremiumProvider),
                             onTap: () => context.goNamed(AppRoutes.paywall),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 9,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.purplePale,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              // Shortened to leave room for sign-out; the
-                              // paywall spells the offer out in full.
-                              child: Text(
-                                'Teste grátis',
-                                style: AppTextStyles.baloo(
-                                  13,
-                                  color: AppColors.purple,
-                                ),
-                              ),
-                            ),
                           ),
+                        ),
                         const SizedBox(width: 8),
                         _SignOutButton(
                           onSignOut: () =>
@@ -332,49 +299,59 @@ class _WeekCard extends StatelessWidget {
         children: [
           Text('Esta semana', style: AppTextStyles.sectionTitle),
           const SizedBox(height: 14),
-          SizedBox(
-            height: 90,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              spacing: 10,
-              children: [
-                for (var i = 0; i < _week.length; i++)
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: _week[i].minutes == 0
-                              ? 6
-                              : 60 * _week[i].minutes / maxMinutes + 6,
-                          decoration: BoxDecoration(
-                            color: _week[i].minutes == 0
-                                ? AppColors.panel
-                                : i == today
-                                ? AppColors.orange
-                                : AppColors.teal,
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(8),
-                              bottom: Radius.circular(4),
+          // The bars keep a fixed plot area; the row's height then follows
+          // the day labels, which grow with the text scale. A fixed 90px box
+          // overflowed by 2px the moment they did.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            spacing: 10,
+            children: [
+              for (var i = 0; i < _week.length; i++)
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        height: 66,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              height: _week[i].minutes == 0
+                                  ? 6
+                                  : 60 * _week[i].minutes / maxMinutes + 6,
+                              decoration: BoxDecoration(
+                                color: _week[i].minutes == 0
+                                    ? AppColors.panel
+                                    : i == today
+                                    ? AppColors.orange
+                                    : AppColors.teal,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(8),
+                                  bottom: Radius.circular(4),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          _week[i].label,
-                          style: AppTextStyles.nunito(
-                            11,
-                            weight: FontWeight.w700,
-                            color: _week[i].minutes == 0
-                                ? AppColors.textDisabled
-                                : AppColors.textDark,
-                          ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _week[i].label,
+                        maxLines: 1,
+                        style: AppTextStyles.nunito(
+                          11,
+                          weight: FontWeight.w700,
+                          color: _week[i].minutes == 0
+                              ? AppColors.textDisabled
+                              : AppColors.textDark,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
           Text(
@@ -459,5 +436,36 @@ class _ModuleRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// The premium / free-trial pill in the dashboard header.
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.premium, required this.onTap});
+
+  final bool premium;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: premium ? AppColors.greenPale : AppColors.purplePale,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      // Shortened to leave room for sign-out; the paywall spells the offer
+      // out in full.
+      child: Text(
+        premium ? 'Premium ativo' : 'Teste grátis',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppTextStyles.baloo(
+          13,
+          color: premium ? AppColors.greenDark : AppColors.purple,
+        ),
+      ),
+    );
+    return premium ? chip : GestureDetector(onTap: onTap, child: chip);
   }
 }

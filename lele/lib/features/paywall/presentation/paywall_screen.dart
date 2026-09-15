@@ -252,7 +252,12 @@ class _PlanCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(plan.name, style: AppTextStyles.baloo(17)),
+                      Text(
+                        plan.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.baloo(17),
+                      ),
                       Text(
                         plan.subtitle,
                         style: AppTextStyles.nunito(
@@ -263,9 +268,12 @@ class _PlanCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  plan.price,
-                  style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+                Flexible(
+                  child: Text(
+                    plan.price,
+                    maxLines: 1,
+                    style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+                  ),
                 ),
               ],
             ),

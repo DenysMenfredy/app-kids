@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/storage/local_storage.dart';
@@ -68,8 +72,9 @@ Future<List<String>> audit(
   WidgetTester tester,
   String screen,
   Widget Function() build,
-  Size size,
-) async {
+  Size size, {
+  double textScale = 1.0,
+}) async {
   final problems = <String>[];
 
   tester.view.physicalSize = size;
@@ -83,7 +88,16 @@ Future<List<String>> audit(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: MaterialApp(theme: AppTheme.light, home: build()),
+      child: MaterialApp(
+        theme: AppTheme.light,
+        builder: (context, child) => MediaQuery(
+          // What the device's font-size setting actually does to the app.
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(textScale)),
+          child: child!,
+        ),
+        home: build(),
+      ),
     ),
   );
   await tester.pump();
@@ -118,6 +132,37 @@ Future<List<String>> audit(
     if (rect.right > viewport.right + 0.5 || rect.left < -0.5) {
       problems.add('button "$label" is cut off horizontally');
     }
+
+    // A call to action that wraps onto a second line is the "text is too
+    // big" complaint in its most measurable form.
+    final labels = find.descendant(of: self, matching: find.byType(Text));
+    for (final labelEl in labels.evaluate()) {
+      final para = labelEl.renderObject;
+      final text = labelEl.widget;
+      if (para is RenderParagraph && text is Text && (text.data ?? '').isNotEmpty) {
+        // Distinct box tops == distinct rendered lines.
+        final boxes = para.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: text.data!.length),
+        );
+        final lines = boxes.map((b) => b.top.round()).toSet().length;
+        // One line is the goal; two is the deliberate fallback for a label
+        // too long to shrink politely. Three is the reported bug.
+        if (lines > 2) {
+          problems.add('button label "$label" wraps onto $lines lines');
+        }
+        // And shrink-to-fit must not be allowed to solve wrapping by making
+        // the label unreadable.
+        if (lines == 1) {
+          final natural = para.getMaxIntrinsicWidth(double.infinity);
+          final available = rect.width - 36;
+          final ratio = natural <= available ? 1.0 : available / natural;
+          if (ratio < 0.75) {
+            problems.add('button label "$label" shrunk to '
+                '${ratio.toStringAsFixed(2)}x — below legibility');
+          }
+        }
+      }
+    }
   }
 
   return problems;
@@ -139,25 +184,53 @@ String _labelOf(Element element) {
   return found ?? '?';
 }
 
+/// 1.0 is the default; 1.3 is Android's largest non-accessibility setting
+/// and iOS's larger sizes, which plenty of parents run day to day.
+const textScales = <double>[1.0, 1.3, 1.6, 2.0];
+
+/// Widget tests use a fallback font whose glyphs are far wider than Baloo 2.
+/// Measuring text against it would exaggerate every wrap and shrink, so load
+/// the real bundled faces before measuring anything.
+Future<void> loadAppFonts() async {
+  for (final family in const {
+    'Baloo 2': ['Baloo2-Bold.ttf', 'Baloo2-ExtraBold.ttf'],
+    'Nunito': ['Nunito-Bold.ttf', 'Nunito-SemiBold.ttf', 'Nunito-Regular.ttf'],
+  }.entries) {
+    final loader = FontLoader(family.key);
+    for (final file in family.value) {
+      final bytes = File('assets/fonts/$file').readAsBytesSync();
+      loader.addFont(Future.value(ByteData.sublistView(bytes)));
+    }
+    await loader.load();
+  }
+}
+
 void main() {
+  setUpAll(loadAppFonts);
+
   for (final device in devices.entries) {
-    testWidgets('layout survives ${device.key}', (tester) async {
-      addTearDown(tester.view.reset);
-      addTearDown(
-          tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    for (final scale in textScales) {
+      testWidgets('layout survives ${device.key} at text scale $scale',
+          (tester) async {
+        addTearDown(tester.view.reset);
+        addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
-      final report = <String>[];
-      for (final screen in screens.entries) {
-        final problems =
-            await audit(tester, screen.key, screen.value, device.value);
-        for (final problem in problems) {
-          // ignore: avoid_print
-          print('FAILROW|${device.key}|${screen.key}|$problem');
-          report.add('${screen.key}: $problem');
+        final report = <String>[];
+        for (final screen in screens.entries) {
+          final problems = await audit(
+              tester, screen.key, screen.value, device.value,
+              textScale: scale);
+          for (final problem in problems) {
+            // ignore: avoid_print
+            print('FAILROW|${device.key} @${scale}x|${screen.key}|$problem');
+            report.add('${screen.key}: $problem');
+          }
         }
-      }
 
-      expect(report, isEmpty, reason: '${device.key}:\n${report.join('\n')}');
-    });
+        expect(report, isEmpty,
+            reason: '${device.key} @${scale}x:\n${report.join('\n')}');
+      });
+    }
   }
 }

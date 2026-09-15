@@ -79,12 +79,15 @@ class AssessmentIntroScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
-                      Text(
-                        'Leva 1 minuto',
-                        style: AppTextStyles.nunito(
-                          14,
-                          weight: FontWeight.w700,
-                          color: AppColors.textMuted,
+                      Flexible(
+                        child: Text(
+                          'Leva 1 minuto',
+                          maxLines: 1,
+                          style: AppTextStyles.nunito(
+                            14,
+                            weight: FontWeight.w700,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ),
                     ],

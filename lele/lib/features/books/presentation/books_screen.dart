@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../domain/book.dart';
@@ -50,12 +51,23 @@ class BooksScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               GridView.count(
-                crossAxisCount: 2,
+                // Two covers on a phone, more once there is room — a
+                // two-column grid on a tablet leaves each cover absurdly
+                // large.
+                crossAxisCount: switch (context.windowClass) {
+                  WindowClass.compact => 2,
+                  WindowClass.medium => 3,
+                  WindowClass.expanded => 4,
+                },
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                childAspectRatio: 0.82,
+                // The title under each cover grows with the text scale, so
+                // the tile has to get taller with it or the column overflows.
+                childAspectRatio:
+                    0.82 /
+                    (1 + (MediaQuery.textScalerOf(context).scale(1) - 1) * 0.6),
                 children: [
                   for (final book in bookLibrary) _BookTile(book: book),
                 ],
@@ -135,6 +147,8 @@ class _BookTile extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           book.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: AppTextStyles.baloo(
             14,

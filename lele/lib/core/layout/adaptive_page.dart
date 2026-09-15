@@ -118,3 +118,19 @@ class AdaptiveWidth extends StatelessWidget {
     ),
   );
 }
+
+/// The text scale the app actually renders at.
+///
+/// Two things feed into it. The viewer's own font-size setting is honoured
+/// but bounded — at 1.3x untouched, button labels wrapped onto three lines
+/// and the dashboard overflowed, which is a worse accessibility outcome
+/// than slightly smaller text. And the screens were drawn at roughly 390dp
+/// wide, so narrower phones pull the scale down a little and larger ones
+/// nudge it up, instead of every device rendering the same absolute sizes.
+TextScaler adaptiveTextScaler(BuildContext context) {
+  final media = MediaQuery.of(context);
+  const designWidth = 390.0;
+  final widthFactor = (media.size.width / designWidth).clamp(0.90, 1.10);
+  final requested = media.textScaler.scale(1.0);
+  return TextScaler.linear((widthFactor * requested).clamp(0.90, 1.25));
+}

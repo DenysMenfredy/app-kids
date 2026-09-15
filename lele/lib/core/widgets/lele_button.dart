@@ -64,7 +64,9 @@ class _LeleButtonState extends State<LeleButton> {
           padding: EdgeInsets.only(top: offsetY, bottom: _restDepth - offsetY),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 80),
-            height: widget.height,
+            // A minimum rather than a fixed height: at a large text scale
+            // the button grows instead of overflowing by two pixels.
+            constraints: BoxConstraints(minHeight: widget.height),
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: widget.color,
@@ -75,18 +77,86 @@ class _LeleButtonState extends State<LeleButton> {
             ),
             child:
                 widget.child ??
-                Text(
-                  widget.label!,
-                  style: TextStyle(
-                    fontFamily: 'Baloo 2',
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 8,
+                  ),
+                  child: _ButtonLabel(
+                    label: widget.label!,
                     fontSize: widget.fontSize,
-                    fontWeight: FontWeight.w700,
                     color: widget.textColor,
                   ),
                 ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A button label that prefers one line, shrinks to fit, and stops shrinking
+/// before it becomes unreadable.
+///
+/// Plain `Text` wrapped "Começar teste grátis de 7 dias" onto three lines at
+/// a large text scale. A bare `FittedBox` fixed that by scaling the label to
+/// a third of its size, which is worse — a 20pt call to action rendering at
+/// about 6pt. So it scales down to [_minScale] and, only if that still does
+/// not fit, uses a second line at that size.
+class _ButtonLabel extends StatelessWidget {
+  const _ButtonLabel({
+    required this.label,
+    required this.fontSize,
+    required this.color,
+  });
+
+  final String label;
+  final double fontSize;
+  final Color color;
+
+  /// Below this a label stops reading as a button and starts reading as fine
+  /// print.
+  static const _minScale = 0.78;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontFamily: 'Baloo 2',
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      color: color,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scaler = MediaQuery.textScalerOf(context);
+        final painter = TextPainter(
+          text: TextSpan(text: label, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: scaler,
+          maxLines: 1,
+        )..layout();
+
+        final available = constraints.maxWidth;
+        final natural = painter.width;
+        final fits = natural <= available || !available.isFinite;
+        final ratio = fits ? 1.0 : available / natural;
+
+        if (ratio >= _minScale) {
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, maxLines: 1, softWrap: false, style: style),
+          );
+        }
+        // Too long to shrink politely: two lines at the floor size.
+        return Text(
+          label,
+          maxLines: 2,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: style.copyWith(fontSize: fontSize * _minScale),
+        );
+      },
     );
   }
 }
