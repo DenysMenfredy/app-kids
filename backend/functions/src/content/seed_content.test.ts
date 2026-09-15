@@ -277,16 +277,17 @@ describe("seed content — activity payloads", () => {
     }
   });
 
-  it("never shows uppercase I and lowercase l together", () => {
-    // They are the same glyph in most fonts, so the child cannot choose.
-    for (const activity of activities) {
-      const letters = [
-        ...(activity.options ?? []).map((option) => option.label),
-        ...(activity.pairs ?? []).map((pair) => pair.upper),
-      ];
+  it("never asks a child to match I and L in the same exercise", () => {
+    // Uppercase I and lowercase l are the same glyph in most fonts. Side by
+    // side in one case that is fine — uppercase I and L differ by the foot.
+    // Matching is where it breaks: the child taps "I", then the lowercase
+    // column offers an "l" identical to what they just tapped, so the wrong
+    // answer looks more right than the right one.
+    for (const activity of activities.filter((a) => a.type === "match")) {
+      const uppers = (activity.pairs ?? []).map((pair) => pair.upper);
       assert.ok(
-        !(letters.includes("I") && letters.includes("L")),
-        `${activity.id} mixes I and L`,
+        !(uppers.includes("I") && uppers.includes("L")),
+        `${activity.id} pairs I and L`,
       );
     }
   });

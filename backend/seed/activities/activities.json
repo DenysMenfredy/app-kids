@@ -12,8 +12,8 @@
     "target": "A",
     "options": [
       {
-        "id": "O",
-        "label": "O",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
@@ -22,13 +22,13 @@
         "correct": true
       },
       {
-        "id": "E",
-        "label": "E",
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
-        "id": "U",
-        "label": "U",
+        "id": "D",
+        "label": "D",
         "correct": false
       }
     ]
@@ -49,17 +49,17 @@
         "lower": "a"
       },
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "L",
+        "lower": "l"
       },
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "N",
+        "lower": "n"
       }
     ],
     "lowercaseOrder": [
-      "e",
-      "o",
+      "l",
+      "n",
       "a"
     ]
   },
@@ -88,19 +88,19 @@
     "answer": "ASA",
     "options": [
       {
-        "id": "OVO",
-        "label": "OVO",
-        "correct": false
-      },
-      {
-        "id": "UVA",
-        "label": "UVA",
+        "id": "ÁRVORE",
+        "label": "ÁRVORE",
         "correct": false
       },
       {
         "id": "ASA",
         "label": "ASA",
         "correct": true
+      },
+      {
+        "id": "AVIÃO",
+        "label": "AVIÃO",
+        "correct": false
       }
     ]
   },
@@ -117,13 +117,13 @@
     "target": "E",
     "options": [
       {
-        "id": "A",
-        "label": "A",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
-        "id": "O",
-        "label": "O",
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
@@ -132,8 +132,8 @@
         "correct": true
       },
       {
-        "id": "U",
-        "label": "U",
+        "id": "D",
+        "label": "D",
         "correct": false
       }
     ]
@@ -154,18 +154,18 @@
         "lower": "e"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "L",
+        "lower": "l"
       },
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "N",
+        "lower": "n"
       }
     ],
     "lowercaseOrder": [
-      "a",
-      "o",
-      "e"
+      "n",
+      "e",
+      "l"
     ]
   },
   {
@@ -189,22 +189,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "escola",
-    "answer": "ESCOLA",
+    "speech": "elefante",
+    "answer": "ELEFANTE",
     "options": [
       {
-        "id": "ESCOLA",
-        "label": "ESCOLA",
+        "id": "ELEFANTE",
+        "label": "ELEFANTE",
         "correct": true
       },
       {
-        "id": "ASA",
-        "label": "ASA",
+        "id": "ESCOLA",
+        "label": "ESCOLA",
         "correct": false
       },
       {
-        "id": "UVA",
-        "label": "UVA",
+        "id": "ESTRELA",
+        "label": "ESTRELA",
         "correct": false
       }
     ]
@@ -222,18 +222,18 @@
     "target": "I",
     "options": [
       {
-        "id": "A",
-        "label": "A",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
-        "id": "E",
-        "label": "E",
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
-        "id": "O",
-        "label": "O",
+        "id": "D",
+        "label": "D",
         "correct": false
       },
       {
@@ -294,23 +294,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "igreja",
-    "answer": "IGREJA",
+    "speech": "ilha",
+    "answer": "ILHA",
     "options": [
       {
-        "id": "ASA",
-        "label": "ASA",
+        "id": "ÍNDIO",
+        "label": "ÍNDIO",
         "correct": false
       },
       {
         "id": "IGREJA",
         "label": "IGREJA",
-        "correct": true
+        "correct": false
       },
       {
-        "id": "OVO",
-        "label": "OVO",
-        "correct": false
+        "id": "ILHA",
+        "label": "ILHA",
+        "correct": true
       }
     ]
   },
@@ -332,8 +332,8 @@
         "correct": true
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "I",
+        "label": "I",
         "correct": false
       },
       {
@@ -342,8 +342,8 @@
         "correct": false
       },
       {
-        "id": "U",
-        "label": "U",
+        "id": "A",
+        "label": "A",
         "correct": false
       }
     ]
@@ -364,17 +364,17 @@
         "lower": "o"
       },
       {
-        "upper": "U",
-        "lower": "u"
+        "upper": "I",
+        "lower": "i"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "E",
+        "lower": "e"
       }
     ],
     "lowercaseOrder": [
-      "u",
-      "a",
+      "i",
+      "e",
       "o"
     ]
   },
@@ -403,19 +403,19 @@
     "answer": "OVO",
     "options": [
       {
-        "id": "ASA",
-        "label": "ASA",
-        "correct": false
-      },
-      {
-        "id": "IGREJA",
-        "label": "IGREJA",
+        "id": "OCA",
+        "label": "OCA",
         "correct": false
       },
       {
         "id": "OVO",
         "label": "OVO",
         "correct": true
+      },
+      {
+        "id": "OLHO",
+        "label": "OLHO",
+        "correct": false
       }
     ]
   },
@@ -442,8 +442,8 @@
         "correct": true
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "I",
+        "label": "I",
         "correct": false
       },
       {
@@ -473,14 +473,14 @@
         "lower": "o"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "I",
+        "lower": "i"
       }
     ],
     "lowercaseOrder": [
-      "o",
-      "a",
-      "u"
+      "i",
+      "u",
+      "o"
     ]
   },
   {
@@ -513,13 +513,13 @@
         "correct": true
       },
       {
-        "id": "OVO",
-        "label": "OVO",
+        "id": "URSO",
+        "label": "URSO",
         "correct": false
       },
       {
-        "id": "ESCOLA",
-        "label": "ESCOLA",
+        "id": "UNHA",
+        "label": "UNHA",
         "correct": false
       }
     ]
@@ -537,8 +537,8 @@
     "target": "M",
     "options": [
       {
-        "id": "A",
-        "label": "A",
+        "id": "U",
+        "label": "U",
         "correct": false
       },
       {
@@ -552,8 +552,8 @@
         "correct": true
       },
       {
-        "id": "E",
-        "label": "E",
+        "id": "I",
+        "label": "I",
         "correct": false
       }
     ]
@@ -574,8 +574,8 @@
         "lower": "m"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "U",
+        "lower": "u"
       },
       {
         "upper": "O",
@@ -583,9 +583,9 @@
       }
     ],
     "lowercaseOrder": [
-      "a",
-      "o",
-      "m"
+      "m",
+      "u",
+      "o"
     ]
   },
   {
@@ -613,19 +613,19 @@
     "answer": "MALA",
     "options": [
       {
-        "id": "UVA",
-        "label": "UVA",
+        "id": "MAMÃE",
+        "label": "MAMÃE",
+        "correct": false
+      },
+      {
+        "id": "MACACO",
+        "label": "MACACO",
         "correct": false
       },
       {
         "id": "MALA",
         "label": "MALA",
         "correct": true
-      },
-      {
-        "id": "OVO",
-        "label": "OVO",
-        "correct": false
       }
     ]
   },
@@ -647,13 +647,13 @@
         "correct": false
       },
       {
-        "id": "O",
-        "label": "O",
+        "id": "U",
+        "label": "U",
         "correct": false
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "O",
+        "label": "O",
         "correct": false
       },
       {
@@ -683,13 +683,13 @@
         "lower": "m"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "U",
+        "lower": "u"
       }
     ],
     "lowercaseOrder": [
       "m",
-      "a",
+      "u",
       "p"
     ]
   },
@@ -718,19 +718,19 @@
     "answer": "PATO",
     "options": [
       {
-        "id": "MALA",
-        "label": "MALA",
-        "correct": false
-      },
-      {
-        "id": "UVA",
-        "label": "UVA",
+        "id": "PÃO",
+        "label": "PÃO",
         "correct": false
       },
       {
         "id": "PATO",
         "label": "PATO",
         "correct": true
+      },
+      {
+        "id": "PIPA",
+        "label": "PIPA",
+        "correct": false
       }
     ]
   },
@@ -762,8 +762,8 @@
         "correct": false
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "U",
+        "label": "U",
         "correct": false
       }
     ]
@@ -793,9 +793,9 @@
       }
     ],
     "lowercaseOrder": [
-      "p",
       "m",
-      "b"
+      "b",
+      "p"
     ]
   },
   {
@@ -828,13 +828,13 @@
         "correct": true
       },
       {
-        "id": "PATO",
-        "label": "PATO",
+        "id": "BONECA",
+        "label": "BONECA",
         "correct": false
       },
       {
-        "id": "MALA",
-        "label": "MALA",
+        "id": "BEBÊ",
+        "label": "BEBÊ",
         "correct": false
       }
     ]
@@ -852,8 +852,8 @@
     "target": "T",
     "options": [
       {
-        "id": "P",
-        "label": "P",
+        "id": "B",
+        "label": "B",
         "correct": false
       },
       {
@@ -862,8 +862,8 @@
         "correct": true
       },
       {
-        "id": "B",
-        "label": "B",
+        "id": "P",
+        "label": "P",
         "correct": false
       },
       {
@@ -889,18 +889,18 @@
         "lower": "t"
       },
       {
-        "upper": "P",
-        "lower": "p"
-      },
-      {
         "upper": "B",
         "lower": "b"
+      },
+      {
+        "upper": "P",
+        "lower": "p"
       }
     ],
     "lowercaseOrder": [
-      "p",
+      "t",
       "b",
-      "t"
+      "p"
     ]
   },
   {
@@ -928,19 +928,19 @@
     "answer": "TATU",
     "options": [
       {
-        "id": "BOLA",
-        "label": "BOLA",
+        "id": "TAPETE",
+        "label": "TAPETE",
+        "correct": false
+      },
+      {
+        "id": "TIGRE",
+        "label": "TIGRE",
         "correct": false
       },
       {
         "id": "TATU",
         "label": "TATU",
         "correct": true
-      },
-      {
-        "id": "PATO",
-        "label": "PATO",
-        "correct": false
       }
     ]
   },
@@ -1033,19 +1033,19 @@
     "answer": "DADO",
     "options": [
       {
-        "id": "TATU",
-        "label": "TATU",
-        "correct": false
-      },
-      {
-        "id": "BOLA",
-        "label": "BOLA",
+        "id": "DENTE",
+        "label": "DENTE",
         "correct": false
       },
       {
         "id": "DADO",
         "label": "DADO",
         "correct": true
+      },
+      {
+        "id": "DEDO",
+        "label": "DEDO",
+        "correct": false
       }
     ]
   },
@@ -1062,8 +1062,8 @@
     "target": "N",
     "options": [
       {
-        "id": "M",
-        "label": "M",
+        "id": "D",
+        "label": "D",
         "correct": false
       },
       {
@@ -1072,8 +1072,8 @@
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "B",
+        "label": "B",
         "correct": false
       },
       {
@@ -1099,8 +1099,8 @@
         "lower": "n"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "D",
+        "lower": "d"
       },
       {
         "upper": "T",
@@ -1108,9 +1108,9 @@
       }
     ],
     "lowercaseOrder": [
-      "m",
       "t",
-      "n"
+      "n",
+      "d"
     ]
   },
   {
@@ -1143,13 +1143,13 @@
         "correct": true
       },
       {
-        "id": "DADO",
-        "label": "DADO",
+        "id": "NAVIO",
+        "label": "NAVIO",
         "correct": false
       },
       {
-        "id": "TATU",
-        "label": "TATU",
+        "id": "NARIZ",
+        "label": "NARIZ",
         "correct": false
       }
     ]
@@ -1177,8 +1177,8 @@
         "correct": false
       },
       {
-        "id": "M",
-        "label": "M",
+        "id": "D",
+        "label": "D",
         "correct": false
       },
       {
@@ -1208,14 +1208,14 @@
         "lower": "n"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "D",
+        "lower": "d"
       }
     ],
     "lowercaseOrder": [
+      "l",
       "n",
-      "m",
-      "l"
+      "d"
     ]
   },
   {
@@ -1243,19 +1243,19 @@
     "answer": "LUA",
     "options": [
       {
-        "id": "NUVEM",
-        "label": "NUVEM",
+        "id": "LATA",
+        "label": "LATA",
+        "correct": false
+      },
+      {
+        "id": "LEÃO",
+        "label": "LEÃO",
         "correct": false
       },
       {
         "id": "LUA",
         "label": "LUA",
         "correct": true
-      },
-      {
-        "id": "DADO",
-        "label": "DADO",
-        "correct": false
       }
     ]
   },
@@ -1272,8 +1272,8 @@
     "target": "V",
     "options": [
       {
-        "id": "B",
-        "label": "B",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
@@ -1287,8 +1287,8 @@
         "correct": false
       },
       {
-        "id": "L",
-        "label": "L",
+        "id": "D",
+        "label": "D",
         "correct": false
       }
     ]
@@ -1309,8 +1309,8 @@
         "lower": "v"
       },
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "L",
+        "lower": "l"
       },
       {
         "upper": "N",
@@ -1318,7 +1318,7 @@
       }
     ],
     "lowercaseOrder": [
-      "b",
+      "l",
       "n",
       "v"
     ]
@@ -1348,19 +1348,19 @@
     "answer": "VACA",
     "options": [
       {
-        "id": "LUA",
-        "label": "LUA",
-        "correct": false
-      },
-      {
-        "id": "NUVEM",
-        "label": "NUVEM",
+        "id": "VOVÓ",
+        "label": "VOVÓ",
         "correct": false
       },
       {
         "id": "VACA",
         "label": "VACA",
         "correct": true
+      },
+      {
+        "id": "VELA",
+        "label": "VELA",
+        "correct": false
       }
     ]
   },
@@ -1382,8 +1382,8 @@
         "correct": false
       },
       {
-        "id": "T",
-        "label": "T",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
@@ -1392,8 +1392,8 @@
         "correct": true
       },
       {
-        "id": "P",
-        "label": "P",
+        "id": "N",
+        "label": "N",
         "correct": false
       }
     ]
@@ -1418,14 +1418,14 @@
         "lower": "v"
       },
       {
-        "upper": "T",
-        "lower": "t"
+        "upper": "L",
+        "lower": "l"
       }
     ],
     "lowercaseOrder": [
-      "v",
-      "t",
-      "f"
+      "l",
+      "f",
+      "v"
     ]
   },
   {
@@ -1458,13 +1458,13 @@
         "correct": true
       },
       {
-        "id": "VACA",
-        "label": "VACA",
+        "id": "FADA",
+        "label": "FADA",
         "correct": false
       },
       {
-        "id": "LUA",
-        "label": "LUA",
+        "id": "FACA",
+        "label": "FACA",
         "correct": false
       }
     ]
@@ -1478,7 +1478,7 @@
     "type": "tap",
     "order": 1,
     "instruction": "Toque na letra S",
-    "speech": "Toque na letra ésse",
+    "speech": "Toque na letra esse",
     "target": "S",
     "options": [
       {
@@ -1492,8 +1492,8 @@
         "correct": false
       },
       {
-        "id": "B",
-        "label": "B",
+        "id": "L",
+        "label": "L",
         "correct": false
       },
       {
@@ -1528,9 +1528,9 @@
       }
     ],
     "lowercaseOrder": [
+      "s",
       "f",
-      "v",
-      "s"
+      "v"
     ]
   },
   {
@@ -1542,7 +1542,7 @@
     "type": "trace",
     "order": 3,
     "instruction": "Trace a letra S com o dedo",
-    "speech": "Trace a letra ésse",
+    "speech": "Trace a letra esse",
     "letter": "S"
   },
   {
@@ -1558,19 +1558,19 @@
     "answer": "SAPO",
     "options": [
       {
-        "id": "FOCA",
-        "label": "FOCA",
+        "id": "SACO",
+        "label": "SACO",
+        "correct": false
+      },
+      {
+        "id": "SALA",
+        "label": "SALA",
         "correct": false
       },
       {
         "id": "SAPO",
         "label": "SAPO",
         "correct": true
-      },
-      {
-        "id": "VACA",
-        "label": "VACA",
-        "correct": false
       }
     ]
   },
@@ -1602,8 +1602,8 @@
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "V",
+        "label": "V",
         "correct": false
       }
     ]
@@ -1663,19 +1663,19 @@
     "answer": "CASA",
     "options": [
       {
-        "id": "SAPO",
-        "label": "SAPO",
-        "correct": false
-      },
-      {
-        "id": "FOCA",
-        "label": "FOCA",
+        "id": "CUBO",
+        "label": "CUBO",
         "correct": false
       },
       {
         "id": "CASA",
         "label": "CASA",
         "correct": true
+      },
+      {
+        "id": "CAMA",
+        "label": "CAMA",
+        "correct": false
       }
     ]
   },
@@ -1707,8 +1707,8 @@
         "correct": false
       },
       {
-        "id": "P",
-        "label": "P",
+        "id": "F",
+        "label": "F",
         "correct": false
       }
     ]
@@ -1738,9 +1738,9 @@
       }
     ],
     "lowercaseOrder": [
-      "c",
       "s",
-      "r"
+      "r",
+      "c"
     ]
   },
   {
@@ -1773,13 +1773,13 @@
         "correct": true
       },
       {
-        "id": "CASA",
-        "label": "CASA",
+        "id": "REDE",
+        "label": "REDE",
         "correct": false
       },
       {
-        "id": "SAPO",
-        "label": "SAPO",
+        "id": "RODA",
+        "label": "RODA",
         "correct": false
       }
     ]
@@ -1797,13 +1797,13 @@
     "target": "G",
     "options": [
       {
-        "id": "C",
-        "label": "C",
+        "id": "R",
+        "label": "R",
         "correct": false
       },
       {
-        "id": "R",
-        "label": "R",
+        "id": "C",
+        "label": "C",
         "correct": false
       },
       {
@@ -1812,8 +1812,8 @@
         "correct": true
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "S",
+        "label": "S",
         "correct": false
       }
     ]
@@ -1834,18 +1834,18 @@
         "lower": "g"
       },
       {
-        "upper": "C",
-        "lower": "c"
-      },
-      {
         "upper": "R",
         "lower": "r"
+      },
+      {
+        "upper": "C",
+        "lower": "c"
       }
     ],
     "lowercaseOrder": [
-      "c",
+      "g",
       "r",
-      "g"
+      "c"
     ]
   },
   {
@@ -1873,19 +1873,19 @@
     "answer": "GATO",
     "options": [
       {
-        "id": "RATO",
-        "label": "RATO",
+        "id": "GOLA",
+        "label": "GOLA",
+        "correct": false
+      },
+      {
+        "id": "GOTA",
+        "label": "GOTA",
         "correct": false
       },
       {
         "id": "GATO",
         "label": "GATO",
         "correct": true
-      },
-      {
-        "id": "CASA",
-        "label": "CASA",
-        "correct": false
       }
     ]
   },
@@ -1974,23 +1974,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "janela",
-    "answer": "JANELA",
+    "speech": "jacaré",
+    "answer": "JACARÉ",
     "options": [
       {
-        "id": "GATO",
-        "label": "GATO",
+        "id": "JOGO",
+        "label": "JOGO",
         "correct": false
       },
       {
-        "id": "RATO",
-        "label": "RATO",
-        "correct": false
+        "id": "JACARÉ",
+        "label": "JACARÉ",
+        "correct": true
       },
       {
         "id": "JANELA",
         "label": "JANELA",
-        "correct": true
+        "correct": false
       }
     ]
   },
@@ -2012,18 +2012,18 @@
         "correct": true
       },
       {
-        "id": "S",
-        "label": "S",
-        "correct": false
-      },
-      {
         "id": "J",
         "label": "J",
         "correct": false
       },
       {
-        "id": "C",
-        "label": "C",
+        "id": "G",
+        "label": "G",
+        "correct": false
+      },
+      {
+        "id": "R",
+        "label": "R",
         "correct": false
       }
     ]
@@ -2044,18 +2044,18 @@
         "lower": "z"
       },
       {
-        "upper": "S",
-        "lower": "s"
-      },
-      {
         "upper": "J",
         "lower": "j"
+      },
+      {
+        "upper": "G",
+        "lower": "g"
       }
     ],
     "lowercaseOrder": [
-      "s",
-      "j",
-      "z"
+      "g",
+      "z",
+      "j"
     ]
   },
   {
@@ -2088,13 +2088,13 @@
         "correct": true
       },
       {
-        "id": "JANELA",
-        "label": "JANELA",
+        "id": "ZERO",
+        "label": "ZERO",
         "correct": false
       },
       {
-        "id": "GATO",
-        "label": "GATO",
+        "id": "ZÍPER",
+        "label": "ZÍPER",
         "correct": false
       }
     ]
@@ -2122,13 +2122,13 @@
         "correct": true
       },
       {
-        "id": "S",
-        "label": "S",
+        "id": "J",
+        "label": "J",
         "correct": false
       },
       {
-        "id": "C",
-        "label": "C",
+        "id": "G",
+        "label": "G",
         "correct": false
       }
     ]
@@ -2153,14 +2153,14 @@
         "lower": "z"
       },
       {
-        "upper": "S",
-        "lower": "s"
+        "upper": "J",
+        "lower": "j"
       }
     ],
     "lowercaseOrder": [
+      "x",
       "z",
-      "s",
-      "x"
+      "j"
     ]
   },
   {
@@ -2188,19 +2188,19 @@
     "answer": "XÍCARA",
     "options": [
       {
-        "id": "ZEBRA",
-        "label": "ZEBRA",
+        "id": "XADREZ",
+        "label": "XADREZ",
+        "correct": false
+      },
+      {
+        "id": "XAROPE",
+        "label": "XAROPE",
         "correct": false
       },
       {
         "id": "XÍCARA",
         "label": "XÍCARA",
         "correct": true
-      },
-      {
-        "id": "JANELA",
-        "label": "JANELA",
-        "correct": false
       }
     ]
   },
@@ -2217,13 +2217,13 @@
     "target": "Q",
     "options": [
       {
-        "id": "C",
-        "label": "C",
+        "id": "X",
+        "label": "X",
         "correct": false
       },
       {
-        "id": "G",
-        "label": "G",
+        "id": "Z",
+        "label": "Z",
         "correct": false
       },
       {
@@ -2232,8 +2232,8 @@
         "correct": true
       },
       {
-        "id": "O",
-        "label": "O",
+        "id": "J",
+        "label": "J",
         "correct": false
       }
     ]
@@ -2254,17 +2254,17 @@
         "lower": "q"
       },
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "X",
+        "lower": "x"
       },
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "Z",
+        "lower": "z"
       }
     ],
     "lowercaseOrder": [
-      "c",
-      "g",
+      "x",
+      "z",
       "q"
     ]
   },
@@ -2293,19 +2293,19 @@
     "answer": "QUEIJO",
     "options": [
       {
-        "id": "XÍCARA",
-        "label": "XÍCARA",
-        "correct": false
-      },
-      {
-        "id": "ZEBRA",
-        "label": "ZEBRA",
+        "id": "QUERER",
+        "label": "QUERER",
         "correct": false
       },
       {
         "id": "QUEIJO",
         "label": "QUEIJO",
         "correct": true
+      },
+      {
+        "id": "QUILO",
+        "label": "QUILO",
+        "correct": false
       }
     ]
   },
@@ -2322,18 +2322,18 @@
     "target": "H",
     "options": [
       {
-        "id": "X",
-        "label": "X",
-        "correct": false
-      },
-      {
         "id": "Q",
         "label": "Q",
         "correct": false
       },
       {
-        "id": "N",
-        "label": "N",
+        "id": "X",
+        "label": "X",
+        "correct": false
+      },
+      {
+        "id": "Z",
+        "label": "Z",
         "correct": false
       },
       {
@@ -2359,18 +2359,18 @@
         "lower": "h"
       },
       {
-        "upper": "X",
-        "lower": "x"
-      },
-      {
         "upper": "Q",
         "lower": "q"
+      },
+      {
+        "upper": "X",
+        "lower": "x"
       }
     ],
     "lowercaseOrder": [
       "x",
-      "q",
-      "h"
+      "h",
+      "q"
     ]
   },
   {
@@ -2403,13 +2403,13 @@
         "correct": true
       },
       {
-        "id": "QUEIJO",
-        "label": "QUEIJO",
+        "id": "HOJE",
+        "label": "HOJE",
         "correct": false
       },
       {
-        "id": "XÍCARA",
-        "label": "XÍCARA",
+        "id": "HOMEM",
+        "label": "HOMEM",
         "correct": false
       }
     ]
@@ -2422,8 +2422,8 @@
     "id": "activity_024_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra CH",
-    "speech": "Toque na letra cê-agá",
+    "instruction": "Toque em CH",
+    "speech": "Toque em cê-agá",
     "target": "CH",
     "options": [
       {
@@ -2432,18 +2432,18 @@
         "correct": true
       },
       {
-        "id": "C",
-        "label": "C",
-        "correct": false
-      },
-      {
         "id": "H",
         "label": "H",
         "correct": false
       },
       {
-        "id": "S",
-        "label": "S",
+        "id": "Q",
+        "label": "Q",
+        "correct": false
+      },
+      {
+        "id": "X",
+        "label": "X",
         "correct": false
       }
     ]
@@ -2473,9 +2473,9 @@
       }
     ],
     "lowercaseOrder": [
+      "ch",
       "c",
-      "h",
-      "ch"
+      "h"
     ]
   },
   {
@@ -2486,8 +2486,8 @@
     "id": "activity_024_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra CH com o dedo",
-    "speech": "Trace a letra cê-agá",
+    "instruction": "Trace CH com o dedo",
+    "speech": "Trace cê-agá",
     "letter": "CH"
   },
   {
@@ -2503,19 +2503,19 @@
     "answer": "CHAVE",
     "options": [
       {
-        "id": "HORA",
-        "label": "HORA",
+        "id": "CHUVA",
+        "label": "CHUVA",
+        "correct": false
+      },
+      {
+        "id": "CHAPÉU",
+        "label": "CHAPÉU",
         "correct": false
       },
       {
         "id": "CHAVE",
         "label": "CHAVE",
         "correct": true
-      },
-      {
-        "id": "QUEIJO",
-        "label": "QUEIJO",
-        "correct": false
       }
     ]
   },
@@ -2527,13 +2527,13 @@
     "id": "activity_025_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra LH",
-    "speech": "Toque na letra éle-agá",
+    "instruction": "Toque em LH",
+    "speech": "Toque em éle-agá",
     "target": "LH",
     "options": [
       {
-        "id": "L",
-        "label": "L",
+        "id": "CH",
+        "label": "CH",
         "correct": false
       },
       {
@@ -2547,8 +2547,8 @@
         "correct": false
       },
       {
-        "id": "CH",
-        "label": "CH",
+        "id": "Q",
+        "label": "Q",
         "correct": false
       }
     ]
@@ -2573,13 +2573,13 @@
         "lower": "l"
       },
       {
-        "upper": "CH",
-        "lower": "ch"
+        "upper": "H",
+        "lower": "h"
       }
     ],
     "lowercaseOrder": [
       "l",
-      "ch",
+      "h",
       "lh"
     ]
   },
@@ -2591,8 +2591,8 @@
     "id": "activity_025_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra LH com o dedo",
-    "speech": "Trace a letra éle-agá",
+    "instruction": "Trace LH com o dedo",
+    "speech": "Trace éle-agá",
     "letter": "LH"
   },
   {
@@ -2604,23 +2604,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "filho",
-    "answer": "FILHO",
+    "speech": "milho",
+    "answer": "MILHO",
     "options": [
       {
-        "id": "CHAVE",
-        "label": "CHAVE",
+        "id": "COELHO",
+        "label": "COELHO",
         "correct": false
       },
       {
-        "id": "HORA",
-        "label": "HORA",
-        "correct": false
+        "id": "MILHO",
+        "label": "MILHO",
+        "correct": true
       },
       {
         "id": "FILHO",
         "label": "FILHO",
-        "correct": true
+        "correct": false
       }
     ]
   },
@@ -2632,18 +2632,18 @@
     "id": "activity_026_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra NH",
-    "speech": "Toque na letra êne-agá",
+    "instruction": "Toque em NH",
+    "speech": "Toque em êne-agá",
     "target": "NH",
     "options": [
       {
-        "id": "N",
-        "label": "N",
+        "id": "LH",
+        "label": "LH",
         "correct": false
       },
       {
-        "id": "H",
-        "label": "H",
+        "id": "CH",
+        "label": "CH",
         "correct": false
       },
       {
@@ -2652,8 +2652,8 @@
         "correct": true
       },
       {
-        "id": "LH",
-        "label": "LH",
+        "id": "H",
+        "label": "H",
         "correct": false
       }
     ]
@@ -2678,14 +2678,14 @@
         "lower": "n"
       },
       {
-        "upper": "LH",
-        "lower": "lh"
+        "upper": "H",
+        "lower": "h"
       }
     ],
     "lowercaseOrder": [
-      "n",
-      "lh",
-      "nh"
+      "h",
+      "nh",
+      "n"
     ]
   },
   {
@@ -2696,8 +2696,8 @@
     "id": "activity_026_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra NH com o dedo",
-    "speech": "Trace a letra êne-agá",
+    "instruction": "Trace NH com o dedo",
+    "speech": "Trace êne-agá",
     "letter": "NH"
   },
   {
@@ -2708,23 +2708,23 @@
     "id": "activity_026_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o ninho",
-    "answer": "O NINHO",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "ninho",
+    "answer": "NINHO",
     "options": [
       {
-        "id": "O NINHO",
-        "label": "O NINHO",
-        "correct": true
-      },
-      {
-        "id": "A CHAVE",
-        "label": "A CHAVE",
+        "id": "MINHOCA",
+        "label": "MINHOCA",
         "correct": false
       },
       {
-        "id": "O FILHO",
-        "label": "O FILHO",
+        "id": "NINHO",
+        "label": "NINHO",
+        "correct": true
+      },
+      {
+        "id": "BANHO",
+        "label": "BANHO",
         "correct": false
       }
     ]
@@ -2742,11 +2742,6 @@
     "target": "B",
     "options": [
       {
-        "id": "V",
-        "label": "V",
-        "correct": false
-      },
-      {
         "id": "P",
         "label": "P",
         "correct": false
@@ -2754,6 +2749,11 @@
       {
         "id": "D",
         "label": "D",
+        "correct": false
+      },
+      {
+        "id": "M",
+        "label": "M",
         "correct": false
       },
       {
@@ -2779,18 +2779,18 @@
         "lower": "b"
       },
       {
-        "upper": "V",
-        "lower": "v"
-      },
-      {
         "upper": "P",
         "lower": "p"
+      },
+      {
+        "upper": "D",
+        "lower": "d"
       }
     ],
     "lowercaseOrder": [
-      "v",
+      "b",
       "p",
-      "b"
+      "d"
     ]
   },
   {
@@ -2813,23 +2813,23 @@
     "id": "activity_027_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "a bola",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "bola",
     "answer": "A BOLA",
     "options": [
-      {
-        "id": "A VACA",
-        "label": "A VACA",
-        "correct": false
-      },
       {
         "id": "A BOLA",
         "label": "A BOLA",
         "correct": true
       },
       {
-        "id": "O PATO",
-        "label": "O PATO",
+        "id": "A BOLA AZUL",
+        "label": "A BOLA AZUL",
+        "correct": false
+      },
+      {
+        "id": "O BEBÊ BATE A BOLA",
+        "label": "O BEBÊ BATE A BOLA",
         "correct": false
       }
     ]
@@ -2862,8 +2862,8 @@
         "correct": false
       },
       {
-        "id": "P",
-        "label": "P",
+        "id": "N",
+        "label": "N",
         "correct": false
       }
     ]
@@ -2918,18 +2918,18 @@
     "id": "activity_028_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o dado",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "dado",
     "answer": "O DADO",
     "options": [
       {
-        "id": "O TATU",
-        "label": "O TATU",
+        "id": "O DADO ROLA",
+        "label": "O DADO ROLA",
         "correct": false
       },
       {
-        "id": "A LUA",
-        "label": "A LUA",
+        "id": "DAVI ROLA O DADO",
+        "label": "DAVI ROLA O DADO",
         "correct": false
       },
       {
@@ -2962,13 +2962,13 @@
         "correct": true
       },
       {
-        "id": "Q",
-        "label": "Q",
+        "id": "S",
+        "label": "S",
         "correct": false
       },
       {
-        "id": "S",
-        "label": "S",
+        "id": "Q",
+        "label": "Q",
         "correct": false
       }
     ]
@@ -2993,14 +2993,14 @@
         "lower": "g"
       },
       {
-        "upper": "Q",
-        "lower": "q"
+        "upper": "S",
+        "lower": "s"
       }
     ],
     "lowercaseOrder": [
-      "g",
-      "q",
-      "c"
+      "s",
+      "c",
+      "g"
     ]
   },
   {
@@ -3023,23 +3023,23 @@
     "id": "activity_029_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "a casa",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "casa",
     "answer": "A CASA",
     "options": [
+      {
+        "id": "A CIDA VÊ A CASA",
+        "label": "A CIDA VÊ A CASA",
+        "correct": false
+      },
       {
         "id": "A CASA",
         "label": "A CASA",
         "correct": true
       },
       {
-        "id": "O GATO",
-        "label": "O GATO",
-        "correct": false
-      },
-      {
-        "id": "O RATO",
-        "label": "O RATO",
+        "id": "A CASA É AZUL",
+        "label": "A CASA É AZUL",
         "correct": false
       }
     ]
@@ -3062,8 +3062,8 @@
         "correct": false
       },
       {
-        "id": "S",
-        "label": "S",
+        "id": "P",
+        "label": "P",
         "correct": false
       },
       {
@@ -3072,8 +3072,8 @@
         "correct": true
       },
       {
-        "id": "B",
-        "label": "B",
+        "id": "S",
+        "label": "S",
         "correct": false
       }
     ]
@@ -3098,14 +3098,14 @@
         "lower": "v"
       },
       {
-        "upper": "S",
-        "lower": "s"
+        "upper": "P",
+        "lower": "p"
       }
     ],
     "lowercaseOrder": [
+      "f",
       "v",
-      "s",
-      "f"
+      "p"
     ]
   },
   {
@@ -3128,23 +3128,23 @@
     "id": "activity_030_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "a foca",
-    "answer": "A FOCA",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "fada",
+    "answer": "A FADA",
     "options": [
       {
-        "id": "A VACA",
-        "label": "A VACA",
-        "correct": false
-      },
-      {
-        "id": "A FOCA",
-        "label": "A FOCA",
+        "id": "A FADA",
+        "label": "A FADA",
         "correct": true
       },
       {
-        "id": "O SAPO",
-        "label": "O SAPO",
+        "id": "A FADA VOA",
+        "label": "A FADA VOA",
+        "correct": false
+      },
+      {
+        "id": "A FADA VÊ A FLOR",
+        "label": "A FADA VÊ A FLOR",
         "correct": false
       }
     ]
@@ -3158,22 +3158,22 @@
     "type": "tap",
     "order": 1,
     "instruction": "Toque na letra S",
-    "speech": "Toque na letra ésse",
+    "speech": "Toque na letra esse",
     "target": "S",
     "options": [
-      {
-        "id": "Z",
-        "label": "Z",
-        "correct": false
-      },
       {
         "id": "C",
         "label": "C",
         "correct": false
       },
       {
-        "id": "X",
-        "label": "X",
+        "id": "F",
+        "label": "F",
+        "correct": false
+      },
+      {
+        "id": "Z",
+        "label": "Z",
         "correct": false
       },
       {
@@ -3199,17 +3199,17 @@
         "lower": "s"
       },
       {
-        "upper": "Z",
-        "lower": "z"
-      },
-      {
         "upper": "C",
         "lower": "c"
+      },
+      {
+        "upper": "F",
+        "lower": "f"
       }
     ],
     "lowercaseOrder": [
-      "z",
       "c",
+      "f",
       "s"
     ]
   },
@@ -3222,7 +3222,7 @@
     "type": "trace",
     "order": 3,
     "instruction": "Trace a letra S com o dedo",
-    "speech": "Trace a letra ésse",
+    "speech": "Trace a letra esse",
     "letter": "S"
   },
   {
@@ -3233,18 +3233,18 @@
     "id": "activity_031_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o sapo",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "sapo",
     "answer": "O SAPO",
     "options": [
       {
-        "id": "A ZEBRA",
-        "label": "A ZEBRA",
+        "id": "O SAPO PULA",
+        "label": "O SAPO PULA",
         "correct": false
       },
       {
-        "id": "A CASA",
-        "label": "A CASA",
+        "id": "O SAPO SOBE NA PEDRA",
+        "label": "O SAPO SOBE NA PEDRA",
         "correct": false
       },
       {
@@ -3272,6 +3272,11 @@
         "correct": true
       },
       {
+        "id": "M",
+        "label": "M",
+        "correct": false
+      },
+      {
         "id": "N",
         "label": "N",
         "correct": false
@@ -3279,11 +3284,6 @@
       {
         "id": "V",
         "label": "V",
-        "correct": false
-      },
-      {
-        "id": "M",
-        "label": "M",
         "correct": false
       }
     ]
@@ -3304,18 +3304,18 @@
         "lower": "l"
       },
       {
-        "upper": "N",
-        "lower": "n"
+        "upper": "M",
+        "lower": "m"
       },
       {
-        "upper": "V",
-        "lower": "v"
+        "upper": "N",
+        "lower": "n"
       }
     ],
     "lowercaseOrder": [
       "n",
-      "v",
-      "l"
+      "l",
+      "m"
     ]
   },
   {
@@ -3338,10 +3338,15 @@
     "id": "activity_032_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
+    "instruction": "Qual frase você ouviu?",
     "speech": "a lua brilha",
     "answer": "A LUA BRILHA",
     "options": [
+      {
+        "id": "A VACA COME",
+        "label": "A VACA COME",
+        "correct": false
+      },
       {
         "id": "A LUA BRILHA",
         "label": "A LUA BRILHA",
@@ -3350,11 +3355,6 @@
       {
         "id": "O SAPO PULA",
         "label": "O SAPO PULA",
-        "correct": false
-      },
-      {
-        "id": "A VACA COME",
-        "label": "A VACA COME",
         "correct": false
       }
     ]
@@ -3382,13 +3382,13 @@
         "correct": true
       },
       {
-        "id": "Q",
-        "label": "Q",
+        "id": "J",
+        "label": "J",
         "correct": false
       },
       {
-        "id": "J",
-        "label": "J",
+        "id": "B",
+        "label": "B",
         "correct": false
       }
     ]
@@ -3418,9 +3418,9 @@
       }
     ],
     "lowercaseOrder": [
+      "g",
       "c",
-      "j",
-      "g"
+      "j"
     ]
   },
   {
@@ -3443,23 +3443,23 @@
     "id": "activity_033_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o gato dorme",
-    "answer": "O GATO DORME",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "o gato corre",
+    "answer": "O GATO CORRE",
     "options": [
       {
-        "id": "O RATO CORRE",
-        "label": "O RATO CORRE",
-        "correct": false
-      },
-      {
-        "id": "O GATO DORME",
-        "label": "O GATO DORME",
+        "id": "O GATO CORRE",
+        "label": "O GATO CORRE",
         "correct": true
       },
       {
-        "id": "A BOLA ROLA",
-        "label": "A BOLA ROLA",
+        "id": "O PATO NADA",
+        "label": "O PATO NADA",
+        "correct": false
+      },
+      {
+        "id": "A FADA VOA",
+        "label": "A FADA VOA",
         "correct": false
       }
     ]
@@ -3482,8 +3482,8 @@
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "T",
+        "label": "T",
         "correct": false
       },
       {
@@ -3492,8 +3492,8 @@
         "correct": true
       },
       {
-        "id": "T",
-        "label": "T",
+        "id": "M",
+        "label": "M",
         "correct": false
       }
     ]
@@ -3518,13 +3518,13 @@
         "lower": "b"
       },
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "T",
+        "lower": "t"
       }
     ],
     "lowercaseOrder": [
       "b",
-      "d",
+      "t",
       "p"
     ]
   },
@@ -3548,23 +3548,23 @@
     "id": "activity_034_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o pato nada",
-    "answer": "O PATO NADA",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "a pipa sobe",
+    "answer": "A PIPA SOBE",
     "options": [
       {
-        "id": "O TATU CAVA",
-        "label": "O TATU CAVA",
+        "id": "O GATO DORME",
+        "label": "O GATO DORME",
         "correct": false
       },
       {
-        "id": "A FOCA PULA",
-        "label": "A FOCA PULA",
+        "id": "A VACA COME",
+        "label": "A VACA COME",
         "correct": false
       },
       {
-        "id": "O PATO NADA",
-        "label": "O PATO NADA",
+        "id": "A PIPA SOBE",
+        "label": "A PIPA SOBE",
         "correct": true
       }
     ]
@@ -3582,18 +3582,18 @@
     "target": "R",
     "options": [
       {
-        "id": "C",
-        "label": "C",
-        "correct": false
-      },
-      {
-        "id": "S",
-        "label": "S",
-        "correct": false
-      },
-      {
         "id": "G",
         "label": "G",
+        "correct": false
+      },
+      {
+        "id": "L",
+        "label": "L",
+        "correct": false
+      },
+      {
+        "id": "D",
+        "label": "D",
         "correct": false
       },
       {
@@ -3619,18 +3619,18 @@
         "lower": "r"
       },
       {
-        "upper": "C",
-        "lower": "c"
-      },
-      {
         "upper": "G",
         "lower": "g"
+      },
+      {
+        "upper": "L",
+        "lower": "l"
       }
     ],
     "lowercaseOrder": [
-      "c",
-      "g",
-      "r"
+      "l",
+      "r",
+      "g"
     ]
   },
   {
@@ -3653,23 +3653,23 @@
     "id": "activity_035_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "o rato corre",
-    "answer": "O RATO CORRE",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "o rato come queijo",
+    "answer": "O RATO COME QUEIJO",
     "options": [
       {
-        "id": "O RATO CORRE",
-        "label": "O RATO CORRE",
-        "correct": true
-      },
-      {
-        "id": "O GATO MIA",
-        "label": "O GATO MIA",
+        "id": "A FADA ABRE A PORTA",
+        "label": "A FADA ABRE A PORTA",
         "correct": false
       },
       {
-        "id": "A LUA BRILHA",
-        "label": "A LUA BRILHA",
+        "id": "O RATO COME QUEIJO",
+        "label": "O RATO COME QUEIJO",
+        "correct": true
+      },
+      {
+        "id": "O PATO VÊ A LUA",
+        "label": "O PATO VÊ A LUA",
         "correct": false
       }
     ]
@@ -3692,18 +3692,18 @@
         "correct": true
       },
       {
-        "id": "B",
-        "label": "B",
-        "correct": false
-      },
-      {
         "id": "F",
         "label": "F",
         "correct": false
       },
       {
-        "id": "N",
-        "label": "N",
+        "id": "B",
+        "label": "B",
+        "correct": false
+      },
+      {
+        "id": "L",
+        "label": "L",
         "correct": false
       }
     ]
@@ -3724,18 +3724,18 @@
         "lower": "v"
       },
       {
-        "upper": "B",
-        "lower": "b"
-      },
-      {
         "upper": "F",
         "lower": "f"
+      },
+      {
+        "upper": "B",
+        "lower": "b"
       }
     ],
     "lowercaseOrder": [
-      "b",
+      "v",
       "f",
-      "v"
+      "b"
     ]
   },
   {
@@ -3758,23 +3758,23 @@
     "id": "activity_036_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "a vaca come",
-    "answer": "A VACA COME",
+    "instruction": "Qual frase você ouviu?",
+    "speech": "a vaca vai ao pasto",
+    "answer": "A VACA VAI AO PASTO",
     "options": [
       {
-        "id": "O PATO NADA",
-        "label": "O PATO NADA",
-        "correct": false
-      },
-      {
-        "id": "A VACA COME",
-        "label": "A VACA COME",
+        "id": "A VACA VAI AO PASTO",
+        "label": "A VACA VAI AO PASTO",
         "correct": true
       },
       {
-        "id": "O NINHO CAIU",
-        "label": "O NINHO CAIU",
+        "id": "O GATO CORRE",
+        "label": "O GATO CORRE",
+        "correct": false
+      },
+      {
+        "id": "A MENINA LÊ",
+        "label": "A MENINA LÊ",
         "correct": false
       }
     ]
@@ -3802,13 +3802,13 @@
         "correct": true
       },
       {
-        "id": "H",
-        "label": "H",
+        "id": "P",
+        "label": "P",
         "correct": false
       },
       {
-        "id": "P",
-        "label": "P",
+        "id": "A",
+        "label": "A",
         "correct": false
       }
     ]
@@ -3833,13 +3833,13 @@
         "lower": "n"
       },
       {
-        "upper": "H",
-        "lower": "h"
+        "upper": "P",
+        "lower": "p"
       }
     ],
     "lowercaseOrder": [
       "n",
-      "h",
+      "p",
       "m"
     ]
   },
@@ -3863,7 +3863,7 @@
     "id": "activity_037_listen",
     "type": "listen",
     "order": 4,
-    "instruction": "Qual palavra você ouviu?",
+    "instruction": "Qual frase você ouviu?",
     "speech": "a mala caiu",
     "answer": "A MALA CAIU",
     "options": [

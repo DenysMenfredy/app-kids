@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
@@ -27,6 +30,28 @@ void main() {
       expect(moduleForLesson('lesson_013')?.number, 3);
       expect(moduleForLesson('lesson_014')?.number, 4);
       expect(moduleForLesson('lesson_999'), isNull);
+    });
+
+    test('the app curriculum matches the backend modules', () {
+      // Two copies of the module list exist: this one, and the seeded
+      // documents the assessment result screen shows a title from. They
+      // drifted once already, so the seed is the reference.
+      final seeded = (jsonDecode(
+        File('../backend/seed/modules/modules.json').readAsStringSync(),
+      ) as List)
+          .cast<Map<String, dynamic>>();
+
+      expect(curriculum, hasLength(seeded.length));
+      for (final module in seeded) {
+        final own = curriculum.firstWhere((m) => m.number == module['number']);
+        expect(own.title, module['title'], reason: 'title ${module['id']}');
+        expect(own.lessonTheme, module['lessonTheme'],
+            reason: 'theme ${module['id']}');
+        expect(own.firstLessonId, module['firstLessonId'],
+            reason: 'first lesson ${module['id']}');
+        expect(own.lessonCount, module['lessonCount'],
+            reason: 'lesson count ${module['id']}');
+      }
     });
 
     test('every placement band in the backend seed resolves to a module', () {
@@ -131,7 +156,7 @@ void main() {
       final module = container.read(currentModuleProvider);
       expect(module.number, 3);
       expect(module.title, 'Consciência Fonológica');
-      expect(module.lessonTheme, 'Sons e rimas');
+      expect(module.lessonTheme, 'Sons iniciais e rimas');
       expect(module.progress, greaterThan(0));
     });
 

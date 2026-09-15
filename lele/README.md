@@ -114,7 +114,9 @@ Firestore.
 
 - The curriculum *shape* is still duplicated in the app (`curriculum` in
   `features/learning/domain`, `bookLibrary`) even though the backend seeds
-  the same 7 modules. Exercises themselves are no longer duplicated: the
+  the same 7 modules. Module titles now live in two places and can drift —
+  the app's copy says "Fônica" where the backend says "Juntar Sons e
+  Sílabas". Exercises themselves are no longer duplicated: the
   lesson the child plays is fetched from `lessons/{id}` + `activities`.
   Tests on both sides assert the two copies of the module ranges agree, and
   the offline sample lesson is checked against the seed so demo mode can't

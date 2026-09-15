@@ -1,0 +1,164 @@
+[
+  {
+    "id": "story_001",
+    "lessonId": "lesson_032",
+    "title": "A Lua",
+    "text": "A lua apareceu no céu. O sapo saiu do lago. Ele olhou para a lua e pulou três vezes. Depois, voltou para casa e dormiu.",
+    "questions": [
+      {
+        "question": "Quem saiu do lago?",
+        "options": [
+          "O sapo",
+          "A vaca",
+          "O gato"
+        ],
+        "answer": "O sapo"
+      },
+      {
+        "question": "O que o sapo olhou?",
+        "options": [
+          "A lua",
+          "A bola",
+          "A casa"
+        ],
+        "answer": "A lua"
+      }
+    ],
+    "published": true
+  },
+  {
+    "id": "story_002",
+    "lessonId": "lesson_033",
+    "title": "O Gato",
+    "text": "O gato viu uma bola. Ele correu até a bola e brincou no quintal. Depois, ficou cansado e dormiu perto da porta.",
+    "questions": [
+      {
+        "question": "O que o gato viu?",
+        "options": [
+          "Uma bola",
+          "Uma pipa",
+          "Uma lua"
+        ],
+        "answer": "Uma bola"
+      },
+      {
+        "question": "Onde o gato dormiu?",
+        "options": [
+          "Perto da porta",
+          "No lago",
+          "Na árvore"
+        ],
+        "answer": "Perto da porta"
+      }
+    ],
+    "published": true
+  },
+  {
+    "id": "story_003",
+    "lessonId": "lesson_034",
+    "title": "A Pipa",
+    "text": "Pia pegou uma pipa. O vento soprou forte e a pipa subiu. Pia segurou a linha e sorriu. A pipa dançou no céu.",
+    "questions": [
+      {
+        "question": "O que subiu?",
+        "options": [
+          "A pipa",
+          "A bola",
+          "O sapo"
+        ],
+        "answer": "A pipa"
+      },
+      {
+        "question": "Quem segurou a linha?",
+        "options": [
+          "Pia",
+          "O gato",
+          "A vaca"
+        ],
+        "answer": "Pia"
+      }
+    ],
+    "published": true
+  },
+  {
+    "id": "story_004",
+    "lessonId": "lesson_035",
+    "title": "O Rato e o Queijo",
+    "text": "Um rato encontrou um pedaço de queijo. Ele levou o queijo para sua casa. Depois, comeu devagar e ficou feliz.",
+    "questions": [
+      {
+        "question": "O que o rato encontrou?",
+        "options": [
+          "Queijo",
+          "Uma pipa",
+          "Uma mala"
+        ],
+        "answer": "Queijo"
+      },
+      {
+        "question": "Como o rato comeu?",
+        "options": [
+          "Devagar",
+          "Correndo",
+          "Pulando"
+        ],
+        "answer": "Devagar"
+      }
+    ],
+    "published": true
+  },
+  {
+    "id": "story_005",
+    "lessonId": "lesson_036",
+    "title": "A Vaca",
+    "text": "A vaca saiu cedo. Ela foi até o pasto e comeu capim. Depois, bebeu água e voltou para perto da casa.",
+    "questions": [
+      {
+        "question": "Para onde a vaca foi?",
+        "options": [
+          "Para o pasto",
+          "Para a escola",
+          "Para o mar"
+        ],
+        "answer": "Para o pasto"
+      },
+      {
+        "question": "O que ela comeu?",
+        "options": [
+          "Capim",
+          "Queijo",
+          "Bolo"
+        ],
+        "answer": "Capim"
+      }
+    ],
+    "published": true
+  },
+  {
+    "id": "story_006",
+    "lessonId": "lesson_037",
+    "title": "A Mala",
+    "text": "Mia pegou sua mala. Dentro dela havia uma bola e uma pipa. Mia saiu para brincar. No caminho, a mala caiu, mas nada quebrou.",
+    "questions": [
+      {
+        "question": "O que havia na mala?",
+        "options": [
+          "Uma bola e uma pipa",
+          "Um sapo e uma vaca",
+          "Um livro e um barco"
+        ],
+        "answer": "Uma bola e uma pipa"
+      },
+      {
+        "question": "O que aconteceu com a mala?",
+        "options": [
+          "Ela caiu",
+          "Ela voou",
+          "Ela sumiu"
+        ],
+        "answer": "Ela caiu"
+      }
+    ],
+    "published": true
+  }
+]

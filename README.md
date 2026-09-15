@@ -105,6 +105,6 @@ holds fake Stripe values so the emulator starts, but checkout needs real keys.
 ```bash
 cd lele && flutter analyze && flutter test          # 83 tests
 cd backend/functions && npm test                    # 61 tests (domain + seed)
-cd backend/test/rules && npm test                   # 27 rules tests (emulator)
+cd backend/test/rules && npm test                   # 29 rules tests (emulator)
 cd backend && ./smoke.sh                            # 11 end-to-end checks
 ```

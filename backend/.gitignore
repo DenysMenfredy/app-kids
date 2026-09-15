@@ -11,3 +11,6 @@ firestore-debug.log
 ui-debug.log
 .firebase/
 .emulator-data/
+
+# Content bundles are unpacked into seed/; the archives are provenance only.
+*.zip

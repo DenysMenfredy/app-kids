@@ -19,8 +19,8 @@ class LocalLessonRepository implements LessonRepository {
 
   static const _sample = LessonContent(
     id: 'lesson_010',
-    title: 'Vamos brincar com a letra D!',
-    theme: 'Sons e rimas',
+    title: 'O som da letra D',
+    theme: 'Sons iniciais e rimas',
     estimatedMinutes: 15,
     tap: TapActivity(
       id: 'activity_010_tap',
@@ -47,7 +47,7 @@ class LocalLessonRepository implements LessonRepository {
       instruction: 'Qual palavra você ouviu?',
       speech: 'dado',
       answer: 'DADO',
-      options: ['TATU', 'BOLA', 'DADO'],
+      options: ['DENTE', 'DADO', 'DEDO'],
     ),
   );
 

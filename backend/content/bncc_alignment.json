@@ -1,0 +1,209 @@
+{
+  "framework": "BNCC",
+  "locale": "pt-BR",
+  "note": "Este arquivo é um mapa pedagógico de referência, não uma certificação de conformidade. A BNCC diferencia objetivos da Educação Infantil por faixa etária e habilidades do Ensino Fundamental; o curso atende uma faixa ampla (3–7 anos), portanto os códigos abaixo funcionam como referências de planejamento e devem ser revisados por um(a) profissional de educação antes de uma alegação formal de alinhamento curricular.",
+  "references": [
+    {
+      "code": "EI02EF02",
+      "focus": "Sons, rimas e aliterações em cantigas e textos poéticos",
+      "modules": [
+        3
+      ]
+    },
+    {
+      "code": "EI02EF03",
+      "focus": "Escuta de histórias, diferenciação entre escrita e ilustração e direção da leitura",
+      "modules": [
+        1,
+        2,
+        7
+      ]
+    },
+    {
+      "code": "EI02EF04",
+      "focus": "Perguntas sobre fatos, cenários, personagens e acontecimentos de histórias",
+      "modules": [
+        7
+      ]
+    },
+    {
+      "code": "EI03EF01",
+      "focus": "Expressão oral e escrita espontânea sobre vivências",
+      "modules": [
+        6,
+        7
+      ]
+    },
+    {
+      "code": "EI03EF02",
+      "focus": "Rimas, aliterações e ritmos",
+      "modules": [
+        3
+      ]
+    },
+    {
+      "code": "EI03EF03",
+      "focus": "Identificação de palavras conhecidas e orientação por temas e ilustrações",
+      "modules": [
+        2,
+        5,
+        7
+      ]
+    },
+    {
+      "code": "EI03EF04",
+      "focus": "Reconto de histórias ouvidas e organização de personagens e estrutura narrativa",
+      "modules": [
+        7
+      ]
+    },
+    {
+      "code": "EI03EF05",
+      "focus": "Reconto de histórias ouvidas para produção escrita mediada",
+      "modules": [
+        7
+      ]
+    },
+    {
+      "code": "EF01LP01",
+      "focus": "Direção da leitura da esquerda para a direita e de cima para baixo",
+      "modules": [
+        6,
+        7
+      ]
+    },
+    {
+      "code": "EF01LP02",
+      "focus": "Escrita alfabética de palavras e frases",
+      "modules": [
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "code": "EF01LP04",
+      "focus": "Conhecimento e distinção das letras do alfabeto",
+      "modules": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "code": "EF01LP05",
+      "focus": "Sistema alfabético como representação dos sons da fala",
+      "modules": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "code": "EF01LP06",
+      "focus": "Segmentação oral de palavras em sílabas",
+      "modules": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "code": "EF01LP07",
+      "focus": "Identificação de fonemas e sua representação por letras",
+      "modules": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "code": "EF01LP08",
+      "focus": "Relação entre sílabas, fonemas e partes de palavras e sua representação escrita",
+      "modules": [
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "code": "EF01LP09",
+      "focus": "Comparação de palavras e de sons em posições inicial, medial e final",
+      "modules": [
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "code": "EF12LP01",
+      "focus": "Leitura de palavras novas por decodificação e de palavras frequentes por reconhecimento",
+      "modules": [
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "code": "EF12LP02",
+      "focus": "Leitura compartilhada de textos impressos ou digitais",
+      "modules": [
+        7
+      ]
+    },
+    {
+      "code": "EF12LP03",
+      "focus": "Cópia de textos breves preservando distribuição gráfica e espaçamento",
+      "modules": [
+        6,
+        7
+      ]
+    },
+    {
+      "code": "EF02LP03",
+      "focus": "Leitura e escrita de palavras com correspondências regulares diretas e contextuais",
+      "modules": [
+        4,
+        5,
+        6
+      ]
+    }
+  ],
+  "module_goals": {
+    "module_001": [
+      "Reconhecer A, E e I",
+      "Associar forma maiúscula/minúscula",
+      "Praticar traçado"
+    ],
+    "module_002": [
+      "Reconhecer O, U, M e P",
+      "Ampliar repertório de palavras conhecidas",
+      "Consolidar discriminação visual"
+    ],
+    "module_003": [
+      "Perceber sons iniciais",
+      "Comparar palavras",
+      "Explorar rimas e aliterações"
+    ],
+    "module_004": [
+      "Relacionar grafema e fonema",
+      "Combinar sons em sílabas",
+      "Ler palavras simples"
+    ],
+    "module_005": [
+      "Ampliar repertório de grafemas",
+      "Reconhecer CH e LH",
+      "Ler palavras familiares"
+    ],
+    "module_006": [
+      "Ler frases curtas",
+      "Segmentar palavras em uma frase",
+      "Construir sentido"
+    ],
+    "module_007": [
+      "Acompanhar narrativa",
+      "Ler/ouvir frases em sequência",
+      "Responder perguntas de compreensão"
+    ]
+  }
+}

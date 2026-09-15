@@ -4,11 +4,11 @@ enum ModuleStatus { done, current, locked }
 
 /// Shape of the curriculum: which lessons belong to which module.
 ///
-/// Static for now. The backend already stores the child's position
-/// (`currentLessonId`, written by submitAssessment), so this only has to
-/// describe the lesson ranges until courses/modules/lessons are served from
-/// Firestore too. Lesson ids match the backend's placement bands
-/// (`backend/seed/assessments/`).
+/// A mirror of `backend/seed/modules/` — titles, themes and lesson ranges
+/// must match it, since the assessment result screen shows the backend's
+/// module title while these screens show this copy. Kept in the app only
+/// because the journey renders offline; serving modules from Firestore
+/// would remove the duplication.
 class CurriculumModule extends Equatable {
   const CurriculumModule({
     required this.number,
@@ -37,49 +37,49 @@ class CurriculumModule extends Equatable {
 const curriculum = [
   CurriculumModule(
     number: 1,
-    title: 'Coordenação Motora',
-    lessonTheme: 'Traçados e formas',
+    title: 'Coordenação Motora e Vogais',
+    lessonTheme: 'Letras e traçados',
     firstLessonId: 'lesson_001',
     lessonCount: 3,
   ),
   CurriculumModule(
     number: 2,
     title: 'Reconhecimento Visual',
-    lessonTheme: 'Achar as letras',
+    lessonTheme: 'Reconhecimento de letras',
     firstLessonId: 'lesson_004',
     lessonCount: 4,
   ),
   CurriculumModule(
     number: 3,
     title: 'Consciência Fonológica',
-    lessonTheme: 'Sons e rimas',
+    lessonTheme: 'Sons iniciais e rimas',
     firstLessonId: 'lesson_008',
     lessonCount: 6,
   ),
   CurriculumModule(
     number: 4,
-    title: 'Fônica',
-    lessonTheme: 'Juntar os sons',
+    title: 'Juntar Sons e Sílabas',
+    lessonTheme: 'Juntar sons e sílabas',
     firstLessonId: 'lesson_014',
     lessonCount: 6,
   ),
   CurriculumModule(
     number: 5,
-    title: 'Palavras',
-    lessonTheme: 'Ler palavrinhas',
+    title: 'Primeiras Palavras',
+    lessonTheme: 'Ler palavras',
     firstLessonId: 'lesson_020',
     lessonCount: 6,
   ),
   CurriculumModule(
     number: 6,
-    title: 'Frases',
+    title: 'Juntar Palavras',
     lessonTheme: 'Juntar palavras',
     firstLessonId: 'lesson_026',
     lessonCount: 6,
   ),
   CurriculumModule(
     number: 7,
-    title: 'Histórias',
+    title: 'Ler e Compreender Histórias',
     lessonTheme: 'Ler uma história',
     firstLessonId: 'lesson_032',
     lessonCount: 6,

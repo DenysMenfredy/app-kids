@@ -183,6 +183,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /stories/{storyId} {
+      // Module 7's reading texts and their comprehension questions.
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
     match /assessments/{assessmentId} {
       // Questions and option labels are readable; the weights and placement
       // bands they carry are only ever interpreted by the backend.

@@ -257,6 +257,28 @@ describe("assessment content", () => {
     );
   });
 
+  it("published stories are readable, drafts are not", async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "stories/story_001"), {
+        lessonId: "lesson_032", title: "A Lua", published: true,
+      });
+      await setDoc(doc(db, "stories/draft"), {
+        lessonId: "lesson_032", title: "Rascunho", published: false,
+      });
+    });
+    await assertSucceeds(asParent().doc("stories/story_001").get());
+    await assertFails(asParent().doc("stories/draft").get());
+    await assertFails(asAnon().doc("stories/story_001").get());
+  });
+
+  it("clients cannot write stories", async () => {
+    await assertFails(
+      asParent().doc("stories/story_001").set({ title: "hack", published: true }),
+    );
+  });
+
   it("clients cannot edit assessments or their weights", async () => {
     await assertFails(
       asParent()

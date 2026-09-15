@@ -30,11 +30,12 @@ backend/
 │       └── admin/             # setUserRole (custom claims), manageContent
 ├── dev.sh                     # run the whole backend on emulators
 ├── smoke.sh                   # end-to-end check against those emulators
-├── content/curriculum.json    # authored curriculum — edit this
-├── seed/                      # generated from it, imported into Firestore
+├── content/bncc_alignment.json # BNCC crosswalk (reference, not seeded)
+├── seed/                      # curriculum content, imported into Firestore
 │   ├── courses/ modules/      # 1 course, 7 modules
 │   ├── lessons/               # 37 lessons (4 activities each)
 │   ├── activities/            # 148 tap/match/trace/listen exercises
+│   ├── stories/               # 6 module-7 texts + comprehension questions
 │   └── assessments/           # onboarding placement questionnaire
 ├── test/rules/                # Security Rules tests (Firestore emulator)
 └── docs/adr/                  # architecture decision records
@@ -74,29 +75,36 @@ document and displays what it is told.
 
 ## Content model (§5)
 
-The curriculum is data, not code, and it is authored in one place:
+The curriculum is data, not code. `seed/` holds it as the documents Firestore
+stores, and `npm run seed` imports them:
 
 ```
-content/curriculum.json     the editorial source — 37 lessons, hand-written
-      │  npm run seed:build
-      ▼
-seed/{courses,modules,lessons,activities}/    generated documents
+seed/{courses,modules,lessons,activities,stories,assessments}/
       │  npm run seed
       ▼
 Firestore
 ```
 
-`content/curriculum.json` is where the teaching decisions live: which letter
-each lesson introduces, which distractors contrast with it, which word the
-child hears. Sequencing follows how pt-BR alphabetisation is normally
-taught — vowels, then the consonants that form the simplest CV syllables,
-then voiced/voiceless pairs (B/P, D/T, F/V, C/G, S/Z), then the digraphs.
+The current content is the BNCC-aligned bundle
+(`jornada_alfabetizacao_bncc_seed.zip`): 1 course, 7 modules, 37 lessons,
+148 activities and 6 stories, progressing vowels and tracing → visual
+recognition → phonological awareness → grapheme-phoneme and blending →
+words and digraphs → short phrases → stories and comprehension. Distractors
+teach rather than pad: module 4's listening exercises are near-minimal pairs
+(FOCA / FADA / FACA), and module 3's share an initial sound.
 
-Editing that file and re-running the build is the whole content workflow;
-the generated files are validated on every `npm test`
+`content/bncc_alignment.json` maps modules to BNCC goals. It is a
+pedagogical crosswalk for the team, deliberately **not** seeded and not a
+claim of curricular compliance — the BNCC separates Educação Infantil
+objectives by age band from Ensino Fundamental skills, and this product
+spans 3–7, so difficulty has to follow the child's assessment rather than a
+grade.
+
+Content is hand-maintained: edit the files under `seed/` (or replace them
+from a new bundle) and re-run the import. Every `npm test` validates them
 (`src/content/seed_content.test.ts` checks ids, cross-references, lesson
-ordering, per-activity payloads, and that all four activities of a lesson
-teach the same letter):
+ordering, per-activity payloads, that all four activities of a lesson teach
+the same letter, and that no matching exercise pairs I with L):
 
 ```
 courses/{courseId}          → moduleIds, locale, published
@@ -105,6 +113,7 @@ modules/{moduleId}          → courseId, number, title, lessonTheme,
 lessons/{lessonId}          → moduleId, number, order, title, theme,
                               estimatedMinutes, activityIds
 activities/{activityId}     → lessonId, type, order, difficulty, instruction
+stories/{storyId}           → lessonId, title, text, questions
 ```
 
 One lesson is four activities in play order — `tap`, `match`, `trace`,
@@ -126,11 +135,11 @@ fonts, so the child couldn't tell them apart.
 Module lesson ranges match the assessment's placement bands and the app's
 `curriculum`, asserted by tests on both sides.
 
-**Engine gap:** modules 6 and 7 are called *Frases* and *Histórias*, but the
-four activity types only express letters and words. Those lessons use
-phrase-level listening and review the most-confused letter pairs, which is
-real practice but not sentence or story work. Proper ones need new activity
-types.
+**Engine gap:** `stories/` carries the six module-7 texts and their
+comprehension questions, but the four activity types only express letters
+and words, so nothing reads them yet. Those lessons currently do
+phrase-level listening — real practice, but not reading a story. A story
+activity type is the missing piece.
 
 ## Payments flow (§8)
 
@@ -168,7 +177,6 @@ scoring → reward granting and its idempotency → a denied client XP write.
 cd functions
 npm install
 npm test                # tsc build + 61 unit tests (domain + seed integrity)
-npm run seed:build      # regenerate seed/ from content/curriculum.json
 
 # Seed educational content (course, modules, lessons, activities, assessment)
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
@@ -178,7 +186,7 @@ GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
-npm test                # firebase emulators:exec → node --test
+npm test                # firebase emulators:exec → node --test (29 tests)
 
 # Deploy (per environment)
 firebase deploy --project dev        # letrando-dev

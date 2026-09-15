@@ -9,9 +9,21 @@
       "prompt": "{name} já reconhece algumas letras?",
       "order": 1,
       "options": [
-        { "id": "not_yet", "label": "Ainda não", "weight": 0 },
-        { "id": "some", "label": "Algumas letras", "weight": 1 },
-        { "id": "most", "label": "Quase todas", "weight": 2 }
+        {
+          "id": "not_yet",
+          "label": "Ainda não",
+          "weight": 0
+        },
+        {
+          "id": "some",
+          "label": "Algumas letras",
+          "weight": 1
+        },
+        {
+          "id": "most",
+          "label": "Quase todas",
+          "weight": 2
+        }
       ]
     },
     {
@@ -19,9 +31,21 @@
       "prompt": "{name} consegue escrever o próprio nome?",
       "order": 2,
       "options": [
-        { "id": "not_yet", "label": "Ainda não", "weight": 0 },
-        { "id": "with_help", "label": "Com ajuda", "weight": 1 },
-        { "id": "alone", "label": "Sozinho(a)", "weight": 2 }
+        {
+          "id": "not_yet",
+          "label": "Ainda não",
+          "weight": 0
+        },
+        {
+          "id": "with_help",
+          "label": "Com ajuda",
+          "weight": 1
+        },
+        {
+          "id": "alone",
+          "label": "Sozinho(a)",
+          "weight": 2
+        }
       ]
     },
     {
@@ -29,9 +53,21 @@
       "prompt": "Com que frequência vocês leem juntos?",
       "order": 3,
       "options": [
-        { "id": "rarely", "label": "Raramente", "weight": 0 },
-        { "id": "weekly", "label": "Algumas vezes por semana", "weight": 1 },
-        { "id": "daily", "label": "Todos os dias", "weight": 2 }
+        {
+          "id": "rarely",
+          "label": "Raramente",
+          "weight": 0
+        },
+        {
+          "id": "weekly",
+          "label": "Algumas vezes por semana",
+          "weight": 1
+        },
+        {
+          "id": "daily",
+          "label": "Todos os dias",
+          "weight": 2
+        }
       ]
     }
   ],
@@ -39,9 +75,12 @@
     {
       "maxScore": 1,
       "moduleNumber": 1,
-      "moduleTitle": "Coordenação Motora",
+      "moduleTitle": "Coordenação Motora e Vogais",
       "description": "Traçados, formas e movimentos que preparam a mãozinha para escrever.",
-      "tags": ["15 min/dia", "4 semanas"],
+      "tags": [
+        "15 min/dia",
+        "4 semanas"
+      ],
       "learningLevel": "pre_literacy",
       "courseId": "course_001",
       "firstLessonId": "lesson_001"
@@ -51,7 +90,10 @@
       "moduleNumber": 2,
       "moduleTitle": "Reconhecimento Visual",
       "description": "Reconhecer letras e diferenciar formas — o primeiro passo para ler.",
-      "tags": ["15 min/dia", "5 semanas"],
+      "tags": [
+        "15 min/dia",
+        "5 semanas"
+      ],
       "learningLevel": "visual_recognition",
       "courseId": "course_001",
       "firstLessonId": "lesson_004"
@@ -61,7 +103,10 @@
       "moduleNumber": 3,
       "moduleTitle": "Consciência Fonológica",
       "description": "Brincadeiras com sons, rimas e sílabas — a base para ler as primeiras palavras.",
-      "tags": ["15 min/dia", "6 semanas"],
+      "tags": [
+        "15 min/dia",
+        "6 semanas"
+      ],
       "learningLevel": "phonological",
       "courseId": "course_001",
       "firstLessonId": "lesson_008"
@@ -69,9 +114,12 @@
     {
       "maxScore": 6,
       "moduleNumber": 4,
-      "moduleTitle": "Fônica",
+      "moduleTitle": "Juntar Sons e Sílabas",
       "description": "Juntar sons e letras para formar e ler as primeiras palavras.",
-      "tags": ["15 min/dia", "6 semanas"],
+      "tags": [
+        "15 min/dia",
+        "6 semanas"
+      ],
       "learningLevel": "phonics",
       "courseId": "course_001",
       "firstLessonId": "lesson_014"

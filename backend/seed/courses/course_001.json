@@ -1,7 +1,7 @@
 {
   "id": "course_001",
   "title": "Jornada de Alfabetização",
-  "description": "Das vogais às primeiras histórias, 15 minutos por dia.",
+  "description": "Uma jornada lúdica de 37 lições, das primeiras letras às pequenas histórias, com prática diária de leitura, escuta e traçado.",
   "locale": "pt-BR",
   "order": 1,
   "moduleIds": [
