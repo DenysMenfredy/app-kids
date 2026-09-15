@@ -9,7 +9,9 @@ import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
+import '../../auth/data/auth_repository.dart';
 import '../../paywall/application/entitlement_provider.dart';
+import '../../session/application/parent_provider.dart';
 import '../../session/application/progress_provider.dart';
 import '../../session/application/session_controller.dart';
 
@@ -38,6 +40,8 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
     final progress = ref.watch(progressProvider);
+    // Whoever actually registered, per the backend — not the sample name.
+    final parentName = ref.watch(parentNameProvider);
     final journey = ref.watch(journeyProvider);
     final currentModule = ref.watch(currentModuleProvider);
 
@@ -65,7 +69,9 @@ class DashboardScreen extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                'Olá, ${session.parentName}',
+                                parentName.isEmpty
+                                    ? 'Olá!'
+                                    : 'Olá, $parentName',
                                 style: AppTextStyles.baloo(26),
                               ),
                             ],
@@ -101,8 +107,10 @@ class DashboardScreen extends ConsumerWidget {
                                 color: AppColors.purplePale,
                                 borderRadius: BorderRadius.circular(14),
                               ),
+                              // Shortened to leave room for sign-out; the
+                              // paywall spells the offer out in full.
                               child: Text(
-                                'Teste grátis · 5 dias',
+                                'Teste grátis',
                                 style: AppTextStyles.baloo(
                                   13,
                                   color: AppColors.purple,
@@ -110,6 +118,11 @@ class DashboardScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
+                        const SizedBox(width: 8),
+                        _SignOutButton(
+                          onSignOut: () =>
+                              ref.read(authRepositoryProvider).signOut(),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -146,6 +159,36 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Leaves the account. The router sends the parent back to sign-in as soon
+/// as auth state clears, so nothing else has to happen here.
+class _SignOutButton extends StatelessWidget {
+  const _SignOutButton({required this.onSignOut});
+
+  final Future<void> Function() onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Sair da conta',
+      child: GestureDetector(
+        onTap: onSignOut,
+        child: Container(
+          width: 38,
+          height: 38,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.panel,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.logout_rounded,
+              size: 18, color: AppColors.textMuted),
         ),
       ),
     );

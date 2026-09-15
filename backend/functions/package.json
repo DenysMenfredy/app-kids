@@ -16,7 +16,8 @@
     "deploy:dev": "firebase deploy --only functions --project dev",
     "deploy:staging": "firebase deploy --only functions --project staging",
     "deploy:production": "firebase deploy --only functions --project production",
-    "seed": "node scripts/seed_content.mjs"
+    "seed": "node scripts/seed_content.mjs",
+    "seed:build": "node scripts/build_seed.mjs"
   },
   "dependencies": {
     "firebase-admin": "^13.0.0",

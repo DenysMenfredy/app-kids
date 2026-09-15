@@ -236,11 +236,44 @@ describe("seed content — activity payloads", () => {
     for (const activity of activities) {
       assert.ok(activity.instruction.length > 0, `${activity.id} instruction`);
       if (activity.type === "trace") {
-        assert.equal(activity.letter?.length, 1, `${activity.id} letter`);
+        // A target is a letter or a digraph — CH, LH and NH are taught as
+        // single units in pt-BR.
+        const letter = activity.letter ?? "";
+        assert.ok(
+          letter.length >= 1 && letter.length <= 2,
+          `${activity.id} letter: ${letter}`,
+        );
       }
       if (activity.type === "tap" || activity.type === "listen") {
         assert.ok(activity.speech, `${activity.id} needs speech text`);
       }
+    }
+  });
+
+  it("all four activities of a lesson teach the same letter", () => {
+    const byLesson = new Map<string, Activity[]>();
+    for (const activity of activities) {
+      byLesson.set(activity.lessonId, [
+        ...(byLesson.get(activity.lessonId) ?? []),
+        activity,
+      ]);
+    }
+    for (const [lessonId, own] of byLesson) {
+      const target = own.find((a) => a.type === "tap")?.target;
+      const traced = own.find((a) => a.type === "trace")?.letter;
+      const matched = own.find((a) => a.type === "match")?.pairs?.[0]?.upper;
+      assert.equal(traced, target, `${lessonId} traces a different letter`);
+      assert.equal(matched, target, `${lessonId} matches a different letter`);
+    }
+  });
+
+  it("a tap option is never the target twice over", () => {
+    for (const activity of activities.filter((a) => a.type === "tap")) {
+      const decoys = (activity.options ?? []).filter((o) => !o.correct);
+      assert.ok(
+        decoys.every((o) => o.label !== activity.target),
+        `${activity.id} lists its own target as a decoy`,
+      );
     }
   });
 

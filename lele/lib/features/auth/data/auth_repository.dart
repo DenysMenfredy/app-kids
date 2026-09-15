@@ -27,6 +27,10 @@ abstract interface class AuthRepository {
 
   Future<void> signInWithGoogle();
 
+  /// Sends a reset link. Succeeds even for an unknown address, so the screen
+  /// can't be used to discover which e-mails have accounts.
+  Future<void> sendPasswordReset(String email);
+
   Future<void> signOut();
 
   /// Firebase UID when signed in with Firebase, null otherwise.
@@ -52,6 +56,9 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> signInWithGoogle() => Future.delayed(_latency);
+
+  @override
+  Future<void> sendPasswordReset(String email) => Future.delayed(_latency);
 
   @override
   Future<void> signOut() => Future.delayed(_latency);

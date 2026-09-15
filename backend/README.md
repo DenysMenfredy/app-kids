@@ -30,7 +30,8 @@ backend/
 │       └── admin/             # setUserRole (custom claims), manageContent
 ├── dev.sh                     # run the whole backend on emulators
 ├── smoke.sh                   # end-to-end check against those emulators
-├── seed/                      # curriculum content, imported into Firestore
+├── content/curriculum.json    # authored curriculum — edit this
+├── seed/                      # generated from it, imported into Firestore
 │   ├── courses/ modules/      # 1 course, 7 modules
 │   ├── lessons/               # 37 lessons (4 activities each)
 │   ├── activities/            # 148 tap/match/trace/listen exercises
@@ -73,10 +74,29 @@ document and displays what it is told.
 
 ## Content model (§5)
 
-The curriculum is data, not code. `backend/seed/` holds it as plain JSON,
-hand-editable by a content editor and validated on every `npm test`
+The curriculum is data, not code, and it is authored in one place:
+
+```
+content/curriculum.json     the editorial source — 37 lessons, hand-written
+      │  npm run seed:build
+      ▼
+seed/{courses,modules,lessons,activities}/    generated documents
+      │  npm run seed
+      ▼
+Firestore
+```
+
+`content/curriculum.json` is where the teaching decisions live: which letter
+each lesson introduces, which distractors contrast with it, which word the
+child hears. Sequencing follows how pt-BR alphabetisation is normally
+taught — vowels, then the consonants that form the simplest CV syllables,
+then voiced/voiceless pairs (B/P, D/T, F/V, C/G, S/Z), then the digraphs.
+
+Editing that file and re-running the build is the whole content workflow;
+the generated files are validated on every `npm test`
 (`src/content/seed_content.test.ts` checks ids, cross-references, lesson
-ordering and per-activity payloads):
+ordering, per-activity payloads, and that all four activities of a lesson
+teach the same letter):
 
 ```
 courses/{courseId}          → moduleIds, locale, published
@@ -97,15 +117,20 @@ One lesson is four activities in play order — `tap`, `match`, `trace`,
 | `trace` | `letter` |
 | `listen` | `answer`, `options[]` (one `correct`), `speech` |
 
-`speech` is the pt-BR text the app reads aloud; recorded audio replaces it
-once assets exist. Two content rules are enforced by tests: exactly one
-correct option per exercise, and never uppercase `I` alongside `L` — the
-same glyph in most fonts, so the child couldn't tell them apart.
+`speech` is the pt-BR text the app reads aloud, including how each letter is
+*said* ("bê", "éle-agá"); recorded audio replaces it once assets exist. Two
+content rules are enforced by tests: exactly one correct option per
+exercise, and never uppercase `I` alongside `L` — the same glyph in most
+fonts, so the child couldn't tell them apart.
 
-A seed file may hold one document or an array of them, so 148 activities
-stay in one reviewable file. Module lesson ranges match the assessment's
-placement bands and the app's `curriculum`, which is asserted by tests on
-both sides.
+Module lesson ranges match the assessment's placement bands and the app's
+`curriculum`, asserted by tests on both sides.
+
+**Engine gap:** modules 6 and 7 are called *Frases* and *Histórias*, but the
+four activity types only express letters and words. Those lessons use
+phrase-level listening and review the most-confused letter pairs, which is
+real practice but not sentence or story work. Proper ones need new activity
+types.
 
 ## Payments flow (§8)
 
@@ -142,7 +167,8 @@ scoring → reward granting and its idempotency → a denied client XP write.
 ```bash
 cd functions
 npm install
-npm test                # tsc build + 59 unit tests (domain + seed integrity)
+npm test                # tsc build + 61 unit tests (domain + seed integrity)
+npm run seed:build      # regenerate seed/ from content/curriculum.json
 
 # Seed educational content (course, modules, lessons, activities, assessment)
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev

@@ -23,15 +23,22 @@ export const onUserCreated = functionsV1
   .onCreate(async (user) => {
   const batch = db().batch();
 
-  batch.set(db().doc(paths.user(user.uid)), {
+  // The app writes the parent's name immediately after sign-up, and this
+  // trigger can land after it. Merging — and leaving displayName out when
+  // the auth record doesn't carry one yet — keeps whichever arrived first
+  // instead of overwriting the name with null.
+  const profile: Record<string, unknown> = {
     email: user.email ?? null,
-    displayName: user.displayName ?? null,
     locale: "pt-BR",
     timezone: "America/Sao_Paulo",
     onboardingState: "created",
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
-  });
+  };
+  if (user.displayName) {
+    profile.displayName = user.displayName;
+  }
+  batch.set(db().doc(paths.user(user.uid)), profile, { merge: true });
 
   batch.set(
     db()

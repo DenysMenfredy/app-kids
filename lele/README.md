@@ -62,7 +62,9 @@ The app runs against either an offline stub or the real Letrando backend
 
 | Concern | local (default) | firebase (`--dart-define=USE_FIREBASE=true`) |
 | --- | --- | --- |
-| Auth | `FakeAuthRepository` | Firebase Auth (email + Google) |
+| Auth | `FakeAuthRepository` | Firebase Auth (email + Google), with password reset and sign-out |
+| Parent's name | on-device session | `users/{uid}.displayName` from the backend |
+| Route access | ungated | signed-out visitors are sent to sign-in |
 | Profile/child | SharedPreferences only | + Firestore `users/{uid}` mirror |
 | Assessment | bundled copy of the questions | `assessments/{id}` from Firestore |
 | Placement | fixed fallback (module 3) | scored server-side by `submitAssessment` |
@@ -90,7 +92,7 @@ and the real placement is written on the next successful submission
 ```bash
 flutter pub get
 flutter run            # local mode (no Firebase project needed)
-flutter test           # 71 tests
+flutter test           # 83 tests
 flutter analyze        # zero issues
 ```
 
@@ -119,6 +121,9 @@ Firestore.
   drift from production.
 - Demo mode ships a single sample lesson, so offline play repeats it
   regardless of the journey position.
+- Sign-in validates and reports errors per field, but there is no e-mail
+  verification step and no account deletion yet (the latter is an LGPD
+  requirement tracked in the backend README).
 - One child profile per account (`AppConfig.primaryChildId`), though the
   backend data model supports several.
 - FCM device registration (`registerDevice`) is not called from the app yet,

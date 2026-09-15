@@ -1,5 +1,12 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../core/config/app_config.dart';
+import '../../core/firebase/firebase_providers.dart';
 
 import '../../features/assessment/presentation/assessment_intro_screen.dart';
 import '../../features/assessment/presentation/assessment_question_screen.dart';
@@ -42,9 +49,54 @@ abstract final class AppRoutes {
   static const books = 'books';
 }
 
+/// Screens a signed-out visitor is allowed to see.
+const _publicRoutes = {'/', '/welcome', '/login', '/register'};
+
+/// Keeps the parent on the right side of the sign-in boundary.
+///
+/// Reaching a protected screen without an account used to leave the app
+/// showing generic failures, because every Firestore read behind it was
+/// denied. Demo mode has no accounts, so no gating applies there.
+String? _authRedirect(FirebaseAuth auth, GoRouterState state) {
+  final signedIn = auth.currentUser != null;
+  final location = state.matchedLocation;
+
+  if (!signedIn) {
+    return _publicRoutes.contains(location) ? null : '/login';
+  }
+  // A signed-in parent has no use for the splash or the sign-in form.
+  // Registration is deliberately left alone: it sends itself on to profile
+  // setup, and redirecting here would race that.
+  if (location == '/' || location == '/login') return '/dashboard';
+  return null;
+}
+
+/// Bridges the auth stream to something GoRouter can listen to, so the
+/// redirect re-runs the moment someone signs in or out.
+class _AuthRefresh extends ChangeNotifier {
+  _AuthRefresh(Stream<User?> stream) {
+    _subscription = stream.listen((_) => notifyListeners());
+  }
+
+  late final StreamSubscription<User?> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final auth = AppConfig.useFirebase ? ref.watch(firebaseAuthProvider) : null;
+  final refresh = auth == null ? null : _AuthRefresh(auth.authStateChanges());
+  ref.onDispose(() => refresh?.dispose());
+
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refresh,
+    redirect:
+        auth == null ? null : (context, state) => _authRedirect(auth, state),
     routes: [
       GoRoute(
         path: '/',

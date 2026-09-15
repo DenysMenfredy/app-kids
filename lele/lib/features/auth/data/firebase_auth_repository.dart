@@ -50,6 +50,20 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> sendPasswordReset(String email) {
+    return _guard(() async {
+      try {
+        await _auth.sendPasswordResetEmail(email: email.trim());
+      } on FirebaseAuthException catch (e) {
+        // Don't let the screen reveal whether an account exists; anything
+        // other than a malformed address is reported as sent.
+        if (e.code == 'user-not-found') return;
+        rethrow;
+      }
+    });
+  }
+
+  @override
   Future<void> signOut() => _auth.signOut();
 
   Future<void> _guard(Future<void> Function() action) async {

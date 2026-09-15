@@ -8,27 +8,27 @@
     "type": "tap",
     "order": 1,
     "instruction": "Toque na letra A",
-    "speech": "Toque na letra a",
+    "speech": "Toque na letra á",
     "target": "A",
     "options": [
+      {
+        "id": "O",
+        "label": "O",
+        "correct": false
+      },
       {
         "id": "A",
         "label": "A",
         "correct": true
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "E",
+        "label": "E",
         "correct": false
       },
       {
-        "id": "I",
-        "label": "I",
-        "correct": false
-      },
-      {
-        "id": "P",
-        "label": "P",
+        "id": "U",
+        "label": "U",
         "correct": false
       }
     ]
@@ -49,17 +49,17 @@
         "lower": "a"
       },
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "E",
+        "lower": "e"
       },
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "O",
+        "lower": "o"
       }
     ],
     "lowercaseOrder": [
-      "b",
-      "c",
+      "e",
+      "o",
       "a"
     ]
   },
@@ -72,7 +72,7 @@
     "type": "trace",
     "order": 3,
     "instruction": "Trace a letra A com o dedo",
-    "speech": "Trace a letra a",
+    "speech": "Trace a letra á",
     "letter": "A"
   },
   {
@@ -84,23 +84,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "abelha",
-    "answer": "ABELHA",
+    "speech": "asa",
+    "answer": "ASA",
     "options": [
       {
-        "id": "FOCA",
-        "label": "FOCA",
+        "id": "OVO",
+        "label": "OVO",
         "correct": false
       },
       {
-        "id": "ABELHA",
-        "label": "ABELHA",
+        "id": "UVA",
+        "label": "UVA",
+        "correct": false
+      },
+      {
+        "id": "ASA",
+        "label": "ASA",
         "correct": true
-      },
-      {
-        "id": "JANELA",
-        "label": "JANELA",
-        "correct": false
       }
     ]
   },
@@ -112,28 +112,28 @@
     "id": "activity_002_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra B",
-    "speech": "Toque na letra bê",
-    "target": "B",
+    "instruction": "Toque na letra E",
+    "speech": "Toque na letra é",
+    "target": "E",
     "options": [
+      {
+        "id": "A",
+        "label": "A",
+        "correct": false
+      },
+      {
+        "id": "O",
+        "label": "O",
+        "correct": false
+      },
       {
         "id": "E",
         "label": "E",
-        "correct": false
-      },
-      {
-        "id": "B",
-        "label": "B",
         "correct": true
       },
       {
-        "id": "J",
-        "label": "J",
-        "correct": false
-      },
-      {
-        "id": "Q",
-        "label": "Q",
+        "id": "U",
+        "label": "U",
         "correct": false
       }
     ]
@@ -150,22 +150,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "E",
+        "lower": "e"
       },
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "A",
+        "lower": "a"
       },
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "O",
+        "lower": "o"
       }
     ],
     "lowercaseOrder": [
-      "c",
-      "d",
-      "b"
+      "a",
+      "o",
+      "e"
     ]
   },
   {
@@ -176,9 +176,9 @@
     "id": "activity_002_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra B com o dedo",
-    "speech": "Trace a letra bê",
-    "letter": "B"
+    "instruction": "Trace a letra E com o dedo",
+    "speech": "Trace a letra é",
+    "letter": "E"
   },
   {
     "lessonId": "lesson_002",
@@ -189,23 +189,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "bola",
-    "answer": "BOLA",
+    "speech": "escola",
+    "answer": "ESCOLA",
     "options": [
       {
-        "id": "GATO",
-        "label": "GATO",
-        "correct": false
-      },
-      {
-        "id": "LUA",
-        "label": "LUA",
-        "correct": false
-      },
-      {
-        "id": "BOLA",
-        "label": "BOLA",
+        "id": "ESCOLA",
+        "label": "ESCOLA",
         "correct": true
+      },
+      {
+        "id": "ASA",
+        "label": "ASA",
+        "correct": false
+      },
+      {
+        "id": "UVA",
+        "label": "UVA",
+        "correct": false
       }
     ]
   },
@@ -217,29 +217,29 @@
     "id": "activity_003_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra C",
-    "speech": "Toque na letra cê",
-    "target": "C",
+    "instruction": "Toque na letra I",
+    "speech": "Toque na letra i",
+    "target": "I",
     "options": [
       {
-        "id": "F",
-        "label": "F",
+        "id": "A",
+        "label": "A",
         "correct": false
       },
       {
-        "id": "L",
-        "label": "L",
+        "id": "E",
+        "label": "E",
         "correct": false
       },
       {
-        "id": "C",
-        "label": "C",
+        "id": "O",
+        "label": "O",
+        "correct": false
+      },
+      {
+        "id": "I",
+        "label": "I",
         "correct": true
-      },
-      {
-        "id": "R",
-        "label": "R",
-        "correct": false
       }
     ]
   },
@@ -255,12 +255,12 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "I",
+        "lower": "i"
       },
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "A",
+        "lower": "a"
       },
       {
         "upper": "E",
@@ -268,9 +268,9 @@
       }
     ],
     "lowercaseOrder": [
-      "d",
+      "a",
       "e",
-      "c"
+      "i"
     ]
   },
   {
@@ -281,9 +281,9 @@
     "id": "activity_003_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra C com o dedo",
-    "speech": "Trace a letra cê",
-    "letter": "C"
+    "instruction": "Trace a letra I com o dedo",
+    "speech": "Trace a letra i",
+    "letter": "I"
   },
   {
     "lessonId": "lesson_003",
@@ -294,22 +294,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "casa",
-    "answer": "CASA",
+    "speech": "igreja",
+    "answer": "IGREJA",
     "options": [
       {
-        "id": "CASA",
-        "label": "CASA",
-        "correct": true
-      },
-      {
-        "id": "ILHA",
-        "label": "ILHA",
+        "id": "ASA",
+        "label": "ASA",
         "correct": false
       },
       {
-        "id": "MALA",
-        "label": "MALA",
+        "id": "IGREJA",
+        "label": "IGREJA",
+        "correct": true
+      },
+      {
+        "id": "OVO",
+        "label": "OVO",
         "correct": false
       }
     ]
@@ -322,29 +322,29 @@
     "id": "activity_004_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra D",
-    "speech": "Toque na letra dê",
-    "target": "D",
+    "instruction": "Toque na letra O",
+    "speech": "Toque na letra ó",
+    "target": "O",
     "options": [
       {
-        "id": "G",
-        "label": "G",
-        "correct": false
-      },
-      {
-        "id": "M",
-        "label": "M",
-        "correct": false
-      },
-      {
-        "id": "S",
-        "label": "S",
-        "correct": false
-      },
-      {
-        "id": "D",
-        "label": "D",
+        "id": "O",
+        "label": "O",
         "correct": true
+      },
+      {
+        "id": "A",
+        "label": "A",
+        "correct": false
+      },
+      {
+        "id": "E",
+        "label": "E",
+        "correct": false
+      },
+      {
+        "id": "U",
+        "label": "U",
+        "correct": false
       }
     ]
   },
@@ -360,22 +360,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "O",
+        "lower": "o"
       },
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "U",
+        "lower": "u"
       },
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "A",
+        "lower": "a"
       }
     ],
     "lowercaseOrder": [
-      "e",
-      "f",
-      "d"
+      "u",
+      "a",
+      "o"
     ]
   },
   {
@@ -386,9 +386,9 @@
     "id": "activity_004_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra D com o dedo",
-    "speech": "Trace a letra dê",
-    "letter": "D"
+    "instruction": "Trace a letra O com o dedo",
+    "speech": "Trace a letra ó",
+    "letter": "O"
   },
   {
     "lessonId": "lesson_004",
@@ -399,23 +399,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "dado",
-    "answer": "DADO",
+    "speech": "ovo",
+    "answer": "OVO",
     "options": [
       {
-        "id": "JANELA",
-        "label": "JANELA",
+        "id": "ASA",
+        "label": "ASA",
         "correct": false
       },
       {
-        "id": "DADO",
-        "label": "DADO",
+        "id": "IGREJA",
+        "label": "IGREJA",
+        "correct": false
+      },
+      {
+        "id": "OVO",
+        "label": "OVO",
         "correct": true
-      },
-      {
-        "id": "NAVIO",
-        "label": "NAVIO",
-        "correct": false
       }
     ]
   },
@@ -427,28 +427,28 @@
     "id": "activity_005_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra E",
-    "speech": "Toque na letra é",
-    "target": "E",
+    "instruction": "Toque na letra U",
+    "speech": "Toque na letra u",
+    "target": "U",
     "options": [
       {
-        "id": "E",
-        "label": "E",
+        "id": "O",
+        "label": "O",
+        "correct": false
+      },
+      {
+        "id": "U",
+        "label": "U",
         "correct": true
       },
       {
-        "id": "I",
-        "label": "I",
+        "id": "A",
+        "label": "A",
         "correct": false
       },
       {
-        "id": "N",
-        "label": "N",
-        "correct": false
-      },
-      {
-        "id": "T",
-        "label": "T",
+        "id": "E",
+        "label": "E",
         "correct": false
       }
     ]
@@ -465,22 +465,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "U",
+        "lower": "u"
       },
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "O",
+        "lower": "o"
       },
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "A",
+        "lower": "a"
       }
     ],
     "lowercaseOrder": [
-      "f",
-      "g",
-      "e"
+      "o",
+      "a",
+      "u"
     ]
   },
   {
@@ -491,9 +491,9 @@
     "id": "activity_005_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra E com o dedo",
-    "speech": "Trace a letra é",
-    "letter": "E"
+    "instruction": "Trace a letra U com o dedo",
+    "speech": "Trace a letra u",
+    "letter": "U"
   },
   {
     "lessonId": "lesson_005",
@@ -504,13 +504,13 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "escola",
-    "answer": "ESCOLA",
+    "speech": "uva",
+    "answer": "UVA",
     "options": [
       {
-        "id": "LUA",
-        "label": "LUA",
-        "correct": false
+        "id": "UVA",
+        "label": "UVA",
+        "correct": true
       },
       {
         "id": "OVO",
@@ -520,7 +520,7 @@
       {
         "id": "ESCOLA",
         "label": "ESCOLA",
-        "correct": true
+        "correct": false
       }
     ]
   },
@@ -532,19 +532,14 @@
     "id": "activity_006_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra F",
-    "speech": "Toque na letra éfe",
-    "target": "F",
+    "instruction": "Toque na letra M",
+    "speech": "Toque na letra ême",
+    "target": "M",
     "options": [
       {
-        "id": "J",
-        "label": "J",
+        "id": "A",
+        "label": "A",
         "correct": false
-      },
-      {
-        "id": "F",
-        "label": "F",
-        "correct": true
       },
       {
         "id": "O",
@@ -552,8 +547,13 @@
         "correct": false
       },
       {
-        "id": "U",
-        "label": "U",
+        "id": "M",
+        "label": "M",
+        "correct": true
+      },
+      {
+        "id": "E",
+        "label": "E",
         "correct": false
       }
     ]
@@ -570,22 +570,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "M",
+        "lower": "m"
       },
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "A",
+        "lower": "a"
       },
       {
-        "upper": "I",
-        "lower": "i"
+        "upper": "O",
+        "lower": "o"
       }
     ],
     "lowercaseOrder": [
-      "g",
-      "i",
-      "f"
+      "a",
+      "o",
+      "m"
     ]
   },
   {
@@ -596,9 +596,9 @@
     "id": "activity_006_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra F com o dedo",
-    "speech": "Trace a letra éfe",
-    "letter": "F"
+    "instruction": "Trace a letra M com o dedo",
+    "speech": "Trace a letra ême",
+    "letter": "M"
   },
   {
     "lessonId": "lesson_006",
@@ -609,22 +609,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "foca",
-    "answer": "FOCA",
+    "speech": "mala",
+    "answer": "MALA",
     "options": [
       {
-        "id": "FOCA",
-        "label": "FOCA",
-        "correct": true
+        "id": "UVA",
+        "label": "UVA",
+        "correct": false
       },
       {
         "id": "MALA",
         "label": "MALA",
-        "correct": false
+        "correct": true
       },
       {
-        "id": "PATO",
-        "label": "PATO",
+        "id": "OVO",
+        "label": "OVO",
         "correct": false
       }
     ]
@@ -637,29 +637,29 @@
     "id": "activity_007_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra G",
-    "speech": "Toque na letra gê",
-    "target": "G",
+    "instruction": "Toque na letra P",
+    "speech": "Toque na letra pê",
+    "target": "P",
     "options": [
       {
-        "id": "L",
-        "label": "L",
+        "id": "M",
+        "label": "M",
+        "correct": false
+      },
+      {
+        "id": "O",
+        "label": "O",
+        "correct": false
+      },
+      {
+        "id": "A",
+        "label": "A",
         "correct": false
       },
       {
         "id": "P",
         "label": "P",
-        "correct": false
-      },
-      {
-        "id": "G",
-        "label": "G",
         "correct": true
-      },
-      {
-        "id": "V",
-        "label": "V",
-        "correct": false
       }
     ]
   },
@@ -675,22 +675,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "P",
+        "lower": "p"
       },
       {
-        "upper": "I",
-        "lower": "i"
+        "upper": "M",
+        "lower": "m"
       },
       {
-        "upper": "J",
-        "lower": "j"
+        "upper": "A",
+        "lower": "a"
       }
     ],
     "lowercaseOrder": [
-      "i",
-      "j",
-      "g"
+      "m",
+      "a",
+      "p"
     ]
   },
   {
@@ -701,9 +701,9 @@
     "id": "activity_007_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra G com o dedo",
-    "speech": "Trace a letra gê",
-    "letter": "G"
+    "instruction": "Trace a letra P com o dedo",
+    "speech": "Trace a letra pê",
+    "letter": "P"
   },
   {
     "lessonId": "lesson_007",
@@ -714,23 +714,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "gato",
-    "answer": "GATO",
+    "speech": "pato",
+    "answer": "PATO",
     "options": [
       {
-        "id": "NAVIO",
-        "label": "NAVIO",
+        "id": "MALA",
+        "label": "MALA",
         "correct": false
       },
       {
-        "id": "GATO",
-        "label": "GATO",
+        "id": "UVA",
+        "label": "UVA",
+        "correct": false
+      },
+      {
+        "id": "PATO",
+        "label": "PATO",
         "correct": true
-      },
-      {
-        "id": "QUEIJO",
-        "label": "QUEIJO",
-        "correct": false
       }
     ]
   },
@@ -742,29 +742,29 @@
     "id": "activity_008_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra I",
-    "speech": "Toque na letra i",
-    "target": "I",
+    "instruction": "Toque na letra B",
+    "speech": "Toque na letra bê",
+    "target": "B",
     "options": [
+      {
+        "id": "B",
+        "label": "B",
+        "correct": true
+      },
+      {
+        "id": "P",
+        "label": "P",
+        "correct": false
+      },
       {
         "id": "M",
         "label": "M",
         "correct": false
       },
       {
-        "id": "Q",
-        "label": "Q",
+        "id": "A",
+        "label": "A",
         "correct": false
-      },
-      {
-        "id": "X",
-        "label": "X",
-        "correct": false
-      },
-      {
-        "id": "I",
-        "label": "I",
-        "correct": true
       }
     ]
   },
@@ -780,12 +780,12 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "I",
-        "lower": "i"
+        "upper": "B",
+        "lower": "b"
       },
       {
-        "upper": "J",
-        "lower": "j"
+        "upper": "P",
+        "lower": "p"
       },
       {
         "upper": "M",
@@ -793,9 +793,9 @@
       }
     ],
     "lowercaseOrder": [
-      "j",
+      "p",
       "m",
-      "i"
+      "b"
     ]
   },
   {
@@ -806,9 +806,9 @@
     "id": "activity_008_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra I com o dedo",
-    "speech": "Trace a letra i",
-    "letter": "I"
+    "instruction": "Trace a letra B com o dedo",
+    "speech": "Trace a letra bê",
+    "letter": "B"
   },
   {
     "lessonId": "lesson_008",
@@ -819,23 +819,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "ilha",
-    "answer": "ILHA",
+    "speech": "bola",
+    "answer": "BOLA",
     "options": [
       {
-        "id": "OVO",
-        "label": "OVO",
-        "correct": false
-      },
-      {
-        "id": "RATO",
-        "label": "RATO",
-        "correct": false
-      },
-      {
-        "id": "ILHA",
-        "label": "ILHA",
+        "id": "BOLA",
+        "label": "BOLA",
         "correct": true
+      },
+      {
+        "id": "PATO",
+        "label": "PATO",
+        "correct": false
+      },
+      {
+        "id": "MALA",
+        "label": "MALA",
+        "correct": false
       }
     ]
   },
@@ -847,28 +847,28 @@
     "id": "activity_009_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra J",
-    "speech": "Toque na letra jota",
-    "target": "J",
+    "instruction": "Toque na letra T",
+    "speech": "Toque na letra tê",
+    "target": "T",
     "options": [
       {
-        "id": "J",
-        "label": "J",
+        "id": "P",
+        "label": "P",
+        "correct": false
+      },
+      {
+        "id": "T",
+        "label": "T",
         "correct": true
       },
       {
-        "id": "N",
-        "label": "N",
+        "id": "B",
+        "label": "B",
         "correct": false
       },
       {
-        "id": "R",
-        "label": "R",
-        "correct": false
-      },
-      {
-        "id": "Z",
-        "label": "Z",
+        "id": "M",
+        "label": "M",
         "correct": false
       }
     ]
@@ -885,22 +885,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "J",
-        "lower": "j"
+        "upper": "T",
+        "lower": "t"
       },
       {
-        "upper": "L",
-        "lower": "l"
+        "upper": "P",
+        "lower": "p"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "B",
+        "lower": "b"
       }
     ],
     "lowercaseOrder": [
-      "l",
-      "m",
-      "j"
+      "p",
+      "b",
+      "t"
     ]
   },
   {
@@ -911,9 +911,9 @@
     "id": "activity_009_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra J com o dedo",
-    "speech": "Trace a letra jota",
-    "letter": "J"
+    "instruction": "Trace a letra T com o dedo",
+    "speech": "Trace a letra tê",
+    "letter": "T"
   },
   {
     "lessonId": "lesson_009",
@@ -924,22 +924,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "janela",
-    "answer": "JANELA",
+    "speech": "tatu",
+    "answer": "TATU",
     "options": [
       {
-        "id": "JANELA",
-        "label": "JANELA",
+        "id": "BOLA",
+        "label": "BOLA",
+        "correct": false
+      },
+      {
+        "id": "TATU",
+        "label": "TATU",
         "correct": true
       },
       {
         "id": "PATO",
         "label": "PATO",
-        "correct": false
-      },
-      {
-        "id": "SAPO",
-        "label": "SAPO",
         "correct": false
       }
     ]
@@ -952,28 +952,28 @@
     "id": "activity_010_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra L",
-    "speech": "Toque na letra éle",
-    "target": "L",
+    "instruction": "Toque na letra D",
+    "speech": "Toque na letra dê",
+    "target": "D",
     "options": [
       {
-        "id": "O",
-        "label": "O",
+        "id": "T",
+        "label": "T",
         "correct": false
       },
       {
-        "id": "L",
-        "label": "L",
+        "id": "B",
+        "label": "B",
+        "correct": false
+      },
+      {
+        "id": "D",
+        "label": "D",
         "correct": true
       },
       {
-        "id": "S",
-        "label": "S",
-        "correct": false
-      },
-      {
-        "id": "A",
-        "label": "A",
+        "id": "P",
+        "label": "P",
         "correct": false
       }
     ]
@@ -990,22 +990,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "L",
-        "lower": "l"
+        "upper": "D",
+        "lower": "d"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "T",
+        "lower": "t"
       },
       {
-        "upper": "N",
-        "lower": "n"
+        "upper": "B",
+        "lower": "b"
       }
     ],
     "lowercaseOrder": [
-      "m",
-      "n",
-      "l"
+      "t",
+      "b",
+      "d"
     ]
   },
   {
@@ -1016,9 +1016,9 @@
     "id": "activity_010_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra L com o dedo",
-    "speech": "Trace a letra éle",
-    "letter": "L"
+    "instruction": "Trace a letra D com o dedo",
+    "speech": "Trace a letra dê",
+    "letter": "D"
   },
   {
     "lessonId": "lesson_010",
@@ -1029,23 +1029,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "lua",
-    "answer": "LUA",
+    "speech": "dado",
+    "answer": "DADO",
     "options": [
-      {
-        "id": "QUEIJO",
-        "label": "QUEIJO",
-        "correct": false
-      },
-      {
-        "id": "LUA",
-        "label": "LUA",
-        "correct": true
-      },
       {
         "id": "TATU",
         "label": "TATU",
         "correct": false
+      },
+      {
+        "id": "BOLA",
+        "label": "BOLA",
+        "correct": false
+      },
+      {
+        "id": "DADO",
+        "label": "DADO",
+        "correct": true
       }
     ]
   },
@@ -1057,13 +1057,13 @@
     "id": "activity_011_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra M",
-    "speech": "Toque na letra ême",
-    "target": "M",
+    "instruction": "Toque na letra N",
+    "speech": "Toque na letra êne",
+    "target": "N",
     "options": [
       {
-        "id": "P",
-        "label": "P",
+        "id": "M",
+        "label": "M",
         "correct": false
       },
       {
@@ -1072,14 +1072,14 @@
         "correct": false
       },
       {
-        "id": "M",
-        "label": "M",
-        "correct": true
+        "id": "D",
+        "label": "D",
+        "correct": false
       },
       {
-        "id": "B",
-        "label": "B",
-        "correct": false
+        "id": "N",
+        "label": "N",
+        "correct": true
       }
     ]
   },
@@ -1095,22 +1095,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "M",
-        "lower": "m"
-      },
-      {
         "upper": "N",
         "lower": "n"
       },
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "M",
+        "lower": "m"
+      },
+      {
+        "upper": "T",
+        "lower": "t"
       }
     ],
     "lowercaseOrder": [
-      "n",
-      "o",
-      "m"
+      "m",
+      "t",
+      "n"
     ]
   },
   {
@@ -1121,9 +1121,9 @@
     "id": "activity_011_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra M com o dedo",
-    "speech": "Trace a letra ême",
-    "letter": "M"
+    "instruction": "Trace a letra N com o dedo",
+    "speech": "Trace a letra êne",
+    "letter": "N"
   },
   {
     "lessonId": "lesson_011",
@@ -1134,23 +1134,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "mala",
-    "answer": "MALA",
+    "speech": "nuvem",
+    "answer": "NUVEM",
     "options": [
       {
-        "id": "RATO",
-        "label": "RATO",
-        "correct": false
-      },
-      {
-        "id": "UVA",
-        "label": "UVA",
-        "correct": false
-      },
-      {
-        "id": "MALA",
-        "label": "MALA",
+        "id": "NUVEM",
+        "label": "NUVEM",
         "correct": true
+      },
+      {
+        "id": "DADO",
+        "label": "DADO",
+        "correct": false
+      },
+      {
+        "id": "TATU",
+        "label": "TATU",
+        "correct": false
       }
     ]
   },
@@ -1162,29 +1162,29 @@
     "id": "activity_012_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra N",
-    "speech": "Toque na letra êne",
-    "target": "N",
+    "instruction": "Toque na letra L",
+    "speech": "Toque na letra éle",
+    "target": "L",
     "options": [
       {
-        "id": "Q",
-        "label": "Q",
-        "correct": false
-      },
-      {
-        "id": "U",
-        "label": "U",
-        "correct": false
-      },
-      {
-        "id": "C",
-        "label": "C",
-        "correct": false
+        "id": "L",
+        "label": "L",
+        "correct": true
       },
       {
         "id": "N",
         "label": "N",
-        "correct": true
+        "correct": false
+      },
+      {
+        "id": "M",
+        "label": "M",
+        "correct": false
+      },
+      {
+        "id": "T",
+        "label": "T",
+        "correct": false
       }
     ]
   },
@@ -1200,22 +1200,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
+        "upper": "L",
+        "lower": "l"
+      },
+      {
         "upper": "N",
         "lower": "n"
       },
       {
-        "upper": "O",
-        "lower": "o"
-      },
-      {
-        "upper": "P",
-        "lower": "p"
+        "upper": "M",
+        "lower": "m"
       }
     ],
     "lowercaseOrder": [
-      "o",
-      "p",
-      "n"
+      "n",
+      "m",
+      "l"
     ]
   },
   {
@@ -1226,9 +1226,9 @@
     "id": "activity_012_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra N com o dedo",
-    "speech": "Trace a letra êne",
-    "letter": "N"
+    "instruction": "Trace a letra L com o dedo",
+    "speech": "Trace a letra éle",
+    "letter": "L"
   },
   {
     "lessonId": "lesson_012",
@@ -1239,22 +1239,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "navio",
-    "answer": "NAVIO",
+    "speech": "lua",
+    "answer": "LUA",
     "options": [
       {
-        "id": "NAVIO",
-        "label": "NAVIO",
-        "correct": true
-      },
-      {
-        "id": "SAPO",
-        "label": "SAPO",
+        "id": "NUVEM",
+        "label": "NUVEM",
         "correct": false
       },
       {
-        "id": "VACA",
-        "label": "VACA",
+        "id": "LUA",
+        "label": "LUA",
+        "correct": true
+      },
+      {
+        "id": "DADO",
+        "label": "DADO",
         "correct": false
       }
     ]
@@ -1267,28 +1267,28 @@
     "id": "activity_013_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra O",
-    "speech": "Toque na letra ó",
-    "target": "O",
+    "instruction": "Toque na letra V",
+    "speech": "Toque na letra vê",
+    "target": "V",
     "options": [
       {
-        "id": "O",
-        "label": "O",
-        "correct": true
-      },
-      {
-        "id": "R",
-        "label": "R",
+        "id": "B",
+        "label": "B",
         "correct": false
       },
       {
         "id": "V",
         "label": "V",
+        "correct": true
+      },
+      {
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "L",
+        "label": "L",
         "correct": false
       }
     ]
@@ -1305,22 +1305,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "V",
+        "lower": "v"
       },
       {
-        "upper": "P",
-        "lower": "p"
+        "upper": "B",
+        "lower": "b"
       },
       {
-        "upper": "Q",
-        "lower": "q"
+        "upper": "N",
+        "lower": "n"
       }
     ],
     "lowercaseOrder": [
-      "p",
-      "q",
-      "o"
+      "b",
+      "n",
+      "v"
     ]
   },
   {
@@ -1331,9 +1331,9 @@
     "id": "activity_013_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra O com o dedo",
-    "speech": "Trace a letra ó",
-    "letter": "O"
+    "instruction": "Trace a letra V com o dedo",
+    "speech": "Trace a letra vê",
+    "letter": "V"
   },
   {
     "lessonId": "lesson_013",
@@ -1344,23 +1344,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "ovo",
-    "answer": "OVO",
+    "speech": "vaca",
+    "answer": "VACA",
     "options": [
       {
-        "id": "TATU",
-        "label": "TATU",
+        "id": "LUA",
+        "label": "LUA",
         "correct": false
       },
       {
-        "id": "OVO",
-        "label": "OVO",
+        "id": "NUVEM",
+        "label": "NUVEM",
+        "correct": false
+      },
+      {
+        "id": "VACA",
+        "label": "VACA",
         "correct": true
-      },
-      {
-        "id": "XÍCARA",
-        "label": "XÍCARA",
-        "correct": false
       }
     ]
   },
@@ -1372,28 +1372,28 @@
     "id": "activity_014_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra P",
-    "speech": "Toque na letra pê",
-    "target": "P",
+    "instruction": "Toque na letra F",
+    "speech": "Toque na letra éfe",
+    "target": "F",
     "options": [
       {
-        "id": "S",
-        "label": "S",
+        "id": "V",
+        "label": "V",
         "correct": false
+      },
+      {
+        "id": "T",
+        "label": "T",
+        "correct": false
+      },
+      {
+        "id": "F",
+        "label": "F",
+        "correct": true
       },
       {
         "id": "P",
         "label": "P",
-        "correct": true
-      },
-      {
-        "id": "X",
-        "label": "X",
-        "correct": false
-      },
-      {
-        "id": "E",
-        "label": "E",
         "correct": false
       }
     ]
@@ -1410,22 +1410,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "P",
-        "lower": "p"
+        "upper": "F",
+        "lower": "f"
       },
       {
-        "upper": "Q",
-        "lower": "q"
+        "upper": "V",
+        "lower": "v"
       },
       {
-        "upper": "R",
-        "lower": "r"
+        "upper": "T",
+        "lower": "t"
       }
     ],
     "lowercaseOrder": [
-      "q",
-      "r",
-      "p"
+      "v",
+      "t",
+      "f"
     ]
   },
   {
@@ -1436,9 +1436,9 @@
     "id": "activity_014_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra P com o dedo",
-    "speech": "Trace a letra pê",
-    "letter": "P"
+    "instruction": "Trace a letra F com o dedo",
+    "speech": "Trace a letra éfe",
+    "letter": "F"
   },
   {
     "lessonId": "lesson_014",
@@ -1449,23 +1449,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "pato",
-    "answer": "PATO",
+    "speech": "foca",
+    "answer": "FOCA",
     "options": [
       {
-        "id": "UVA",
-        "label": "UVA",
-        "correct": false
-      },
-      {
-        "id": "ZEBRA",
-        "label": "ZEBRA",
-        "correct": false
-      },
-      {
-        "id": "PATO",
-        "label": "PATO",
+        "id": "FOCA",
+        "label": "FOCA",
         "correct": true
+      },
+      {
+        "id": "VACA",
+        "label": "VACA",
+        "correct": false
+      },
+      {
+        "id": "LUA",
+        "label": "LUA",
+        "correct": false
       }
     ]
   },
@@ -1477,29 +1477,29 @@
     "id": "activity_015_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra Q",
-    "speech": "Toque na letra quê",
-    "target": "Q",
+    "instruction": "Toque na letra S",
+    "speech": "Toque na letra ésse",
+    "target": "S",
     "options": [
-      {
-        "id": "T",
-        "label": "T",
-        "correct": false
-      },
-      {
-        "id": "Z",
-        "label": "Z",
-        "correct": false
-      },
-      {
-        "id": "Q",
-        "label": "Q",
-        "correct": true
-      },
       {
         "id": "F",
         "label": "F",
         "correct": false
+      },
+      {
+        "id": "V",
+        "label": "V",
+        "correct": false
+      },
+      {
+        "id": "B",
+        "label": "B",
+        "correct": false
+      },
+      {
+        "id": "S",
+        "label": "S",
+        "correct": true
       }
     ]
   },
@@ -1515,22 +1515,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "Q",
-        "lower": "q"
-      },
-      {
-        "upper": "R",
-        "lower": "r"
-      },
-      {
         "upper": "S",
         "lower": "s"
+      },
+      {
+        "upper": "F",
+        "lower": "f"
+      },
+      {
+        "upper": "V",
+        "lower": "v"
       }
     ],
     "lowercaseOrder": [
-      "r",
-      "s",
-      "q"
+      "f",
+      "v",
+      "s"
     ]
   },
   {
@@ -1541,9 +1541,9 @@
     "id": "activity_015_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra Q com o dedo",
-    "speech": "Trace a letra quê",
-    "letter": "Q"
+    "instruction": "Trace a letra S com o dedo",
+    "speech": "Trace a letra ésse",
+    "letter": "S"
   },
   {
     "lessonId": "lesson_015",
@@ -1554,22 +1554,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "queijo",
-    "answer": "QUEIJO",
+    "speech": "sapo",
+    "answer": "SAPO",
     "options": [
       {
-        "id": "QUEIJO",
-        "label": "QUEIJO",
+        "id": "FOCA",
+        "label": "FOCA",
+        "correct": false
+      },
+      {
+        "id": "SAPO",
+        "label": "SAPO",
         "correct": true
       },
       {
         "id": "VACA",
         "label": "VACA",
-        "correct": false
-      },
-      {
-        "id": "AVIÃO",
-        "label": "AVIÃO",
         "correct": false
       }
     ]
@@ -1582,29 +1582,29 @@
     "id": "activity_016_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra R",
-    "speech": "Toque na letra érre",
-    "target": "R",
+    "instruction": "Toque na letra C",
+    "speech": "Toque na letra cê",
+    "target": "C",
     "options": [
       {
-        "id": "U",
-        "label": "U",
-        "correct": false
-      },
-      {
-        "id": "A",
-        "label": "A",
-        "correct": false
-      },
-      {
-        "id": "G",
-        "label": "G",
-        "correct": false
-      },
-      {
-        "id": "R",
-        "label": "R",
+        "id": "C",
+        "label": "C",
         "correct": true
+      },
+      {
+        "id": "S",
+        "label": "S",
+        "correct": false
+      },
+      {
+        "id": "F",
+        "label": "F",
+        "correct": false
+      },
+      {
+        "id": "D",
+        "label": "D",
+        "correct": false
       }
     ]
   },
@@ -1620,22 +1620,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "R",
-        "lower": "r"
+        "upper": "C",
+        "lower": "c"
       },
       {
         "upper": "S",
         "lower": "s"
       },
       {
-        "upper": "T",
-        "lower": "t"
+        "upper": "F",
+        "lower": "f"
       }
     ],
     "lowercaseOrder": [
       "s",
-      "t",
-      "r"
+      "f",
+      "c"
     ]
   },
   {
@@ -1646,9 +1646,9 @@
     "id": "activity_016_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra R com o dedo",
-    "speech": "Trace a letra érre",
-    "letter": "R"
+    "instruction": "Trace a letra C com o dedo",
+    "speech": "Trace a letra cê",
+    "letter": "C"
   },
   {
     "lessonId": "lesson_016",
@@ -1659,23 +1659,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "rato",
-    "answer": "RATO",
+    "speech": "casa",
+    "answer": "CASA",
     "options": [
       {
-        "id": "XÍCARA",
-        "label": "XÍCARA",
+        "id": "SAPO",
+        "label": "SAPO",
         "correct": false
       },
       {
-        "id": "RATO",
-        "label": "RATO",
+        "id": "FOCA",
+        "label": "FOCA",
+        "correct": false
+      },
+      {
+        "id": "CASA",
+        "label": "CASA",
         "correct": true
-      },
-      {
-        "id": "BONECA",
-        "label": "BONECA",
-        "correct": false
       }
     ]
   },
@@ -1687,28 +1687,28 @@
     "id": "activity_017_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra S",
-    "speech": "Toque na letra ésse",
-    "target": "S",
+    "instruction": "Toque na letra R",
+    "speech": "Toque na letra érre",
+    "target": "R",
     "options": [
       {
-        "id": "S",
-        "label": "S",
+        "id": "C",
+        "label": "C",
+        "correct": false
+      },
+      {
+        "id": "R",
+        "label": "R",
         "correct": true
       },
       {
-        "id": "V",
-        "label": "V",
+        "id": "S",
+        "label": "S",
         "correct": false
       },
       {
-        "id": "B",
-        "label": "B",
-        "correct": false
-      },
-      {
-        "id": "I",
-        "label": "I",
+        "id": "P",
+        "label": "P",
         "correct": false
       }
     ]
@@ -1725,22 +1725,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
+        "upper": "R",
+        "lower": "r"
+      },
+      {
+        "upper": "C",
+        "lower": "c"
+      },
+      {
         "upper": "S",
         "lower": "s"
-      },
-      {
-        "upper": "T",
-        "lower": "t"
-      },
-      {
-        "upper": "U",
-        "lower": "u"
       }
     ],
     "lowercaseOrder": [
-      "t",
-      "u",
-      "s"
+      "c",
+      "s",
+      "r"
     ]
   },
   {
@@ -1751,9 +1751,9 @@
     "id": "activity_017_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra S com o dedo",
-    "speech": "Trace a letra ésse",
-    "letter": "S"
+    "instruction": "Trace a letra R com o dedo",
+    "speech": "Trace a letra érre",
+    "letter": "R"
   },
   {
     "lessonId": "lesson_017",
@@ -1764,23 +1764,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "sapo",
-    "answer": "SAPO",
+    "speech": "rato",
+    "answer": "RATO",
     "options": [
       {
-        "id": "ZEBRA",
-        "label": "ZEBRA",
-        "correct": false
+        "id": "RATO",
+        "label": "RATO",
+        "correct": true
       },
       {
-        "id": "CAVALO",
-        "label": "CAVALO",
+        "id": "CASA",
+        "label": "CASA",
         "correct": false
       },
       {
         "id": "SAPO",
         "label": "SAPO",
-        "correct": true
+        "correct": false
       }
     ]
   },
@@ -1792,28 +1792,28 @@
     "id": "activity_018_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra T",
-    "speech": "Toque na letra tê",
-    "target": "T",
+    "instruction": "Toque na letra G",
+    "speech": "Toque na letra gê",
+    "target": "G",
     "options": [
-      {
-        "id": "X",
-        "label": "X",
-        "correct": false
-      },
-      {
-        "id": "T",
-        "label": "T",
-        "correct": true
-      },
       {
         "id": "C",
         "label": "C",
         "correct": false
       },
       {
-        "id": "J",
-        "label": "J",
+        "id": "R",
+        "label": "R",
+        "correct": false
+      },
+      {
+        "id": "G",
+        "label": "G",
+        "correct": true
+      },
+      {
+        "id": "D",
+        "label": "D",
         "correct": false
       }
     ]
@@ -1830,22 +1830,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "T",
-        "lower": "t"
+        "upper": "G",
+        "lower": "g"
       },
       {
-        "upper": "U",
-        "lower": "u"
+        "upper": "C",
+        "lower": "c"
       },
       {
-        "upper": "V",
-        "lower": "v"
+        "upper": "R",
+        "lower": "r"
       }
     ],
     "lowercaseOrder": [
-      "u",
-      "v",
-      "t"
+      "c",
+      "r",
+      "g"
     ]
   },
   {
@@ -1856,9 +1856,9 @@
     "id": "activity_018_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra T com o dedo",
-    "speech": "Trace a letra tê",
-    "letter": "T"
+    "instruction": "Trace a letra G com o dedo",
+    "speech": "Trace a letra gê",
+    "letter": "G"
   },
   {
     "lessonId": "lesson_018",
@@ -1869,22 +1869,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "tatu",
-    "answer": "TATU",
+    "speech": "gato",
+    "answer": "GATO",
     "options": [
       {
-        "id": "TATU",
-        "label": "TATU",
-        "correct": true
-      },
-      {
-        "id": "AVIÃO",
-        "label": "AVIÃO",
+        "id": "RATO",
+        "label": "RATO",
         "correct": false
       },
       {
-        "id": "DEDO",
-        "label": "DEDO",
+        "id": "GATO",
+        "label": "GATO",
+        "correct": true
+      },
+      {
+        "id": "CASA",
+        "label": "CASA",
         "correct": false
       }
     ]
@@ -1897,29 +1897,29 @@
     "id": "activity_019_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra U",
-    "speech": "Toque na letra u",
-    "target": "U",
+    "instruction": "Toque na letra J",
+    "speech": "Toque na letra jota",
+    "target": "J",
     "options": [
       {
-        "id": "Z",
-        "label": "Z",
+        "id": "G",
+        "label": "G",
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "R",
+        "label": "R",
         "correct": false
       },
       {
-        "id": "U",
-        "label": "U",
+        "id": "C",
+        "label": "C",
+        "correct": false
+      },
+      {
+        "id": "J",
+        "label": "J",
         "correct": true
-      },
-      {
-        "id": "L",
-        "label": "L",
-        "correct": false
       }
     ]
   },
@@ -1935,22 +1935,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "U",
-        "lower": "u"
+        "upper": "J",
+        "lower": "j"
       },
       {
-        "upper": "V",
-        "lower": "v"
+        "upper": "G",
+        "lower": "g"
       },
       {
-        "upper": "X",
-        "lower": "x"
+        "upper": "R",
+        "lower": "r"
       }
     ],
     "lowercaseOrder": [
-      "v",
-      "x",
-      "u"
+      "g",
+      "r",
+      "j"
     ]
   },
   {
@@ -1961,9 +1961,9 @@
     "id": "activity_019_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra U com o dedo",
-    "speech": "Trace a letra u",
-    "letter": "U"
+    "instruction": "Trace a letra J com o dedo",
+    "speech": "Trace a letra jota",
+    "letter": "J"
   },
   {
     "lessonId": "lesson_019",
@@ -1974,23 +1974,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "uva",
-    "answer": "UVA",
+    "speech": "janela",
+    "answer": "JANELA",
     "options": [
       {
-        "id": "BONECA",
-        "label": "BONECA",
+        "id": "GATO",
+        "label": "GATO",
         "correct": false
       },
       {
-        "id": "UVA",
-        "label": "UVA",
+        "id": "RATO",
+        "label": "RATO",
+        "correct": false
+      },
+      {
+        "id": "JANELA",
+        "label": "JANELA",
         "correct": true
-      },
-      {
-        "id": "ESTRELA",
-        "label": "ESTRELA",
-        "correct": false
       }
     ]
   },
@@ -2002,29 +2002,29 @@
     "id": "activity_020_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra V",
-    "speech": "Toque na letra vê",
-    "target": "V",
+    "instruction": "Toque na letra Z",
+    "speech": "Toque na letra zê",
+    "target": "Z",
     "options": [
       {
-        "id": "A",
-        "label": "A",
-        "correct": false
-      },
-      {
-        "id": "E",
-        "label": "E",
-        "correct": false
-      },
-      {
-        "id": "M",
-        "label": "M",
-        "correct": false
-      },
-      {
-        "id": "V",
-        "label": "V",
+        "id": "Z",
+        "label": "Z",
         "correct": true
+      },
+      {
+        "id": "S",
+        "label": "S",
+        "correct": false
+      },
+      {
+        "id": "J",
+        "label": "J",
+        "correct": false
+      },
+      {
+        "id": "C",
+        "label": "C",
+        "correct": false
       }
     ]
   },
@@ -2040,22 +2040,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "V",
-        "lower": "v"
-      },
-      {
-        "upper": "X",
-        "lower": "x"
-      },
-      {
         "upper": "Z",
         "lower": "z"
+      },
+      {
+        "upper": "S",
+        "lower": "s"
+      },
+      {
+        "upper": "J",
+        "lower": "j"
       }
     ],
     "lowercaseOrder": [
-      "x",
-      "z",
-      "v"
+      "s",
+      "j",
+      "z"
     ]
   },
   {
@@ -2066,9 +2066,9 @@
     "id": "activity_020_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra V com o dedo",
-    "speech": "Trace a letra vê",
-    "letter": "V"
+    "instruction": "Trace a letra Z com o dedo",
+    "speech": "Trace a letra zê",
+    "letter": "Z"
   },
   {
     "lessonId": "lesson_020",
@@ -2079,23 +2079,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "vaca",
-    "answer": "VACA",
+    "speech": "zebra",
+    "answer": "ZEBRA",
     "options": [
       {
-        "id": "CAVALO",
-        "label": "CAVALO",
-        "correct": false
-      },
-      {
-        "id": "FLOR",
-        "label": "FLOR",
-        "correct": false
-      },
-      {
-        "id": "VACA",
-        "label": "VACA",
+        "id": "ZEBRA",
+        "label": "ZEBRA",
         "correct": true
+      },
+      {
+        "id": "JANELA",
+        "label": "JANELA",
+        "correct": false
+      },
+      {
+        "id": "GATO",
+        "label": "GATO",
+        "correct": false
       }
     ]
   },
@@ -2112,23 +2112,23 @@
     "target": "X",
     "options": [
       {
+        "id": "Z",
+        "label": "Z",
+        "correct": false
+      },
+      {
         "id": "X",
         "label": "X",
         "correct": true
       },
       {
-        "id": "B",
-        "label": "B",
+        "id": "S",
+        "label": "S",
         "correct": false
       },
       {
-        "id": "F",
-        "label": "F",
-        "correct": false
-      },
-      {
-        "id": "N",
-        "label": "N",
+        "id": "C",
+        "label": "C",
         "correct": false
       }
     ]
@@ -2153,13 +2153,13 @@
         "lower": "z"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "S",
+        "lower": "s"
       }
     ],
     "lowercaseOrder": [
       "z",
-      "a",
+      "s",
       "x"
     ]
   },
@@ -2188,18 +2188,18 @@
     "answer": "XÍCARA",
     "options": [
       {
+        "id": "ZEBRA",
+        "label": "ZEBRA",
+        "correct": false
+      },
+      {
         "id": "XÍCARA",
         "label": "XÍCARA",
         "correct": true
       },
       {
-        "id": "DEDO",
-        "label": "DEDO",
-        "correct": false
-      },
-      {
-        "id": "GALO",
-        "label": "GALO",
+        "id": "JANELA",
+        "label": "JANELA",
         "correct": false
       }
     ]
@@ -2212,9 +2212,9 @@
     "id": "activity_022_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra Z",
-    "speech": "Toque na letra zê",
-    "target": "Z",
+    "instruction": "Toque na letra Q",
+    "speech": "Toque na letra quê",
+    "target": "Q",
     "options": [
       {
         "id": "C",
@@ -2222,14 +2222,14 @@
         "correct": false
       },
       {
-        "id": "Z",
-        "label": "Z",
-        "correct": true
-      },
-      {
         "id": "G",
         "label": "G",
         "correct": false
+      },
+      {
+        "id": "Q",
+        "label": "Q",
+        "correct": true
       },
       {
         "id": "O",
@@ -2250,22 +2250,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "Z",
-        "lower": "z"
+        "upper": "Q",
+        "lower": "q"
       },
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "C",
+        "lower": "c"
       },
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "G",
+        "lower": "g"
       }
     ],
     "lowercaseOrder": [
-      "a",
-      "b",
-      "z"
+      "c",
+      "g",
+      "q"
     ]
   },
   {
@@ -2276,9 +2276,9 @@
     "id": "activity_022_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra Z com o dedo",
-    "speech": "Trace a letra zê",
-    "letter": "Z"
+    "instruction": "Trace a letra Q com o dedo",
+    "speech": "Trace a letra quê",
+    "letter": "Q"
   },
   {
     "lessonId": "lesson_022",
@@ -2289,23 +2289,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "zebra",
-    "answer": "ZEBRA",
+    "speech": "queijo",
+    "answer": "QUEIJO",
     "options": [
       {
-        "id": "ESTRELA",
-        "label": "ESTRELA",
+        "id": "XÍCARA",
+        "label": "XÍCARA",
         "correct": false
       },
       {
         "id": "ZEBRA",
         "label": "ZEBRA",
-        "correct": true
+        "correct": false
       },
       {
-        "id": "JACARÉ",
-        "label": "JACARÉ",
-        "correct": false
+        "id": "QUEIJO",
+        "label": "QUEIJO",
+        "correct": true
       }
     ]
   },
@@ -2317,29 +2317,29 @@
     "id": "activity_023_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra A",
-    "speech": "Toque na letra a",
-    "target": "A",
+    "instruction": "Toque na letra H",
+    "speech": "Toque na letra agá",
+    "target": "H",
     "options": [
       {
-        "id": "D",
-        "label": "D",
+        "id": "X",
+        "label": "X",
         "correct": false
       },
       {
-        "id": "I",
-        "label": "I",
+        "id": "Q",
+        "label": "Q",
         "correct": false
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "N",
+        "label": "N",
+        "correct": false
+      },
+      {
+        "id": "H",
+        "label": "H",
         "correct": true
-      },
-      {
-        "id": "P",
-        "label": "P",
-        "correct": false
       }
     ]
   },
@@ -2355,22 +2355,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "A",
-        "lower": "a"
+        "upper": "H",
+        "lower": "h"
       },
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "X",
+        "lower": "x"
       },
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "Q",
+        "lower": "q"
       }
     ],
     "lowercaseOrder": [
-      "b",
-      "c",
-      "a"
+      "x",
+      "q",
+      "h"
     ]
   },
   {
@@ -2381,9 +2381,9 @@
     "id": "activity_023_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra A com o dedo",
-    "speech": "Trace a letra a",
-    "letter": "A"
+    "instruction": "Trace a letra H com o dedo",
+    "speech": "Trace a letra agá",
+    "letter": "H"
   },
   {
     "lessonId": "lesson_023",
@@ -2394,23 +2394,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "avião",
-    "answer": "AVIÃO",
+    "speech": "hora",
+    "answer": "HORA",
     "options": [
       {
-        "id": "FLOR",
-        "label": "FLOR",
-        "correct": false
-      },
-      {
-        "id": "LIVRO",
-        "label": "LIVRO",
-        "correct": false
-      },
-      {
-        "id": "AVIÃO",
-        "label": "AVIÃO",
+        "id": "HORA",
+        "label": "HORA",
         "correct": true
+      },
+      {
+        "id": "QUEIJO",
+        "label": "QUEIJO",
+        "correct": false
+      },
+      {
+        "id": "XÍCARA",
+        "label": "XÍCARA",
+        "correct": false
       }
     ]
   },
@@ -2422,29 +2422,29 @@
     "id": "activity_024_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra B",
-    "speech": "Toque na letra bê",
-    "target": "B",
+    "instruction": "Toque na letra CH",
+    "speech": "Toque na letra cê-agá",
+    "target": "CH",
     "options": [
       {
-        "id": "E",
-        "label": "E",
-        "correct": false
-      },
-      {
-        "id": "J",
-        "label": "J",
-        "correct": false
-      },
-      {
-        "id": "Q",
-        "label": "Q",
-        "correct": false
-      },
-      {
-        "id": "B",
-        "label": "B",
+        "id": "CH",
+        "label": "CH",
         "correct": true
+      },
+      {
+        "id": "C",
+        "label": "C",
+        "correct": false
+      },
+      {
+        "id": "H",
+        "label": "H",
+        "correct": false
+      },
+      {
+        "id": "S",
+        "label": "S",
+        "correct": false
       }
     ]
   },
@@ -2460,22 +2460,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "B",
-        "lower": "b"
+        "upper": "CH",
+        "lower": "ch"
       },
       {
         "upper": "C",
         "lower": "c"
       },
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "H",
+        "lower": "h"
       }
     ],
     "lowercaseOrder": [
       "c",
-      "d",
-      "b"
+      "h",
+      "ch"
     ]
   },
   {
@@ -2486,9 +2486,9 @@
     "id": "activity_024_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra B com o dedo",
-    "speech": "Trace a letra bê",
-    "letter": "B"
+    "instruction": "Trace a letra CH com o dedo",
+    "speech": "Trace a letra cê-agá",
+    "letter": "CH"
   },
   {
     "lessonId": "lesson_024",
@@ -2499,22 +2499,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "boneca",
-    "answer": "BONECA",
+    "speech": "chave",
+    "answer": "CHAVE",
     "options": [
       {
-        "id": "BONECA",
-        "label": "BONECA",
-        "correct": true
-      },
-      {
-        "id": "GALO",
-        "label": "GALO",
+        "id": "HORA",
+        "label": "HORA",
         "correct": false
       },
       {
-        "id": "MACACO",
-        "label": "MACACO",
+        "id": "CHAVE",
+        "label": "CHAVE",
+        "correct": true
+      },
+      {
+        "id": "QUEIJO",
+        "label": "QUEIJO",
         "correct": false
       }
     ]
@@ -2527,28 +2527,28 @@
     "id": "activity_025_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra C",
-    "speech": "Toque na letra cê",
-    "target": "C",
+    "instruction": "Toque na letra LH",
+    "speech": "Toque na letra éle-agá",
+    "target": "LH",
     "options": [
-      {
-        "id": "C",
-        "label": "C",
-        "correct": true
-      },
-      {
-        "id": "F",
-        "label": "F",
-        "correct": false
-      },
       {
         "id": "L",
         "label": "L",
         "correct": false
       },
       {
-        "id": "R",
-        "label": "R",
+        "id": "LH",
+        "label": "LH",
+        "correct": true
+      },
+      {
+        "id": "H",
+        "label": "H",
+        "correct": false
+      },
+      {
+        "id": "CH",
+        "label": "CH",
         "correct": false
       }
     ]
@@ -2565,22 +2565,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "C",
-        "lower": "c"
+        "upper": "LH",
+        "lower": "lh"
       },
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "L",
+        "lower": "l"
       },
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "CH",
+        "lower": "ch"
       }
     ],
     "lowercaseOrder": [
-      "d",
-      "e",
-      "c"
+      "l",
+      "ch",
+      "lh"
     ]
   },
   {
@@ -2591,9 +2591,9 @@
     "id": "activity_025_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra C com o dedo",
-    "speech": "Trace a letra cê",
-    "letter": "C"
+    "instruction": "Trace a letra LH com o dedo",
+    "speech": "Trace a letra éle-agá",
+    "letter": "LH"
   },
   {
     "lessonId": "lesson_025",
@@ -2604,23 +2604,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "cavalo",
-    "answer": "CAVALO",
+    "speech": "filho",
+    "answer": "FILHO",
     "options": [
       {
-        "id": "JACARÉ",
-        "label": "JACARÉ",
+        "id": "CHAVE",
+        "label": "CHAVE",
         "correct": false
       },
       {
-        "id": "CAVALO",
-        "label": "CAVALO",
+        "id": "HORA",
+        "label": "HORA",
+        "correct": false
+      },
+      {
+        "id": "FILHO",
+        "label": "FILHO",
         "correct": true
-      },
-      {
-        "id": "NUVEM",
-        "label": "NUVEM",
-        "correct": false
       }
     ]
   },
@@ -2632,28 +2632,28 @@
     "id": "activity_026_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra D",
-    "speech": "Toque na letra dê",
-    "target": "D",
+    "instruction": "Toque na letra NH",
+    "speech": "Toque na letra êne-agá",
+    "target": "NH",
     "options": [
       {
-        "id": "G",
-        "label": "G",
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
-        "id": "D",
-        "label": "D",
+        "id": "H",
+        "label": "H",
+        "correct": false
+      },
+      {
+        "id": "NH",
+        "label": "NH",
         "correct": true
       },
       {
-        "id": "M",
-        "label": "M",
-        "correct": false
-      },
-      {
-        "id": "S",
-        "label": "S",
+        "id": "LH",
+        "label": "LH",
         "correct": false
       }
     ]
@@ -2670,22 +2670,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "D",
-        "lower": "d"
+        "upper": "NH",
+        "lower": "nh"
       },
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "N",
+        "lower": "n"
       },
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "LH",
+        "lower": "lh"
       }
     ],
     "lowercaseOrder": [
-      "e",
-      "f",
-      "d"
+      "n",
+      "lh",
+      "nh"
     ]
   },
   {
@@ -2696,9 +2696,9 @@
     "id": "activity_026_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra D com o dedo",
-    "speech": "Trace a letra dê",
-    "letter": "D"
+    "instruction": "Trace a letra NH com o dedo",
+    "speech": "Trace a letra êne-agá",
+    "letter": "NH"
   },
   {
     "lessonId": "lesson_026",
@@ -2709,23 +2709,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "dedo",
-    "answer": "DEDO",
+    "speech": "o ninho",
+    "answer": "O NINHO",
     "options": [
       {
-        "id": "LIVRO",
-        "label": "LIVRO",
-        "correct": false
-      },
-      {
-        "id": "OLHO",
-        "label": "OLHO",
-        "correct": false
-      },
-      {
-        "id": "DEDO",
-        "label": "DEDO",
+        "id": "O NINHO",
+        "label": "O NINHO",
         "correct": true
+      },
+      {
+        "id": "A CHAVE",
+        "label": "A CHAVE",
+        "correct": false
+      },
+      {
+        "id": "O FILHO",
+        "label": "O FILHO",
+        "correct": false
       }
     ]
   },
@@ -2737,29 +2737,29 @@
     "id": "activity_027_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra E",
-    "speech": "Toque na letra é",
-    "target": "E",
+    "instruction": "Toque na letra B",
+    "speech": "Toque na letra bê",
+    "target": "B",
     "options": [
       {
-        "id": "I",
-        "label": "I",
+        "id": "V",
+        "label": "V",
         "correct": false
       },
       {
-        "id": "N",
-        "label": "N",
+        "id": "P",
+        "label": "P",
         "correct": false
       },
       {
-        "id": "E",
-        "label": "E",
+        "id": "D",
+        "label": "D",
+        "correct": false
+      },
+      {
+        "id": "B",
+        "label": "B",
         "correct": true
-      },
-      {
-        "id": "T",
-        "label": "T",
-        "correct": false
       }
     ]
   },
@@ -2775,22 +2775,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "E",
-        "lower": "e"
+        "upper": "B",
+        "lower": "b"
       },
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "V",
+        "lower": "v"
       },
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "P",
+        "lower": "p"
       }
     ],
     "lowercaseOrder": [
-      "f",
-      "g",
-      "e"
+      "v",
+      "p",
+      "b"
     ]
   },
   {
@@ -2801,9 +2801,9 @@
     "id": "activity_027_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra E com o dedo",
-    "speech": "Trace a letra é",
-    "letter": "E"
+    "instruction": "Trace a letra B com o dedo",
+    "speech": "Trace a letra bê",
+    "letter": "B"
   },
   {
     "lessonId": "lesson_027",
@@ -2814,22 +2814,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "estrela",
-    "answer": "ESTRELA",
+    "speech": "a bola",
+    "answer": "A BOLA",
     "options": [
       {
-        "id": "ESTRELA",
-        "label": "ESTRELA",
-        "correct": true
-      },
-      {
-        "id": "MACACO",
-        "label": "MACACO",
+        "id": "A VACA",
+        "label": "A VACA",
         "correct": false
       },
       {
-        "id": "PEIXE",
-        "label": "PEIXE",
+        "id": "A BOLA",
+        "label": "A BOLA",
+        "correct": true
+      },
+      {
+        "id": "O PATO",
+        "label": "O PATO",
         "correct": false
       }
     ]
@@ -2842,29 +2842,29 @@
     "id": "activity_028_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra F",
-    "speech": "Toque na letra éfe",
-    "target": "F",
+    "instruction": "Toque na letra D",
+    "speech": "Toque na letra dê",
+    "target": "D",
     "options": [
       {
-        "id": "J",
-        "label": "J",
-        "correct": false
-      },
-      {
-        "id": "O",
-        "label": "O",
-        "correct": false
-      },
-      {
-        "id": "U",
-        "label": "U",
-        "correct": false
-      },
-      {
-        "id": "F",
-        "label": "F",
+        "id": "D",
+        "label": "D",
         "correct": true
+      },
+      {
+        "id": "T",
+        "label": "T",
+        "correct": false
+      },
+      {
+        "id": "B",
+        "label": "B",
+        "correct": false
+      },
+      {
+        "id": "P",
+        "label": "P",
+        "correct": false
       }
     ]
   },
@@ -2880,22 +2880,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "F",
-        "lower": "f"
+        "upper": "D",
+        "lower": "d"
       },
       {
-        "upper": "G",
-        "lower": "g"
+        "upper": "T",
+        "lower": "t"
       },
       {
-        "upper": "I",
-        "lower": "i"
+        "upper": "B",
+        "lower": "b"
       }
     ],
     "lowercaseOrder": [
-      "g",
-      "i",
-      "f"
+      "t",
+      "b",
+      "d"
     ]
   },
   {
@@ -2906,9 +2906,9 @@
     "id": "activity_028_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra F com o dedo",
-    "speech": "Trace a letra éfe",
-    "letter": "F"
+    "instruction": "Trace a letra D com o dedo",
+    "speech": "Trace a letra dê",
+    "letter": "D"
   },
   {
     "lessonId": "lesson_028",
@@ -2919,23 +2919,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "flor",
-    "answer": "FLOR",
+    "speech": "o dado",
+    "answer": "O DADO",
     "options": [
       {
-        "id": "NUVEM",
-        "label": "NUVEM",
+        "id": "O TATU",
+        "label": "O TATU",
         "correct": false
       },
       {
-        "id": "FLOR",
-        "label": "FLOR",
+        "id": "A LUA",
+        "label": "A LUA",
+        "correct": false
+      },
+      {
+        "id": "O DADO",
+        "label": "O DADO",
         "correct": true
-      },
-      {
-        "id": "ROSA",
-        "label": "ROSA",
-        "correct": false
       }
     ]
   },
@@ -2947,28 +2947,28 @@
     "id": "activity_029_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra G",
-    "speech": "Toque na letra gê",
-    "target": "G",
+    "instruction": "Toque na letra C",
+    "speech": "Toque na letra cê",
+    "target": "C",
     "options": [
       {
         "id": "G",
         "label": "G",
+        "correct": false
+      },
+      {
+        "id": "C",
+        "label": "C",
         "correct": true
       },
       {
-        "id": "L",
-        "label": "L",
+        "id": "Q",
+        "label": "Q",
         "correct": false
       },
       {
-        "id": "P",
-        "label": "P",
-        "correct": false
-      },
-      {
-        "id": "V",
-        "label": "V",
+        "id": "S",
+        "label": "S",
         "correct": false
       }
     ]
@@ -2985,22 +2985,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
+        "upper": "C",
+        "lower": "c"
+      },
+      {
         "upper": "G",
         "lower": "g"
       },
       {
-        "upper": "I",
-        "lower": "i"
-      },
-      {
-        "upper": "J",
-        "lower": "j"
+        "upper": "Q",
+        "lower": "q"
       }
     ],
     "lowercaseOrder": [
-      "i",
-      "j",
-      "g"
+      "g",
+      "q",
+      "c"
     ]
   },
   {
@@ -3011,9 +3011,9 @@
     "id": "activity_029_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra G com o dedo",
-    "speech": "Trace a letra gê",
-    "letter": "G"
+    "instruction": "Trace a letra C com o dedo",
+    "speech": "Trace a letra cê",
+    "letter": "C"
   },
   {
     "lessonId": "lesson_029",
@@ -3024,23 +3024,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "galo",
-    "answer": "GALO",
+    "speech": "a casa",
+    "answer": "A CASA",
     "options": [
       {
-        "id": "OLHO",
-        "label": "OLHO",
-        "correct": false
-      },
-      {
-        "id": "SOL",
-        "label": "SOL",
-        "correct": false
-      },
-      {
-        "id": "GALO",
-        "label": "GALO",
+        "id": "A CASA",
+        "label": "A CASA",
         "correct": true
+      },
+      {
+        "id": "O GATO",
+        "label": "O GATO",
+        "correct": false
+      },
+      {
+        "id": "O RATO",
+        "label": "O RATO",
+        "correct": false
       }
     ]
   },
@@ -3052,28 +3052,28 @@
     "id": "activity_030_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra J",
-    "speech": "Toque na letra jota",
-    "target": "J",
+    "instruction": "Toque na letra F",
+    "speech": "Toque na letra éfe",
+    "target": "F",
     "options": [
       {
-        "id": "N",
-        "label": "N",
+        "id": "V",
+        "label": "V",
         "correct": false
       },
       {
-        "id": "J",
-        "label": "J",
+        "id": "S",
+        "label": "S",
+        "correct": false
+      },
+      {
+        "id": "F",
+        "label": "F",
         "correct": true
       },
       {
-        "id": "R",
-        "label": "R",
-        "correct": false
-      },
-      {
-        "id": "Z",
-        "label": "Z",
+        "id": "B",
+        "label": "B",
         "correct": false
       }
     ]
@@ -3090,22 +3090,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "J",
-        "lower": "j"
+        "upper": "F",
+        "lower": "f"
       },
       {
-        "upper": "L",
-        "lower": "l"
+        "upper": "V",
+        "lower": "v"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "S",
+        "lower": "s"
       }
     ],
     "lowercaseOrder": [
-      "l",
-      "m",
-      "j"
+      "v",
+      "s",
+      "f"
     ]
   },
   {
@@ -3116,9 +3116,9 @@
     "id": "activity_030_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra J com o dedo",
-    "speech": "Trace a letra jota",
-    "letter": "J"
+    "instruction": "Trace a letra F com o dedo",
+    "speech": "Trace a letra éfe",
+    "letter": "F"
   },
   {
     "lessonId": "lesson_030",
@@ -3129,22 +3129,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "jacaré",
-    "answer": "JACARÉ",
+    "speech": "a foca",
+    "answer": "A FOCA",
     "options": [
       {
-        "id": "JACARÉ",
-        "label": "JACARÉ",
-        "correct": true
-      },
-      {
-        "id": "PEIXE",
-        "label": "PEIXE",
+        "id": "A VACA",
+        "label": "A VACA",
         "correct": false
       },
       {
-        "id": "ABELHA",
-        "label": "ABELHA",
+        "id": "A FOCA",
+        "label": "A FOCA",
+        "correct": true
+      },
+      {
+        "id": "O SAPO",
+        "label": "O SAPO",
         "correct": false
       }
     ]
@@ -3157,29 +3157,29 @@
     "id": "activity_031_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra L",
-    "speech": "Toque na letra éle",
-    "target": "L",
+    "instruction": "Toque na letra S",
+    "speech": "Toque na letra ésse",
+    "target": "S",
     "options": [
       {
-        "id": "O",
-        "label": "O",
+        "id": "Z",
+        "label": "Z",
+        "correct": false
+      },
+      {
+        "id": "C",
+        "label": "C",
+        "correct": false
+      },
+      {
+        "id": "X",
+        "label": "X",
         "correct": false
       },
       {
         "id": "S",
         "label": "S",
-        "correct": false
-      },
-      {
-        "id": "L",
-        "label": "L",
         "correct": true
-      },
-      {
-        "id": "A",
-        "label": "A",
-        "correct": false
       }
     ]
   },
@@ -3195,22 +3195,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "L",
-        "lower": "l"
+        "upper": "S",
+        "lower": "s"
       },
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "Z",
+        "lower": "z"
       },
       {
-        "upper": "N",
-        "lower": "n"
+        "upper": "C",
+        "lower": "c"
       }
     ],
     "lowercaseOrder": [
-      "m",
-      "n",
-      "l"
+      "z",
+      "c",
+      "s"
     ]
   },
   {
@@ -3221,9 +3221,9 @@
     "id": "activity_031_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra L com o dedo",
-    "speech": "Trace a letra éle",
-    "letter": "L"
+    "instruction": "Trace a letra S com o dedo",
+    "speech": "Trace a letra ésse",
+    "letter": "S"
   },
   {
     "lessonId": "lesson_031",
@@ -3234,23 +3234,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "livro",
-    "answer": "LIVRO",
+    "speech": "o sapo",
+    "answer": "O SAPO",
     "options": [
       {
-        "id": "ROSA",
-        "label": "ROSA",
+        "id": "A ZEBRA",
+        "label": "A ZEBRA",
         "correct": false
       },
       {
-        "id": "LIVRO",
-        "label": "LIVRO",
+        "id": "A CASA",
+        "label": "A CASA",
+        "correct": false
+      },
+      {
+        "id": "O SAPO",
+        "label": "O SAPO",
         "correct": true
-      },
-      {
-        "id": "BOLA",
-        "label": "BOLA",
-        "correct": false
       }
     ]
   },
@@ -3262,29 +3262,29 @@
     "id": "activity_032_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra M",
-    "speech": "Toque na letra ême",
-    "target": "M",
+    "instruction": "Toque na letra L",
+    "speech": "Toque na letra éle",
+    "target": "L",
     "options": [
       {
-        "id": "P",
-        "label": "P",
+        "id": "L",
+        "label": "L",
+        "correct": true
+      },
+      {
+        "id": "N",
+        "label": "N",
         "correct": false
       },
       {
-        "id": "T",
-        "label": "T",
-        "correct": false
-      },
-      {
-        "id": "B",
-        "label": "B",
+        "id": "V",
+        "label": "V",
         "correct": false
       },
       {
         "id": "M",
         "label": "M",
-        "correct": true
+        "correct": false
       }
     ]
   },
@@ -3300,22 +3300,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "M",
-        "lower": "m"
+        "upper": "L",
+        "lower": "l"
       },
       {
         "upper": "N",
         "lower": "n"
       },
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "V",
+        "lower": "v"
       }
     ],
     "lowercaseOrder": [
       "n",
-      "o",
-      "m"
+      "v",
+      "l"
     ]
   },
   {
@@ -3326,9 +3326,9 @@
     "id": "activity_032_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra M com o dedo",
-    "speech": "Trace a letra ême",
-    "letter": "M"
+    "instruction": "Trace a letra L com o dedo",
+    "speech": "Trace a letra éle",
+    "letter": "L"
   },
   {
     "lessonId": "lesson_032",
@@ -3339,23 +3339,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "macaco",
-    "answer": "MACACO",
+    "speech": "a lua brilha",
+    "answer": "A LUA BRILHA",
     "options": [
       {
-        "id": "SOL",
-        "label": "SOL",
-        "correct": false
-      },
-      {
-        "id": "CASA",
-        "label": "CASA",
-        "correct": false
-      },
-      {
-        "id": "MACACO",
-        "label": "MACACO",
+        "id": "A LUA BRILHA",
+        "label": "A LUA BRILHA",
         "correct": true
+      },
+      {
+        "id": "O SAPO PULA",
+        "label": "O SAPO PULA",
+        "correct": false
+      },
+      {
+        "id": "A VACA COME",
+        "label": "A VACA COME",
+        "correct": false
       }
     ]
   },
@@ -3367,13 +3367,18 @@
     "id": "activity_033_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra N",
-    "speech": "Toque na letra êne",
-    "target": "N",
+    "instruction": "Toque na letra G",
+    "speech": "Toque na letra gê",
+    "target": "G",
     "options": [
       {
-        "id": "N",
-        "label": "N",
+        "id": "C",
+        "label": "C",
+        "correct": false
+      },
+      {
+        "id": "G",
+        "label": "G",
         "correct": true
       },
       {
@@ -3382,13 +3387,8 @@
         "correct": false
       },
       {
-        "id": "U",
-        "label": "U",
-        "correct": false
-      },
-      {
-        "id": "C",
-        "label": "C",
+        "id": "J",
+        "label": "J",
         "correct": false
       }
     ]
@@ -3405,22 +3405,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "N",
-        "lower": "n"
+        "upper": "G",
+        "lower": "g"
       },
       {
-        "upper": "O",
-        "lower": "o"
+        "upper": "C",
+        "lower": "c"
       },
       {
-        "upper": "P",
-        "lower": "p"
+        "upper": "J",
+        "lower": "j"
       }
     ],
     "lowercaseOrder": [
-      "o",
-      "p",
-      "n"
+      "c",
+      "j",
+      "g"
     ]
   },
   {
@@ -3431,9 +3431,9 @@
     "id": "activity_033_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra N com o dedo",
-    "speech": "Trace a letra êne",
-    "letter": "N"
+    "instruction": "Trace a letra G com o dedo",
+    "speech": "Trace a letra gê",
+    "letter": "G"
   },
   {
     "lessonId": "lesson_033",
@@ -3444,22 +3444,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "nuvem",
-    "answer": "NUVEM",
+    "speech": "o gato dorme",
+    "answer": "O GATO DORME",
     "options": [
       {
-        "id": "NUVEM",
-        "label": "NUVEM",
-        "correct": true
-      },
-      {
-        "id": "ABELHA",
-        "label": "ABELHA",
+        "id": "O RATO CORRE",
+        "label": "O RATO CORRE",
         "correct": false
       },
       {
-        "id": "DADO",
-        "label": "DADO",
+        "id": "O GATO DORME",
+        "label": "O GATO DORME",
+        "correct": true
+      },
+      {
+        "id": "A BOLA ROLA",
+        "label": "A BOLA ROLA",
         "correct": false
       }
     ]
@@ -3472,28 +3472,28 @@
     "id": "activity_034_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra O",
-    "speech": "Toque na letra ó",
-    "target": "O",
+    "instruction": "Toque na letra P",
+    "speech": "Toque na letra pê",
+    "target": "P",
     "options": [
       {
-        "id": "R",
-        "label": "R",
-        "correct": false
-      },
-      {
-        "id": "O",
-        "label": "O",
-        "correct": true
-      },
-      {
-        "id": "V",
-        "label": "V",
+        "id": "B",
+        "label": "B",
         "correct": false
       },
       {
         "id": "D",
         "label": "D",
+        "correct": false
+      },
+      {
+        "id": "P",
+        "label": "P",
+        "correct": true
+      },
+      {
+        "id": "T",
+        "label": "T",
         "correct": false
       }
     ]
@@ -3510,22 +3510,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "O",
-        "lower": "o"
-      },
-      {
         "upper": "P",
         "lower": "p"
       },
       {
-        "upper": "Q",
-        "lower": "q"
+        "upper": "B",
+        "lower": "b"
+      },
+      {
+        "upper": "D",
+        "lower": "d"
       }
     ],
     "lowercaseOrder": [
-      "p",
-      "q",
-      "o"
+      "b",
+      "d",
+      "p"
     ]
   },
   {
@@ -3536,9 +3536,9 @@
     "id": "activity_034_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra O com o dedo",
-    "speech": "Trace a letra ó",
-    "letter": "O"
+    "instruction": "Trace a letra P com o dedo",
+    "speech": "Trace a letra pê",
+    "letter": "P"
   },
   {
     "lessonId": "lesson_034",
@@ -3549,23 +3549,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "olho",
-    "answer": "OLHO",
+    "speech": "o pato nada",
+    "answer": "O PATO NADA",
     "options": [
       {
-        "id": "BOLA",
-        "label": "BOLA",
+        "id": "O TATU CAVA",
+        "label": "O TATU CAVA",
         "correct": false
       },
       {
-        "id": "OLHO",
-        "label": "OLHO",
+        "id": "A FOCA PULA",
+        "label": "A FOCA PULA",
+        "correct": false
+      },
+      {
+        "id": "O PATO NADA",
+        "label": "O PATO NADA",
         "correct": true
-      },
-      {
-        "id": "ESCOLA",
-        "label": "ESCOLA",
-        "correct": false
       }
     ]
   },
@@ -3577,123 +3577,18 @@
     "id": "activity_035_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra P",
-    "speech": "Toque na letra pê",
-    "target": "P",
-    "options": [
-      {
-        "id": "S",
-        "label": "S",
-        "correct": false
-      },
-      {
-        "id": "X",
-        "label": "X",
-        "correct": false
-      },
-      {
-        "id": "P",
-        "label": "P",
-        "correct": true
-      },
-      {
-        "id": "E",
-        "label": "E",
-        "correct": false
-      }
-    ]
-  },
-  {
-    "lessonId": "lesson_035",
-    "courseId": "course_001",
-    "difficulty": 7,
-    "published": true,
-    "id": "activity_035_match",
-    "type": "match",
-    "order": 2,
-    "instruction": "Ligue as letras iguais",
-    "hint": "Toque na letra grande e depois na pequena",
-    "pairs": [
-      {
-        "upper": "P",
-        "lower": "p"
-      },
-      {
-        "upper": "Q",
-        "lower": "q"
-      },
-      {
-        "upper": "R",
-        "lower": "r"
-      }
-    ],
-    "lowercaseOrder": [
-      "q",
-      "r",
-      "p"
-    ]
-  },
-  {
-    "lessonId": "lesson_035",
-    "courseId": "course_001",
-    "difficulty": 7,
-    "published": true,
-    "id": "activity_035_trace",
-    "type": "trace",
-    "order": 3,
-    "instruction": "Trace a letra P com o dedo",
-    "speech": "Trace a letra pê",
-    "letter": "P"
-  },
-  {
-    "lessonId": "lesson_035",
-    "courseId": "course_001",
-    "difficulty": 7,
-    "published": true,
-    "id": "activity_035_listen",
-    "type": "listen",
-    "order": 4,
-    "instruction": "Qual palavra você ouviu?",
-    "speech": "peixe",
-    "answer": "PEIXE",
-    "options": [
-      {
-        "id": "CASA",
-        "label": "CASA",
-        "correct": false
-      },
-      {
-        "id": "FOCA",
-        "label": "FOCA",
-        "correct": false
-      },
-      {
-        "id": "PEIXE",
-        "label": "PEIXE",
-        "correct": true
-      }
-    ]
-  },
-  {
-    "lessonId": "lesson_036",
-    "courseId": "course_001",
-    "difficulty": 7,
-    "published": true,
-    "id": "activity_036_tap",
-    "type": "tap",
-    "order": 1,
     "instruction": "Toque na letra R",
     "speech": "Toque na letra érre",
     "target": "R",
     "options": [
       {
-        "id": "U",
-        "label": "U",
+        "id": "C",
+        "label": "C",
         "correct": false
       },
       {
-        "id": "A",
-        "label": "A",
+        "id": "S",
+        "label": "S",
         "correct": false
       },
       {
@@ -3709,6 +3604,111 @@
     ]
   },
   {
+    "lessonId": "lesson_035",
+    "courseId": "course_001",
+    "difficulty": 7,
+    "published": true,
+    "id": "activity_035_match",
+    "type": "match",
+    "order": 2,
+    "instruction": "Ligue as letras iguais",
+    "hint": "Toque na letra grande e depois na pequena",
+    "pairs": [
+      {
+        "upper": "R",
+        "lower": "r"
+      },
+      {
+        "upper": "C",
+        "lower": "c"
+      },
+      {
+        "upper": "G",
+        "lower": "g"
+      }
+    ],
+    "lowercaseOrder": [
+      "c",
+      "g",
+      "r"
+    ]
+  },
+  {
+    "lessonId": "lesson_035",
+    "courseId": "course_001",
+    "difficulty": 7,
+    "published": true,
+    "id": "activity_035_trace",
+    "type": "trace",
+    "order": 3,
+    "instruction": "Trace a letra R com o dedo",
+    "speech": "Trace a letra érre",
+    "letter": "R"
+  },
+  {
+    "lessonId": "lesson_035",
+    "courseId": "course_001",
+    "difficulty": 7,
+    "published": true,
+    "id": "activity_035_listen",
+    "type": "listen",
+    "order": 4,
+    "instruction": "Qual palavra você ouviu?",
+    "speech": "o rato corre",
+    "answer": "O RATO CORRE",
+    "options": [
+      {
+        "id": "O RATO CORRE",
+        "label": "O RATO CORRE",
+        "correct": true
+      },
+      {
+        "id": "O GATO MIA",
+        "label": "O GATO MIA",
+        "correct": false
+      },
+      {
+        "id": "A LUA BRILHA",
+        "label": "A LUA BRILHA",
+        "correct": false
+      }
+    ]
+  },
+  {
+    "lessonId": "lesson_036",
+    "courseId": "course_001",
+    "difficulty": 7,
+    "published": true,
+    "id": "activity_036_tap",
+    "type": "tap",
+    "order": 1,
+    "instruction": "Toque na letra V",
+    "speech": "Toque na letra vê",
+    "target": "V",
+    "options": [
+      {
+        "id": "V",
+        "label": "V",
+        "correct": true
+      },
+      {
+        "id": "B",
+        "label": "B",
+        "correct": false
+      },
+      {
+        "id": "F",
+        "label": "F",
+        "correct": false
+      },
+      {
+        "id": "N",
+        "label": "N",
+        "correct": false
+      }
+    ]
+  },
+  {
     "lessonId": "lesson_036",
     "courseId": "course_001",
     "difficulty": 7,
@@ -3720,22 +3720,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "R",
-        "lower": "r"
+        "upper": "V",
+        "lower": "v"
       },
       {
-        "upper": "S",
-        "lower": "s"
+        "upper": "B",
+        "lower": "b"
       },
       {
-        "upper": "T",
-        "lower": "t"
+        "upper": "F",
+        "lower": "f"
       }
     ],
     "lowercaseOrder": [
-      "s",
-      "t",
-      "r"
+      "b",
+      "f",
+      "v"
     ]
   },
   {
@@ -3746,9 +3746,9 @@
     "id": "activity_036_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra R com o dedo",
-    "speech": "Trace a letra érre",
-    "letter": "R"
+    "instruction": "Trace a letra V com o dedo",
+    "speech": "Trace a letra vê",
+    "letter": "V"
   },
   {
     "lessonId": "lesson_036",
@@ -3759,22 +3759,22 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "rosa",
-    "answer": "ROSA",
+    "speech": "a vaca come",
+    "answer": "A VACA COME",
     "options": [
       {
-        "id": "ROSA",
-        "label": "ROSA",
-        "correct": true
-      },
-      {
-        "id": "DADO",
-        "label": "DADO",
+        "id": "O PATO NADA",
+        "label": "O PATO NADA",
         "correct": false
       },
       {
-        "id": "GATO",
-        "label": "GATO",
+        "id": "A VACA COME",
+        "label": "A VACA COME",
+        "correct": true
+      },
+      {
+        "id": "O NINHO CAIU",
+        "label": "O NINHO CAIU",
         "correct": false
       }
     ]
@@ -3787,28 +3787,28 @@
     "id": "activity_037_tap",
     "type": "tap",
     "order": 1,
-    "instruction": "Toque na letra S",
-    "speech": "Toque na letra ésse",
-    "target": "S",
+    "instruction": "Toque na letra M",
+    "speech": "Toque na letra ême",
+    "target": "M",
     "options": [
       {
-        "id": "S",
-        "label": "S",
+        "id": "N",
+        "label": "N",
+        "correct": false
+      },
+      {
+        "id": "M",
+        "label": "M",
         "correct": true
       },
       {
-        "id": "V",
-        "label": "V",
+        "id": "H",
+        "label": "H",
         "correct": false
       },
       {
-        "id": "B",
-        "label": "B",
-        "correct": false
-      },
-      {
-        "id": "I",
-        "label": "I",
+        "id": "P",
+        "label": "P",
         "correct": false
       }
     ]
@@ -3825,22 +3825,22 @@
     "hint": "Toque na letra grande e depois na pequena",
     "pairs": [
       {
-        "upper": "S",
-        "lower": "s"
+        "upper": "M",
+        "lower": "m"
       },
       {
-        "upper": "T",
-        "lower": "t"
+        "upper": "N",
+        "lower": "n"
       },
       {
-        "upper": "U",
-        "lower": "u"
+        "upper": "H",
+        "lower": "h"
       }
     ],
     "lowercaseOrder": [
-      "t",
-      "u",
-      "s"
+      "n",
+      "h",
+      "m"
     ]
   },
   {
@@ -3851,9 +3851,9 @@
     "id": "activity_037_trace",
     "type": "trace",
     "order": 3,
-    "instruction": "Trace a letra S com o dedo",
-    "speech": "Trace a letra ésse",
-    "letter": "S"
+    "instruction": "Trace a letra M com o dedo",
+    "speech": "Trace a letra ême",
+    "letter": "M"
   },
   {
     "lessonId": "lesson_037",
@@ -3864,23 +3864,23 @@
     "type": "listen",
     "order": 4,
     "instruction": "Qual palavra você ouviu?",
-    "speech": "sol",
-    "answer": "SOL",
+    "speech": "a mala caiu",
+    "answer": "A MALA CAIU",
     "options": [
       {
-        "id": "ESCOLA",
-        "label": "ESCOLA",
+        "id": "O DADO ROLA",
+        "label": "O DADO ROLA",
         "correct": false
       },
       {
-        "id": "SOL",
-        "label": "SOL",
+        "id": "A CHAVE ABRE",
+        "label": "A CHAVE ABRE",
+        "correct": false
+      },
+      {
+        "id": "A MALA CAIU",
+        "label": "A MALA CAIU",
         "correct": true
-      },
-      {
-        "id": "ILHA",
-        "label": "ILHA",
-        "correct": false
       }
     ]
   }

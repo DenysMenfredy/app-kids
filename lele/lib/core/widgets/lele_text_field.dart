@@ -13,6 +13,12 @@ class LeleTextField extends StatelessWidget {
     this.keyboardType,
     this.textCapitalization = TextCapitalization.none,
     this.onChanged,
+    this.errorText,
+    this.suffixIcon,
+    this.textInputAction,
+    this.onSubmitted,
+    this.enabled = true,
+    this.focusNode,
   });
 
   final String hint;
@@ -22,6 +28,14 @@ class LeleTextField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final ValueChanged<String>? onChanged;
 
+  /// Shown under the field, in place of the usual border colour.
+  final String? errorText;
+  final Widget? suffixIcon;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final bool enabled;
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     return TextField(
@@ -30,6 +44,10 @@ class LeleTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       onChanged: onChanged,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      enabled: enabled,
+      focusNode: focusNode,
       style: AppTextStyles.nunito(16, weight: FontWeight.w700),
       decoration: InputDecoration(
         hintText: hint,
@@ -44,8 +62,17 @@ class LeleTextField extends StatelessWidget {
           horizontal: 18,
           vertical: 17,
         ),
+        suffixIcon: suffixIcon,
+        errorText: errorText,
+        errorStyle: AppTextStyles.nunito(
+          13,
+          weight: FontWeight.w700,
+          color: AppColors.red,
+        ),
         enabledBorder: _border(AppColors.border),
         focusedBorder: _border(AppColors.orange),
+        errorBorder: _border(AppColors.red),
+        focusedErrorBorder: _border(AppColors.red),
       ),
     );
   }

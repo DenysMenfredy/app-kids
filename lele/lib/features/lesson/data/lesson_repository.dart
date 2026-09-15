@@ -19,35 +19,35 @@ class LocalLessonRepository implements LessonRepository {
 
   static const _sample = LessonContent(
     id: 'lesson_010',
-    title: 'Vamos brincar com a letra L!',
+    title: 'Vamos brincar com a letra D!',
     theme: 'Sons e rimas',
     estimatedMinutes: 15,
     tap: TapActivity(
       id: 'activity_010_tap',
-      instruction: 'Toque na letra L',
-      speech: 'Toque na letra éle',
-      target: 'L',
-      options: ['O', 'L', 'S', 'A'],
+      instruction: 'Toque na letra D',
+      speech: 'Toque na letra dê',
+      target: 'D',
+      options: ['T', 'B', 'D', 'P'],
     ),
     match: MatchActivity(
       id: 'activity_010_match',
       instruction: 'Ligue as letras iguais',
       hint: 'Toque na letra grande e depois na pequena',
-      uppercase: ['L', 'M', 'N'],
-      lowercase: ['m', 'n', 'l'],
+      uppercase: ['D', 'T', 'B'],
+      lowercase: ['t', 'b', 'd'],
     ),
     trace: TraceActivity(
       id: 'activity_010_trace',
-      instruction: 'Trace a letra L com o dedo',
-      speech: 'Trace a letra éle',
-      letter: 'L',
+      instruction: 'Trace a letra D com o dedo',
+      speech: 'Trace a letra dê',
+      letter: 'D',
     ),
     listen: ListenActivity(
       id: 'activity_010_listen',
       instruction: 'Qual palavra você ouviu?',
-      speech: 'lua',
-      answer: 'LUA',
-      options: ['QUEIJO', 'LUA', 'TATU'],
+      speech: 'dado',
+      answer: 'DADO',
+      options: ['TATU', 'BOLA', 'DADO'],
     ),
   );
 

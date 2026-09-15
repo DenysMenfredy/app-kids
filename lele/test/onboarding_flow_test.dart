@@ -57,7 +57,11 @@ void main() {
     // Register (fake auth resolves after a short latency).
     expect(find.text('Conta para os pais — leva menos de 2 minutos.'),
         findsOneWidget);
-    await tester.enterText(find.byType(TextField).first, 'Camila');
+    // Every field is required now, so fill the form as a parent would.
+    final registerFields = find.byType(TextField);
+    await tester.enterText(registerFields.at(0), 'Camila');
+    await tester.enterText(registerFields.at(1), 'camila@example.com');
+    await tester.enterText(registerFields.at(2), 'segredo123');
     await tester.tap(find.widgetWithText(LeleButton, 'Criar conta'));
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();

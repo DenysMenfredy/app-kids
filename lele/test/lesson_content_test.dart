@@ -7,8 +7,10 @@ import 'package:lele/core/config/app_config.dart';
 import 'package:lele/features/lesson/data/lesson_repository.dart';
 import 'package:lele/features/lesson/domain/lesson.dart';
 
-/// Documents shaped exactly as the backend stores them
-/// (`backend/seed/lessons` + `backend/seed/activities`).
+/// Documents in the shape the backend stores them (`backend/seed/lessons` +
+/// `backend/seed/activities`). The values are representative rather than a
+/// copy of any one lesson — the drift test below is what pins the offline
+/// sample to the real seed.
 const _lessonDoc = {
   'id': 'lesson_010',
   'moduleId': 'module_003',
@@ -176,7 +178,7 @@ void main() {
       final content =
           await const LocalLessonRepository().loadLesson('lesson_999');
       expect(content.id, AppConfig.demoLessonId);
-      expect(content.tap.target, 'L');
+      expect(content.tap.target, 'D');
     });
 
     test('matches what the backend seeds for that lesson', () async {
@@ -216,7 +218,7 @@ void main() {
           isA<LocalLessonRepository>());
       final content = await container
           .read(lessonContentProvider(AppConfig.demoLessonId).future);
-      expect(content.listen.answer, 'LUA');
+      expect(content.listen.answer, 'DADO');
       expect(
         container.read(currentLessonContentProvider).value,
         content,

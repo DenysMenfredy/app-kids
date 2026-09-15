@@ -43,11 +43,20 @@ if [ -z "$TOKEN" ]; then
 fi
 check "signed up" ok "($UID_)"
 
+# The app writes the parent's name straight after sign-up, before the auth
+# trigger has necessarily run. Do the same here: the name must survive.
+curl -s -X PATCH "${FS}/users/${UID_}?updateMask.fieldPaths=displayName" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"fields":{"displayName":{"stringValue":"Camila"}}}' >/dev/null
+
 # onUserCreated is an auth trigger, so give it a moment to land.
 sleep 3
 PROFILE=$(curl -s "${FS}/users/${UID_}" -H "Authorization: Bearer $TOKEN")
 grep -q '"onboardingState"' <<<"$PROFILE" && r=ok || r=no
 check "onUserCreated bootstrapped the profile" "$r"
+
+grep -q '"Camila"' <<<"$PROFILE" && r=ok || r=no
+check "the parent's name survived the bootstrap trigger" "$r"
 
 ENT=$(curl -s "${FS}/users/${UID_}/entitlements/premium" -H "Authorization: Bearer $TOKEN")
 grep -q '"booleanValue": false' <<<"$ENT" && r=ok || r=no

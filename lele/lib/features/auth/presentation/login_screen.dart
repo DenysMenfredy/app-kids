@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
 import '../data/auth_repository.dart';
+import '../domain/credentials.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -19,50 +20,86 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordFocus = FocusNode();
+
+  String? _emailError;
+  String? _passwordError;
+  bool _obscurePassword = true;
   bool _busy = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _signIn() async {
+  /// Fills in the per-field errors and reports whether the form may be sent.
+  bool _validate() {
+    final emailError = validateEmail(_emailController.text);
+    final passwordError = validatePassword(_passwordController.text);
+    setState(() {
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+    return emailError == null && passwordError == null;
+  }
+
+  Future<void> _run(Future<void> Function() action) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
+      await action();
+    } on AuthFailure catch (failure) {
+      _showMessage(failure.message, isError: true);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _signIn() async {
+    if (!_validate()) return;
+    await _run(() async {
       await ref.read(authRepositoryProvider).signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
       if (mounted) context.goNamed(AppRoutes.dashboard);
-    } on AuthFailure catch (failure) {
-      _showError(failure.message);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
+    });
   }
 
-  Future<void> _signInWithGoogle() async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    try {
-      await ref.read(authRepositoryProvider).signInWithGoogle();
-      if (mounted) context.goNamed(AppRoutes.dashboard);
-    } on AuthFailure catch (failure) {
-      _showError(failure.message);
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
+  Future<void> _signInWithGoogle() => _run(() async {
+        await ref.read(authRepositoryProvider).signInWithGoogle();
+        if (mounted) context.goNamed(AppRoutes.dashboard);
+      });
+
+  /// A reset needs only the e-mail, so the password error is cleared first.
+  Future<void> _resetPassword() async {
+    final emailError = validateEmail(_emailController.text);
+    setState(() {
+      _emailError = emailError;
+      _passwordError = null;
+    });
+    if (emailError != null) return;
+
+    await _run(() async {
+      await ref
+          .read(authRepositoryProvider)
+          .sendPasswordReset(_emailController.text);
+      _showMessage(
+        'Enviamos um link de recuperação para '
+        '${_emailController.text.trim()}.',
+      );
+    });
   }
 
-  void _showError(String message) {
+  void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.red,
+        backgroundColor: isError ? AppColors.red : AppColors.teal,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -88,31 +125,67 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 hint: 'E-mail',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                enabled: !_busy,
+                errorText: _emailError,
+                onChanged: (_) {
+                  if (_emailError != null) setState(() => _emailError = null);
+                },
+                onSubmitted: (_) => _passwordFocus.requestFocus(),
               ),
               const SizedBox(height: 12),
               LeleTextField(
                 hint: 'Senha',
                 controller: _passwordController,
-                obscureText: true,
+                focusNode: _passwordFocus,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
+                enabled: !_busy,
+                errorText: _passwordError,
+                onChanged: (_) {
+                  if (_passwordError != null) {
+                    setState(() => _passwordError = null);
+                  }
+                },
+                onSubmitted: (_) => _signIn(),
+                suffixIcon: _PasswordToggle(
+                  obscured: _obscurePassword,
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
               const SizedBox(height: 14),
               Align(
                 alignment: Alignment.centerRight,
-                child: Text(
-                  'Esqueci minha senha',
-                  style: AppTextStyles.nunito(
-                    14,
-                    weight: FontWeight.w700,
-                    color: AppColors.orangeDark,
+                child: GestureDetector(
+                  onTap: _busy ? null : _resetPassword,
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      'Esqueci minha senha',
+                      style: AppTextStyles.nunito(
+                        14,
+                        weight: FontWeight.w700,
+                        color: AppColors.orangeDark,
+                      ),
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 18),
-              LeleButton(label: 'Entrar', onPressed: _signIn),
+              LeleButton(
+                label: _busy ? 'Entrando...' : 'Entrar',
+                enabled: !_busy,
+                color: _busy ? AppColors.borderMuted : AppColors.orange,
+                shadowColor:
+                    _busy ? AppColors.textDisabled : AppColors.orangeDark,
+                onPressed: _signIn,
+              ),
               const SizedBox(height: 12),
               const _OrDivider(),
               const SizedBox(height: 12),
-              _GoogleButton(onTap: _signInWithGoogle),
+              _GoogleButton(onTap: _busy ? null : _signInWithGoogle),
               const SizedBox(height: 40),
               Center(
                 child: Text.rich(
@@ -125,7 +198,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
-                          onTap: () => context.goNamed(AppRoutes.register),
+                          onTap: _busy
+                              ? null
+                              : () => context.goNamed(AppRoutes.register),
                           child: Text(
                             'Criar conta',
                             style: AppTextStyles.nunito(
@@ -144,6 +219,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PasswordToggle extends StatelessWidget {
+  const _PasswordToggle({required this.obscured, required this.onPressed});
+
+  final bool obscured;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(
+        obscured ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+        color: AppColors.textFaint,
+        size: 22,
+      ),
+      tooltip: obscured ? 'Mostrar senha' : 'Esconder senha',
     );
   }
 }
@@ -174,7 +269,7 @@ class _OrDivider extends StatelessWidget {
 class _GoogleButton extends StatelessWidget {
   const _GoogleButton({required this.onTap});
 
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

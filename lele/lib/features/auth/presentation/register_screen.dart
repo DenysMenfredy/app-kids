@@ -9,6 +9,7 @@ import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
 import '../../session/application/session_controller.dart';
 import '../data/auth_repository.dart';
+import '../domain/credentials.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -21,6 +22,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
+  bool _obscurePassword = true;
   bool _busy = false;
 
   @override
@@ -28,19 +36,36 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
+  bool _validate() {
+    final nameError = validateName(_nameController.text);
+    final emailError = validateEmail(_emailController.text);
+    final passwordError = validatePassword(_passwordController.text);
+    setState(() {
+      _nameError = nameError;
+      _emailError = emailError;
+      _passwordError = passwordError;
+    });
+    return nameError == null && emailError == null && passwordError == null;
+  }
+
   Future<void> _signUp() async {
-    if (_busy) return;
+    if (_busy || !_validate()) return;
     setState(() => _busy = true);
+    final name = _nameController.text.trim();
     try {
       await ref.read(authRepositoryProvider).signUp(
-            name: _nameController.text.trim(),
+            name: name,
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-      ref.read(sessionProvider.notifier).setParentName(_nameController.text);
+      // The name the parent just gave is what the dashboard greets them by,
+      // here and on every device they sign in from.
+      ref.read(sessionProvider.notifier).setParentName(name);
       if (mounted) context.goNamed(AppRoutes.profileSetup);
     } on AuthFailure catch (failure) {
       if (mounted) {
@@ -77,23 +102,68 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 hint: 'Seu nome',
                 controller: _nameController,
                 textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                enabled: !_busy,
+                errorText: _nameError,
+                onChanged: (_) {
+                  if (_nameError != null) setState(() => _nameError = null);
+                },
+                onSubmitted: (_) => _emailFocus.requestFocus(),
               ),
               const SizedBox(height: 12),
               LeleTextField(
                 hint: 'E-mail',
                 controller: _emailController,
+                focusNode: _emailFocus,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                enabled: !_busy,
+                errorText: _emailError,
+                onChanged: (_) {
+                  if (_emailError != null) setState(() => _emailError = null);
+                },
+                onSubmitted: (_) => _passwordFocus.requestFocus(),
               ),
               const SizedBox(height: 12),
               LeleTextField(
                 hint: 'Senha',
                 controller: _passwordController,
-                obscureText: true,
+                focusNode: _passwordFocus,
+                obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
+                enabled: !_busy,
+                errorText: _passwordError,
+                onChanged: (_) {
+                  if (_passwordError != null) {
+                    setState(() => _passwordError = null);
+                  }
+                },
+                onSubmitted: (_) => _signUp(),
+                suffixIcon: IconButton(
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_rounded
+                        : Icons.visibility_off_rounded,
+                    color: AppColors.textFaint,
+                    size: 22,
+                  ),
+                  tooltip:
+                      _obscurePassword ? 'Mostrar senha' : 'Esconder senha',
+                ),
               ),
               const SizedBox(height: 18),
               const _LgpdNotice(),
               const SizedBox(height: 18),
-              LeleButton(label: 'Criar conta', onPressed: _signUp),
+              LeleButton(
+                label: _busy ? 'Criando conta...' : 'Criar conta',
+                enabled: !_busy,
+                color: _busy ? AppColors.borderMuted : AppColors.orange,
+                shadowColor:
+                    _busy ? AppColors.textDisabled : AppColors.orangeDark,
+                onPressed: _signUp,
+              ),
               const SizedBox(height: 40),
               Center(
                 child: Text.rich(
@@ -106,7 +176,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
-                          onTap: () => context.goNamed(AppRoutes.login),
+                          onTap: _busy
+                              ? null
+                              : () => context.goNamed(AppRoutes.login),
                           child: Text(
                             'Entrar',
                             style: AppTextStyles.nunito(
