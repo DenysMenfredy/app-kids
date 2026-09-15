@@ -1,8 +1,9 @@
 name: Release Android
 
-# PREREQUISITE: android/app/build.gradle.kts still signs release builds with
-# the debug key (the Flutter template's TODO). Until it reads key.properties,
-# this workflow produces a debug-signed artifact that Play will reject.
+# Signing: android/app/build.gradle.kts reads android/key.properties, which the
+# "Restore the upload keystore" step below writes from this Environment's
+# secrets. If those secrets are missing the build does not silently fall back —
+# key.properties would be incomplete and Gradle fails naming the missing key.
 on:
   workflow_dispatch:
     inputs:
