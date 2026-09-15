@@ -15,13 +15,12 @@ and the Firebase backend behind it.
 
 | Need | For |
 | --- | --- |
-| Flutter SDK (`~/development/flutter`, not on PATH by default) | the app |
+| Flutter SDK (`~/develop/flutter`, already on PATH) | the app |
 | Node 22 (`nvm use` in `backend/`) | Cloud Functions, seeding |
 | Java 11+ | the Firebase emulators |
 | Chrome, or an Android emulator/device | somewhere to run the app |
 
 ```bash
-export PATH="$HOME/development/flutter/bin:$PATH"
 cd backend && nvm use     # Node 22 — the Cloud Functions runtime
 ```
 
