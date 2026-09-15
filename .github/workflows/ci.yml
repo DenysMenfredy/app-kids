@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes the older run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Flutter app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lele
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          # Pinned, not "stable": resolving on a different SDK silently
+          # rewrites pubspec.lock, which has bitten this repo before.
+          flutter-version: 3.44.9
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: pubspec.lock is the one that was committed
+        run: git diff --exit-code pubspec.lock
+      - run: flutter analyze
+      - run: flutter test
+
+  functions:
+    name: Cloud Functions
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/functions
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/functions/package-lock.json
+      - run: npm ci
+      - run: npm test
+
+  rules:
+    name: Security Rules
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/test/rules
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/test/rules/package-lock.json
+      - uses: actions/setup-java@v4
+        # The Firestore emulator is a Java process.
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - run: npm test

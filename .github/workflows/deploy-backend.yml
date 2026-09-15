@@ -1,0 +1,68 @@
+name: Deploy backend
+
+# Nothing here fires on a push. A deploy is always someone's decision, and
+# staging/production are reached through GitHub Environments, which is where
+# the required reviewers live.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Firebase project alias
+        type: choice
+        options: [dev, staging, production]
+        default: dev
+
+concurrency:
+  # Never cancel a deploy midway; queue behind the one in flight.
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # mint the Workload Identity token; no JSON key exists
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/functions/package-lock.json
+
+      - name: Build and test before anything ships
+        working-directory: backend/functions
+        run: |
+          npm ci
+          npm test
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Security Rules must pass against the emulator
+        working-directory: backend/test/rules
+        run: |
+          npm ci
+          npm test
+
+      # Keyless: GitHub mints a short-lived OIDC token that GCP exchanges for
+      # credentials. No long-lived service-account key is stored anywhere.
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Deploy rules, indexes and functions
+        working-directory: backend
+        run: |
+          npx --yes firebase-tools@13 deploy \
+            --only firestore:rules,firestore:indexes,storage,functions \
+            --project ${{ inputs.environment }} \
+            --non-interactive

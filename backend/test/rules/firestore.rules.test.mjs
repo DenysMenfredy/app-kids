@@ -31,7 +31,7 @@ const STRANGER = "stranger_uid";
 
 before(async () => {
   env = await initializeTestEnvironment({
-    projectId: "letrando-dev",
+    projectId: "demo-letrando",
     firestore: {
       rules: readFileSync(new URL("../../firestore.rules", import.meta.url), "utf8"),
     },
