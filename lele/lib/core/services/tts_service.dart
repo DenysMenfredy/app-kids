@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -55,12 +57,46 @@ TtsVoice? pickPortugueseVoice(List<TtsVoice> voices) {
 /// why the speech sounded wrong.
 double get ttsSpeechRate => kIsWeb ? 0.85 : 0.45;
 
+/// Waits for the platform to actually have a voice list.
+///
+/// This is the whole problem on web: `speechSynthesis.getVoices()` returns
+/// an empty list on the first call and fills in asynchronously, and
+/// flutter_tts reads it synchronously. Configure too early and both
+/// setLanguage and setVoice match nothing, leaving the utterance on
+/// whatever the browser defaults to — German, on a machine set up in
+/// German. Mobile returns its list straight away and falls out on the first
+/// attempt.
+///
+/// Gives up after [attempts], so a device with no voices at all costs a
+/// bounded wait rather than hanging the first lesson.
+Future<List<TtsVoice>> awaitVoices(
+  Future<List<TtsVoice>> Function() loadVoices, {
+  int attempts = 20,
+  Duration gap = const Duration(milliseconds: 150),
+}) async {
+  for (var attempt = 0; attempt < attempts; attempt++) {
+    final voices = await loadVoices();
+    if (voices.isNotEmpty) return voices;
+    if (attempt < attempts - 1) await Future<void>.delayed(gap);
+  }
+  return const [];
+}
+
 /// Text-to-speech for the child-facing activities, pinned to pt-BR.
 class TtsService {
-  TtsService([FlutterTts? tts]) : _tts = tts ?? FlutterTts();
+  TtsService([FlutterTts? tts, this.voiceWait = const Duration(milliseconds: 150)])
+      : _tts = tts ?? FlutterTts();
 
   final FlutterTts _tts;
+
+  /// How long to leave between asks while the platform loads its voices.
+  final Duration voiceWait;
   bool _configured = false;
+
+  /// Shared by every caller while a configure pass is in flight. Without it,
+  /// a `speak` arriving during the warm-up would start a second pass and
+  /// poll for voices all over again.
+  Future<void>? _configuring;
 
   /// The voice actually in use, once known. Null means the platform had no
   /// Portuguese voice and whatever speaks will sound wrong.
@@ -105,13 +141,22 @@ class TtsService {
     }
   }
 
-  Future<void> _configure() async {
-    if (_configured) return;
+  Future<void> _configure() {
+    if (_configured) return Future<void>.value();
+    return _configuring ??= _runConfigure().whenComplete(() {
+      _configuring = null;
+    });
+  }
+
+  Future<void> _runConfigure() async {
     await _configureIosAudio();
     try {
+      // Before anything else: flutter_tts resolves both the language and the
+      // voice against whatever getVoices() returns at that instant.
+      final voices = await awaitVoices(availableVoices, gap: voiceWait);
+
       await _tts.setLanguage(ttsLocale);
 
-      final voices = await availableVoices();
       final chosen = pickPortugueseVoice(voices);
       if (chosen != null) {
         await _tts.setVoice(chosen.toMap());
@@ -137,9 +182,10 @@ class TtsService {
       await _tts.setPitch(1.05);
       await _tts.awaitSpeakCompletion(true);
 
-      // Only now: a failed attempt should be retried on the next utterance
-      // rather than leaving the engine mis-configured for the whole session.
-      _configured = true;
+      // Latch only once the platform actually offered a voice list. An empty
+      // one means it may still be loading, so the next utterance retries
+      // instead of leaving the engine on its default voice for the session.
+      _configured = voices.isNotEmpty;
     } catch (error) {
       debugPrint('TTS unavailable: $error');
     }
@@ -156,6 +202,10 @@ class TtsService {
     }
   }
 
+  /// Settles the engine ahead of the first utterance, so waiting for the
+  /// voice list doesn't delay the child's first "Toque na letra...".
+  Future<void> warmUp() => _configure();
+
   Future<void> stop() async {
     try {
       await _tts.stop();
@@ -165,6 +215,9 @@ class TtsService {
 
 final ttsServiceProvider = Provider<TtsService>((ref) {
   final service = TtsService();
+  // Unawaited on purpose: the voice list loads while the parent is still
+  // reading the lesson intro.
+  unawaited(service.warmUp());
   ref.onDispose(service.stop);
   return service;
 });

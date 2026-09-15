@@ -29,6 +29,17 @@ It picks an exact pt-BR voice, falls back to European Portuguese (wrong
 accent, right language), and logs loudly when the device has no Portuguese
 at all rather than mispronouncing everything in silence.
 
+Naming the voice is not sufficient on the web, because of *when* it is
+named. flutter_tts resolves both the language and the voice against
+`speechSynthesis.getVoices()` **synchronously**, but Chrome returns an empty
+list on the first call and populates it asynchronously. Configuring on page
+load therefore matched nothing and left the utterance on the browser
+default — German, on a machine set up in German, which is what the bug
+looked like. `TtsService` now waits for a non-empty voice list (bounded,
+~3s) before configuring, doesn't mark itself configured if the list never
+arrived, and warms up in the background so the child's first instruction
+isn't delayed.
+
 The speech rate is per-platform on purpose: flutter_tts doubles the value on
 Android and passes it straight through on iOS, where 0.5 is normal, but on
 web it becomes `SpeechSynthesisUtterance.rate`, where **1.0** is normal. One
