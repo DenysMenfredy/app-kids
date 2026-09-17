@@ -1,5 +1,8 @@
 gradle-wrapper.jar
 /.gradle
+# Gradle's output. lele/.gitignore anchors its own `/build/` to the Flutter
+# project root, so it never reached this directory.
+/build
 /captures/
 /gradlew
 /gradlew.bat

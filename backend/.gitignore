@@ -1,5 +1,10 @@
 node_modules/
-lib/
+# Anchored to the compiled output only. An unanchored `lib/` matches at any
+# depth, so it also swallowed functions/src/lib/ — four source modules that
+# every import in the codebase depends on. They stayed on developer machines
+# and were never committed, so CI checked out a tree where `tsc` could not
+# resolve them and every build failed. Keep the leading slash.
+/functions/lib/
 *.log
 .env
 .env.*

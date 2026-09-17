@@ -43,7 +43,8 @@ boundaries or security architecture must be documented as ADRs in
 
 ## Working on the app
 
-- Flutter SDK: `~/develop/flutter` (3.44.x, already on PATH). An older
+- Flutter SDK: `~/develop/flutter` (3.47.4, already on PATH; the CI
+  workflows pin the same version — bump both together). An older
   3.35 copy also exists at `~/development/flutter` — do not use it; it
   resolves `pubspec.lock` down to an older Dart and fights the real one.
 - `flutter analyze` must stay at zero issues; run `flutter test` before

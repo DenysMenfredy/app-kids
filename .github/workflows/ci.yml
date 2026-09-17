@@ -26,7 +26,11 @@ jobs:
         with:
           # Pinned, not "stable": resolving on a different SDK silently
           # rewrites pubspec.lock, which has bitten this repo before.
-          flutter-version: 3.44.9
+          # It must track the SDK the team actually develops on — when this
+          # drifted behind (3.44.9 against a local 3.47.4) the lock check
+          # below failed on SDK-pinned packages like matcher and meta, which
+          # says nothing about the real cause.
+          flutter-version: 3.47.4
           channel: stable
           cache: true
       - run: flutter pub get
