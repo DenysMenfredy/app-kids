@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/audio/feedback_cues.dart';
+import '../../../../core/services/feedback_service.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
-import '../../../../core/widgets/lele_mascot.dart';
+import '../../../../core/widgets/motion.dart';
+import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
-import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
 import '../widgets/highlighted_instruction.dart';
 
@@ -29,9 +33,11 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
   void _onTap(TapActivity activity, String letter) {
     if (_done) return;
     final tts = ref.read(ttsServiceProvider);
+    final feedback = ref.read(feedbackServiceProvider);
     final stats = ref.read(lessonStatsProvider.notifier);
     if (letter == activity.target) {
       stats.recordCorrect();
+      feedback.play(FeedbackCue.correct);
       tts.speak('Muito bem!');
       setState(() {
         _picked = letter;
@@ -46,6 +52,9 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
       });
     } else {
       stats.recordWrong();
+      // Sound first: it lands before the spoken prompt has finished its
+      // first syllable, which is what makes a miss unmistakable.
+      feedback.play(FeedbackCue.wrong);
       tts.speak('Tente de novo');
       setState(() {
         _picked = letter;
@@ -74,10 +83,10 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
       messageColor: _done ? AppColors.green : AppColors.red,
       child: Column(
         children: [
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 12,
+            spacing: AppSpacing.md,
             children: [
               _SpeakButton(
                 onTap: () =>
@@ -97,8 +106,8 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
+                mainAxisSpacing: AppSpacing.lg,
+                crossAxisSpacing: AppSpacing.lg,
                 childAspectRatio: 1.35,
                 children: [
                   for (final letter in activity.options)
@@ -126,23 +135,27 @@ class _SpeakButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 52,
-        height: 52,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: AppColors.teal,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(color: AppColors.tealDark, offset: Offset(0, 4)),
-          ],
-        ),
-        child: const Icon(
-          Icons.volume_up_rounded,
-          size: 26,
-          color: Colors.white,
+    return Semantics(
+      button: true,
+      label: 'Ouvir o som da letra',
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 52,
+          height: 52,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            color: AppColors.teal,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: AppColors.tealDark, offset: Offset(0, 4)),
+            ],
+          ),
+          child: const Icon(
+            Icons.volume_up_rounded,
+            size: 26,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -174,7 +187,7 @@ class _LetterCard extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: isRight ? AppColors.green : AppColors.surface,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(AppRadius.panel),
         border: Border.all(
           color: isRight
               ? AppColors.greenDark
@@ -196,8 +209,7 @@ class _LetterCard extends StatelessWidget {
       ),
       child: Text(
         letter,
-        style: AppTextStyles.baloo(
-          56,
+        style: AppTextStyles.letterGlyph.copyWith(
           color: isRight
               ? Colors.white
               : isWrong
@@ -207,11 +219,26 @@ class _LetterCard extends StatelessWidget {
       ),
     );
 
-    return GestureDetector(
-      onTap: onTap,
-      child: isRight
-          ? PopIn(child: card)
-          : ShakeWidget(trigger: isWrong ? wrongAttempts : null, child: card),
+    return Semantics(
+      button: true,
+      selected: picked,
+      label: 'Letra $letter',
+      // The glyph is already the label; without this the card announces
+      // itself twice.
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: BurstOverlay(
+          trigger: isRight ? letter : null,
+          colors: AppColors.celebration,
+          child: isRight
+              ? PopIn(child: card)
+              : ShakeWidget(
+                  trigger: isWrong ? wrongAttempts : null,
+                  child: card,
+                ),
+        ),
+      ),
     );
   }
 }

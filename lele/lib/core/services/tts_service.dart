@@ -131,14 +131,10 @@ class TtsService {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
     try {
       await _tts.setSharedInstance(true);
-      await _tts.setIosAudioCategory(
-        IosTextToSpeechAudioCategory.playback,
-        [
-          IosTextToSpeechAudioCategoryOptions.duckOthers,
-          IosTextToSpeechAudioCategoryOptions.defaultToSpeaker,
-        ],
-        IosTextToSpeechAudioMode.voicePrompt,
-      );
+      await _tts.setIosAudioCategory(IosTextToSpeechAudioCategory.playback, [
+        IosTextToSpeechAudioCategoryOptions.duckOthers,
+        IosTextToSpeechAudioCategoryOptions.defaultToSpeaker,
+      ], IosTextToSpeechAudioMode.voicePrompt);
     } catch (error) {
       // Not fatal: speech still works, it just obeys the silent switch.
       debugPrint('TTS iOS audio session: $error');

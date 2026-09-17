@@ -36,8 +36,10 @@ void main() {
     test('duration measures from the start instant', () {
       final start = DateTime(2026, 8, 19, 10, 0, 0);
       final stats = LessonStats(startedAt: start);
-      expect(stats.durationSeconds(start.add(const Duration(minutes: 15))),
-          15 * 60);
+      expect(
+        stats.durationSeconds(start.add(const Duration(minutes: 15))),
+        15 * 60,
+      );
     });
 
     test('duration never exceeds a day (backend validation bound)', () {

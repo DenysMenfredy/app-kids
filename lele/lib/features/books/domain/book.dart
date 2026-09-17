@@ -1,76 +1,63 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-
+/// A book in the child's library.
+///
+/// Carries what the book *is*. How its cover is painted lives in
+/// `presentation/book_cover_style.dart`, keyed by [id] — a colour on a
+/// domain model is a decision the backend would have no way to express when
+/// this catalog stops being hardcoded.
 class Book extends Equatable {
   const Book({
+    required this.id,
     required this.title,
     required this.initial,
-    required this.coverColors,
-    required this.spineColor,
     this.locked = false,
     this.isNew = false,
     this.unlockHint,
   });
 
+  final String id;
   final String title;
 
   /// Large letter shown on the cover.
   final String initial;
-  final List<Color> coverColors;
-  final Color spineColor;
+
   final bool locked;
   final bool isNew;
   final String? unlockHint;
 
   @override
-  List<Object?> get props => [title, initial, locked, isNew, unlockHint];
+  List<Object?> get props => [id, title, initial, locked, isNew, unlockHint];
 }
 
 const bookLibrary = [
+  Book(id: 'sapo', title: 'O Sapo Bocudo', initial: 'S', isNew: true),
+  Book(id: 'vogais', title: 'A Festa das Vogais', initial: 'A'),
   Book(
-    title: 'O Sapo Bocudo',
-    initial: 'S',
-    coverColors: [AppColors.teal, AppColors.tealBright],
-    spineColor: AppColors.tealDark,
-    isNew: true,
-  ),
-  Book(
-    title: 'A Festa das Vogais',
-    initial: 'A',
-    coverColors: [AppColors.orangeSoft, Color(0xFFFFB98A)],
-    spineColor: AppColors.orangeDark,
-  ),
-  Book(
+    id: 'bicho',
     title: 'Bicho de Letra',
     initial: 'B',
-    coverColors: [AppColors.purple, AppColors.purpleBright],
-    spineColor: AppColors.purpleDark,
     locked: true,
     unlockHint: '3 lições',
   ),
   Book(
+    id: 'trem',
     title: 'O Trem das Sílabas',
     initial: 'T',
-    coverColors: [AppColors.yellow, AppColors.yellowBright],
-    spineColor: AppColors.yellowDark,
     locked: true,
     unlockHint: '5 lições',
   ),
   Book(
+    id: 'rimas',
     title: 'Rimas da Floresta',
     initial: 'R',
-    coverColors: [AppColors.red, AppColors.redBright],
-    spineColor: AppColors.redDark,
     locked: true,
     unlockHint: '8 lições',
   ),
   Book(
+    id: 'historia',
     title: 'Minha 1ª História',
     initial: 'H',
-    coverColors: [AppColors.textDark, AppColors.brownDeep],
-    spineColor: AppColors.brownDarkest,
     locked: true,
     unlockHint: 'Módulo 7',
   ),

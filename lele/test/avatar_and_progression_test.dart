@@ -7,6 +7,7 @@ import 'package:lele/features/learning/domain/learning_module.dart';
 import 'package:lele/features/session/application/child_provider.dart';
 import 'package:lele/features/session/application/session_controller.dart';
 import 'package:lele/features/session/domain/child_profile.dart';
+import 'package:lele/features/session/presentation/child_avatar_style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<ProviderContainer> makeContainer([
@@ -49,7 +50,9 @@ void main() {
       // Anything but the default, so a pass can't be the default leaking.
       expect(ChildAvatar.purple, isNot(ChildProfile.defaultProfile.avatar));
 
-      container.read(sessionProvider.notifier).saveChildProfile(
+      container
+          .read(sessionProvider.notifier)
+          .saveChildProfile(
             const ChildProfile(
               name: 'Miguel',
               age: 6,
@@ -69,8 +72,14 @@ void main() {
       final first = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-      first.read(sessionProvider.notifier).saveChildProfile(
-            const ChildProfile(name: 'Miguel', age: 6, avatar: ChildAvatar.teal),
+      first
+          .read(sessionProvider.notifier)
+          .saveChildProfile(
+            const ChildProfile(
+              name: 'Miguel',
+              age: 6,
+              avatar: ChildAvatar.teal,
+            ),
           );
       first.dispose();
 
@@ -96,7 +105,8 @@ void main() {
     });
 
     test('stops at the end of the curriculum', () {
-      final last = 'lesson_${curriculum.last.lastLessonNumber.toString().padLeft(3, '0')}';
+      final last =
+          'lesson_${curriculum.last.lastLessonNumber.toString().padLeft(3, '0')}';
       expect(nextLessonId(last), isNull);
     });
 
@@ -121,8 +131,7 @@ void main() {
       expect(container.read(currentLessonIdProvider), isNot(started));
     });
 
-    test('finishing an older lesson does not skip the child forward',
-        () async {
+    test('finishing an older lesson does not skip the child forward', () async {
       final container = await makeContainer();
       container.read(demoLessonProvider.notifier).completed('lesson_001');
       expect(container.read(currentLessonIdProvider), AppConfig.demoLessonId);
@@ -160,9 +169,9 @@ void main() {
       final after = container.read(currentModuleProvider);
       expect(after.number, greaterThan(before.number));
       expect(
-        container.read(journeyProvider).where(
-              (m) => m.status == ModuleStatus.done,
-            ),
+        container
+            .read(journeyProvider)
+            .where((m) => m.status == ModuleStatus.done),
         isNotEmpty,
       );
     });

@@ -18,7 +18,7 @@ class HighlightedInstruction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = AppTextStyles.baloo(23);
+    final style = AppTextStyles.heading;
     final parts = highlightSplit(instruction, token);
     if (parts == null) {
       return Text(instruction, textAlign: TextAlign.center, style: style);
@@ -30,7 +30,7 @@ class HighlightedInstruction extends StatelessWidget {
         children: [
           TextSpan(
             text: token,
-            style: AppTextStyles.baloo(23, color: AppColors.orangeDark),
+            style: AppTextStyles.heading.copyWith(color: AppColors.orangeDark),
           ),
           TextSpan(text: parts.after, style: style),
         ],

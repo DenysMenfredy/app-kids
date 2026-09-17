@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/audio/feedback_cues.dart';
+import '../../../../core/services/feedback_service.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
-import '../../../../core/widgets/lele_mascot.dart';
+import '../../../../core/widgets/motion.dart';
+import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
-import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
 
 class MatchActivityScreen extends ConsumerStatefulWidget {
@@ -40,6 +44,9 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
     if (upper == _selected) {
       final all = _matched.length + 1 == activity.uppercase.length;
       ref.read(lessonStatsProvider.notifier).recordCorrect();
+      ref
+          .read(feedbackServiceProvider)
+          .play(all ? FeedbackCue.celebrate : FeedbackCue.correct);
       ref.read(ttsServiceProvider).speak(all ? 'Incrível!' : 'Isso!');
       setState(() {
         _matched.add(upper);
@@ -57,6 +64,8 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
       }
     } else {
       ref.read(lessonStatsProvider.notifier).recordWrong();
+      // This activity said nothing at all on a wrong pair before.
+      ref.read(feedbackServiceProvider).play(FeedbackCue.wrong);
       setState(() {
         _wrong = letter;
         _wrongAttempts++;
@@ -85,22 +94,22 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
       scrollableContent: true,
       child: Column(
         children: [
-          const SizedBox(height: 20),
-          Text(activity.instruction, style: AppTextStyles.baloo(23)),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xl),
+          Text(activity.instruction, style: AppTextStyles.heading),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             activity.hint,
-            style: AppTextStyles.nunito(14, color: AppColors.textMuted),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
           ),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 22,
+              spacing: AppSpacing.xxl,
               children: [
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 14,
+                  spacing: AppSpacing.lg,
                   children: [
                     for (final letter in activity.uppercase)
                       _MatchCard(
@@ -116,7 +125,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
                 ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  spacing: 14,
+                  spacing: AppSpacing.lg,
                   children: [
                     for (final letter in activity.lowercase)
                       _MatchCard(
@@ -180,39 +189,50 @@ class _MatchCard extends StatelessWidget {
         ? AppColors.red
         : color;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: ShakeWidget(
-        trigger: wrong ? wrongAttempts : null,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 200),
-          opacity: matched ? 0.7 : 1,
-          child: AnimatedScale(
-            duration: const Duration(milliseconds: 200),
-            scale: selected ? 1.06 : 1,
-            child: AnimatedContainer(
+    return Semantics(
+      button: true,
+      selected: selected || matched,
+      label: 'Letra $letter',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: BurstOverlay(
+          trigger: matched ? letter : null,
+          colors: AppColors.celebration,
+          flecks: 10,
+          child: ShakeWidget(
+            trigger: wrong ? wrongAttempts : null,
+            child: AnimatedOpacity(
               duration: const Duration(milliseconds: 200),
-              width: 96,
-              height: 88,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: borderColor, width: 3),
-                boxShadow: [
-                  BoxShadow(
-                    color: matched
-                        ? AppColors.greenBorder
-                        : selected
-                        ? AppColors.orangeDark
-                        : AppColors.border,
-                    offset: const Offset(0, 5),
+              opacity: matched ? 0.7 : 1,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 200),
+                scale: selected ? 1.06 : 1,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 96,
+                  height: 88,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: background,
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                    border: Border.all(color: borderColor, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: matched
+                            ? AppColors.greenBorder
+                            : selected
+                            ? AppColors.orangeDark
+                            : AppColors.border,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Text(
-                letter,
-                style: AppTextStyles.baloo(42, color: textColor),
+                  child: Text(
+                    letter,
+                    style: AppTextStyles.display.copyWith(color: textColor),
+                  ),
+                ),
               ),
             ),
           ),

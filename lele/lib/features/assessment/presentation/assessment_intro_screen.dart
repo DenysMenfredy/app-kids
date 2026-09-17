@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/app_router.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../../core/widgets/motion.dart';
 import '../../session/application/child_provider.dart';
 import '../application/assessment_controller.dart';
 
@@ -28,19 +31,20 @@ class AssessmentIntroScreen extends ConsumerWidget {
               const Center(
                 child: FloatingWidget(
                   child: LeleMascot(
+                    semanticLabel: 'O mascote Lelê',
                     size: 110,
                     color: AppColors.teal,
                     mouthColor: AppColors.tealDark,
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               Text(
                 'Vamos conhecer\n$childName!',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.baloo(27, height: 1.25),
+                style: AppTextStyles.title.copyWith(height: 1.25),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 290),
@@ -48,28 +52,27 @@ class AssessmentIntroScreen extends ConsumerWidget {
                     '3 perguntas rápidas para montarmos a jornada ideal de '
                     'leitura. Sem certo ou errado!',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.nunito(
-                      16,
+                    style: AppTextStyles.body.copyWith(
                       color: AppColors.textMuted,
                       height: 1.5,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.panel,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppRadius.control),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    spacing: 6,
+                    spacing: AppSpacing.sm,
                     children: [
                       Container(
                         width: 10,
@@ -83,9 +86,8 @@ class AssessmentIntroScreen extends ConsumerWidget {
                         child: Text(
                           'Leva 1 minuto',
                           maxLines: 1,
-                          style: AppTextStyles.nunito(
-                            14,
-                            weight: FontWeight.w700,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textMuted,
                           ),
                         ),
@@ -94,7 +96,7 @@ class AssessmentIntroScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               LeleButton(
                 label: 'Vamos lá',
                 color: AppColors.teal,

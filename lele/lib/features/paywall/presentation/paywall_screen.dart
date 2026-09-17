@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/router/app_router.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
-import '../data/subscription_service.dart';
+import '../application/checkout_controller.dart';
+import '../domain/checkout_failure.dart';
 import '../domain/plan.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -31,23 +32,15 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   Future<void> _startCheckout() async {
     if (_busy) return;
-    if (!AppConfig.useFirebase) {
+    final checkout = ref.read(checkoutControllerProvider);
+    if (!checkout.paymentsEnabled) {
       // Demo mode: no payments backend — keep the prototype behavior.
       context.goNamed(AppRoutes.dashboard);
       return;
     }
     setState(() => _busy = true);
     try {
-      final url = await ref
-          .read(subscriptionServiceProvider)
-          .createCheckoutSession(_backendPlanIds[_selectedPlanId]!);
-      final launched = await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched) {
-        throw const CheckoutFailure('Não foi possível abrir o pagamento.');
-      }
+      await checkout.start(_backendPlanIds[_selectedPlanId]!);
     } on CheckoutFailure catch (failure) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +61,12 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxl,
+            AppSpacing.md,
+            AppSpacing.xxl,
+            AppSpacing.xl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -78,28 +76,29 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   onTap: () => context.goNamed(AppRoutes.dashboard),
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.xs,
+                    ),
                     child: Text(
                       '← Voltar',
-                      style: AppTextStyles.nunito(
-                        15,
-                        weight: FontWeight.w800,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w800,
                         color: AppColors.textFaint,
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
+                    horizontal: AppSpacing.lg,
                     vertical: 7,
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.purple,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
                   ),
                   child: Text(
                     'PREÇO DE FUNDADOR',
@@ -111,28 +110,28 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 'Desbloqueie toda a\njornada de leitura',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.baloo(26, height: 1.25),
+                style: AppTextStyles.title.copyWith(height: 1.25),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.lg),
               const _Benefit('Todos os 7 módulos até as histórias'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const _Benefit('Biblioteca de livros desbloqueáveis'),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               const _Benefit('Relatórios de progresso para os pais'),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               for (final plan in founderPlans) ...[
                 _PlanCard(
                   plan: plan,
                   selected: plan.id == _selectedPlanId,
                   onTap: () => setState(() => _selectedPlanId = plan.id),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
               ],
-              const SizedBox(height: 2),
+              const SizedBox(height: AppSpacing.xs),
               LeleButton(
                 label: _busy
                     ? 'Abrindo pagamento...'
@@ -143,7 +142,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                 enabled: !_busy,
                 onPressed: _startCheckout,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 'Cancele quando quiser. O 1º módulo é sempre gratuito.',
                 textAlign: TextAlign.center,
@@ -169,7 +168,7 @@ class _Benefit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: 10,
+      spacing: AppSpacing.md,
       children: [
         Container(
           width: 22,
@@ -177,14 +176,16 @@ class _Benefit extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.teal,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.bar),
           ),
           child: const Icon(Icons.check_rounded, size: 15, color: Colors.white),
         ),
         Expanded(
           child: Text(
             text,
-            style: AppTextStyles.nunito(14, weight: FontWeight.w700),
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -212,17 +213,17 @@ class _PlanCard extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: selected ? AppColors.selectedFill : AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.card),
               border: Border.all(
                 color: selected ? AppColors.orange : AppColors.border,
                 width: 3,
               ),
             ),
             child: Row(
-              spacing: 12,
+              spacing: AppSpacing.md,
               children: [
                 Container(
                   width: 24,
@@ -256,23 +257,31 @@ class _PlanCard extends StatelessWidget {
                         plan.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.baloo(17),
+                        style: AppTextStyles.subheading,
                       ),
                       Text(
                         plan.subtitle,
-                        style: AppTextStyles.nunito(
-                          13,
+                        style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.textMuted,
                         ),
                       ),
                     ],
                   ),
                 ),
-                Flexible(
+                // Capped rather than Flexible: alongside the Expanded above
+                // it would take half the free space, use only as much as the
+                // price needs, and leave the remainder as dead space after
+                // it — which pushed the price 204px in from the card edge on
+                // a tablet.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 140),
                   child: Text(
                     plan.price,
                     maxLines: 1,
-                    style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.subheading.copyWith(
+                      color: AppColors.orangeDark,
+                    ),
                   ),
                 ),
               ],
@@ -284,16 +293,16 @@ class _PlanCard extends StatelessWidget {
               right: 14,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.yellow,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.chip),
                 ),
                 child: Text(
                   plan.badge!,
-                  style: AppTextStyles.baloo(11, color: Colors.white),
+                  style: AppTextStyles.micro.copyWith(color: Colors.white),
                 ),
               ),
             ),

@@ -59,6 +59,11 @@ abstract final class AppColors {
   static const redDark = Color(0xFFC63A3A);
   static const redPale = Color(0xFFF0B5B5);
 
+  /// Thrown out by a burst when a child gets something right. The five
+  /// brand hues in turn, so the flecks read as this app rather than as
+  /// generic confetti.
+  static const celebration = [orange, teal, purple, yellow, green];
+
   // Misc
   static const brownDeep = Color(0xFF6B5248);
   static const brownDarkest = Color(0xFF2C1F1B);

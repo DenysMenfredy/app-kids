@@ -4,11 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
-import '../data/auth_repository.dart';
+import '../application/auth_controller.dart';
+import '../domain/auth_failure.dart';
 import '../domain/credentials.dart';
+import '../domain/sign_in_outcome.dart';
+import 'apple_sign_in_button.dart';
+import 'google_sign_in_button.dart';
+import 'or_divider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -62,7 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_validate()) return;
     await _run(() async {
       await ref
-          .read(authRepositoryProvider)
+          .read(authControllerProvider)
           .signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -71,10 +77,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
   }
 
-  Future<void> _signInWithGoogle() => _run(() async {
-    await ref.read(authRepositoryProvider).signInWithGoogle();
-    if (mounted) context.goNamed(AppRoutes.dashboard);
-  });
+  Future<void> _signInWithGoogle() => _run(
+    () async => _continueFrom(
+      await ref.read(authControllerProvider).signInWithGoogle(),
+    ),
+  );
+
+  Future<void> _signInWithApple() => _run(
+    () async =>
+        _continueFrom(await ref.read(authControllerProvider).signInWithApple()),
+  );
+
+  /// Sends the parent wherever the sign-in actually left them.
+  ///
+  /// A provider button is a sign-in and a sign-up at once, and the two need
+  /// different screens next. Sending everyone to the dashboard — which is
+  /// what this did — dropped a brand-new parent onto a summary of a family
+  /// that does not exist yet: no child, no assessment, nothing to show.
+  void _continueFrom(SignInOutcome outcome) {
+    if (!mounted) return;
+    switch (outcome) {
+      case SignInOutcome.created:
+        // The same door an e-mail sign-up goes through.
+        context.goNamed(AppRoutes.profileSetup);
+      case SignInOutcome.returning:
+        context.goNamed(AppRoutes.dashboard);
+      case SignInOutcome.cancelled:
+        // They closed the sheet. Leave the screen exactly as it was.
+        break;
+    }
+  }
 
   /// A reset needs only the e-mail, so the password error is cleared first.
   Future<void> _resetPassword() async {
@@ -87,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     await _run(() async {
       await ref
-          .read(authRepositoryProvider)
+          .read(authControllerProvider)
           .sendPasswordReset(_emailController.text);
       _showMessage(
         'Enviamos um link de recuperação para '
@@ -117,12 +149,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Que bom te ver!', style: AppTextStyles.screenTitle),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Entre para continuar a jornada de leitura.',
                 style: AppTextStyles.subtitle,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               LeleTextField(
                 hint: 'E-mail',
                 controller: _emailController,
@@ -135,7 +167,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 },
                 onSubmitted: (_) => _passwordFocus.requestFocus(),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               LeleTextField(
                 hint: 'Senha',
                 controller: _passwordController,
@@ -156,26 +188,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: AppSpacing.lg),
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: _busy ? null : _resetPassword,
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.xs,
+                    ),
                     child: Text(
                       'Esqueci minha senha',
-                      style: AppTextStyles.nunito(
-                        14,
-                        weight: FontWeight.w700,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w700,
                         color: AppColors.orangeDark,
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: AppSpacing.xl),
               LeleButton(
                 label: _busy ? 'Entrando...' : 'Entrar',
                 enabled: !_busy,
@@ -185,16 +218,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     : AppColors.orangeDark,
                 onPressed: _signIn,
               ),
-              const SizedBox(height: 12),
-              const _OrDivider(),
-              const SizedBox(height: 12),
-              _GoogleButton(onTap: _busy ? null : _signInWithGoogle),
-              const SizedBox(height: 40),
+              const SizedBox(height: AppSpacing.md),
+              const OrDivider(),
+              const SizedBox(height: AppSpacing.md),
+              // Review guideline 4.8 asks for Sign in with Apple to be
+              // offered on equivalent terms to any other third-party
+              // sign-in: same size, same shape, immediately adjacent.
+              if (AppleSignInButton.isSupported) ...[
+                AppleSignInButton(onPressed: _busy ? null : _signInWithApple),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              GoogleSignInButton(onPressed: _busy ? null : _signInWithGoogle),
+              const SizedBox(height: AppSpacing.xxxl),
               Center(
                 child: Text.rich(
                   TextSpan(
                     text: 'Não tem conta? ',
-                    style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
@@ -203,9 +245,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : () => context.goNamed(AppRoutes.register),
                           child: Text(
                             'Criar conta',
-                            style: AppTextStyles.nunito(
-                              15,
-                              weight: FontWeight.w800,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w800,
                               color: AppColors.orangeDark,
                             ),
                           ),
@@ -239,79 +280,6 @@ class _PasswordToggle extends StatelessWidget {
         size: 22,
       ),
       tooltip: obscured ? 'Mostrar senha' : 'Esconder senha',
-    );
-  }
-}
-
-class _OrDivider extends StatelessWidget {
-  const _OrDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      spacing: 12,
-      children: [
-        const Expanded(child: Divider(color: AppColors.border, thickness: 2)),
-        Text(
-          'ou',
-          style: AppTextStyles.nunito(
-            13,
-            weight: FontWeight.w700,
-            color: AppColors.textFaint,
-          ),
-        ),
-        const Expanded(child: Divider(color: AppColors.border, thickness: 2)),
-      ],
-    );
-  }
-}
-
-class _GoogleButton extends StatelessWidget {
-  const _GoogleButton({required this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border, width: 2),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 10,
-          children: [
-            Container(
-              width: 22,
-              height: 22,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: SweepGradient(
-                  colors: [
-                    Color(0xFFEA4335),
-                    Color(0xFFFBBC05),
-                    Color(0xFF34A853),
-                    Color(0xFF4285F4),
-                    Color(0xFFEA4335),
-                  ],
-                  stops: [0.25, 0.5, 0.75, 1.0, 1.0],
-                ),
-              ),
-            ),
-            Flexible(
-              child: Text(
-                'Continuar com Google',
-                style: AppTextStyles.nunito(16, weight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

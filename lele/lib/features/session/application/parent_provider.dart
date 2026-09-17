@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
+import '../domain/parent_name.dart';
 import 'session_controller.dart';
 
 /// The parent's name as the backend knows it.
@@ -34,3 +35,11 @@ final parentNameProvider = Provider<String>((ref) {
   }
   return ref.watch(remoteParentNameProvider).value ?? '';
 });
+
+/// Just the first name, for greeting the parent.
+///
+/// [parentNameProvider] stays the full name — this is only how the parent is
+/// addressed on screen.
+final parentFirstNameProvider = Provider<String>(
+  (ref) => firstNameOf(ref.watch(parentNameProvider)),
+);

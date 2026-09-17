@@ -1,23 +1,9 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
-import 'session_controller.dart';
-
-/// The child's gamification totals as displayed in the app.
-class Progress extends Equatable {
-  const Progress({required this.xp, required this.coins, required this.streak});
-
-  final int xp;
-  final int coins;
-  final int streak;
-
-  static const zero = Progress(xp: 0, coins: 0, streak: 0);
-
-  @override
-  List<Object?> get props => [xp, coins, streak];
-}
+import '../domain/progress.dart';
+import 'demo_progress_controller.dart';
 
 /// Streams `users/{uid}/gamification/{childId}` — the document only
 /// completeLesson writes (ADR 0003). A child who has never finished a
@@ -52,14 +38,7 @@ final remoteProgressProvider = StreamProvider<Progress>((ref) {
 /// it is told and never adds to them locally. Demo mode falls back to the
 /// on-device session values so the prototype still works offline.
 final progressProvider = Provider<Progress>((ref) {
-  if (!AppConfig.useFirebase) {
-    final session = ref.watch(sessionProvider);
-    return Progress(
-      xp: session.xp,
-      coins: session.coins,
-      streak: session.streak,
-    );
-  }
+  if (!AppConfig.useFirebase) return ref.watch(demoProgressProvider);
   // While a refresh is in flight Riverpod keeps the previous value, so the
   // numbers don't flicker back to zero between snapshots.
   return ref.watch(remoteProgressProvider).value ?? Progress.zero;

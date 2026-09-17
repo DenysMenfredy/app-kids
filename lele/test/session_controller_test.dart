@@ -24,18 +24,19 @@ void main() {
       final state = container.read(sessionProvider);
       expect(state.parentName, 'Ana');
       expect(state.child.name, 'Sofia');
-      expect(state.xp, 120);
-      expect(state.coins, 45);
-      expect(state.streak, 3);
     });
 
-    test('completeLesson grants XP, coins and streak', () async {
+    test('carries no gamification totals of its own', () async {
       final container = await makeContainer();
-      container.read(sessionProvider.notifier).completeLesson();
-      final state = container.read(sessionProvider);
-      expect(state.xp, 170);
-      expect(state.coins, 55);
-      expect(state.streak, 4);
+      container.read(sessionProvider.notifier).setParentName('Camila');
+
+      // The backend mints XP, coins and the streak (ADR 0003). The session
+      // holding a second copy is what left local storage disagreeing with
+      // the dashboard, so the keys must not reappear here.
+      final prefs = container.read(sharedPreferencesProvider);
+      expect(prefs.getInt('session.xp'), isNull);
+      expect(prefs.getInt('session.coins'), isNull);
+      expect(prefs.getInt('session.streak'), isNull);
     });
 
     test('persists child profile across container restarts', () async {
@@ -44,8 +45,14 @@ void main() {
       final container = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-      container.read(sessionProvider.notifier).saveChildProfile(
-            const ChildProfile(name: 'Miguel', age: 6, avatar: ChildAvatar.teal),
+      container
+          .read(sessionProvider.notifier)
+          .saveChildProfile(
+            const ChildProfile(
+              name: 'Miguel',
+              age: 6,
+              avatar: ChildAvatar.teal,
+            ),
           );
       container.dispose();
 

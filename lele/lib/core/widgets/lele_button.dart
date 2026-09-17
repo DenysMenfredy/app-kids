@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 
 /// Chunky 3D button with a hard drop-shadow that presses down on touch,
 /// matching the prototype's `box-shadow: 0 5px 0` + translateY(3px) effect.
@@ -79,8 +81,8 @@ class _LeleButtonState extends State<LeleButton> {
                 widget.child ??
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 8,
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.sm,
                   ),
                   child: _ButtonLabel(
                     label: widget.label!,
@@ -120,10 +122,9 @@ class _ButtonLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
-      fontFamily: 'Baloo 2',
-      fontSize: fontSize,
-      fontWeight: FontWeight.w700,
+    final style = AppTextStyles.baloo(
+      fontSize,
+      weight: FontWeight.w700,
       color: color,
     );
 

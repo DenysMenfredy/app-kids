@@ -67,21 +67,25 @@ void main() {
 
   group('LocalAssessmentRepository', () {
     test('serves the MVP questions with stable option ids', () async {
-      final assessment = await const LocalAssessmentRepository().loadAssessment();
+      final assessment = await const LocalAssessmentRepository()
+          .loadAssessment();
       expect(assessment.id, 'assessment_pre_literacy_v1');
       expect(assessment.questions, hasLength(3));
-      expect(
-        assessment.questions.map((q) => q.id),
-        ['q_letters', 'q_writes_name', 'q_reading_together'],
-      );
-      expect(
-        assessment.questions.first.options.map((o) => o.id),
-        ['not_yet', 'some', 'most'],
-      );
+      expect(assessment.questions.map((q) => q.id), [
+        'q_letters',
+        'q_writes_name',
+        'q_reading_together',
+      ]);
+      expect(assessment.questions.first.options.map((o) => o.id), [
+        'not_yet',
+        'some',
+        'most',
+      ]);
     });
 
     test('substitutes the child name into the prompt', () async {
-      final assessment = await const LocalAssessmentRepository().loadAssessment();
+      final assessment = await const LocalAssessmentRepository()
+          .loadAssessment();
       expect(
         assessment.questions.first.promptFor('Sofia'),
         'Sofia já reconhece algumas letras?',
@@ -120,8 +124,7 @@ void main() {
       expect(state.submitting, isFalse);
     });
 
-    test('falls back instead of dead-ending when the backend fails',
-        () async {
+    test('falls back instead of dead-ending when the backend fails', () async {
       final container = containerWith(
         _RecordingRepository(failWith: Exception('offline')),
       );

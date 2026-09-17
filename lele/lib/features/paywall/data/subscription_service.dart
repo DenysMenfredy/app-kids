@@ -3,16 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
-
-/// Thrown with a user-presentable pt-BR message when checkout can't start.
-class CheckoutFailure implements Exception {
-  const CheckoutFailure(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
+import '../domain/checkout_failure.dart';
 
 /// Starts a subscription purchase. The client only ever receives a hosted
 /// checkout URL — plan validation, Stripe access and entitlement activation

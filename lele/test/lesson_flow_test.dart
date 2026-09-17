@@ -19,8 +19,9 @@ void main() {
     });
 
     test('progress grows monotonically through the lesson', () {
-      final values =
-          ActivityType.values.map((type) => flow.progressOf(type)).toList();
+      final values = ActivityType.values
+          .map((type) => flow.progressOf(type))
+          .toList();
       for (var i = 1; i < values.length; i++) {
         expect(values[i], greaterThan(values[i - 1]));
       }

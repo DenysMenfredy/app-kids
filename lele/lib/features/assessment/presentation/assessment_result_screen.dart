@@ -5,9 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/app_router.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
-import '../../../core/widgets/lele_mascot.dart';
+import '../../../core/widgets/lele_card.dart';
+import '../../../core/widgets/motion.dart';
 import '../../session/application/child_provider.dart';
 import '../application/assessment_controller.dart';
 import '../domain/assessment.dart';
@@ -27,7 +30,12 @@ class AssessmentResultScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: AdaptivePage(
-          padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,30 +64,25 @@ class AssessmentResultScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: AppSpacing.xxl),
               Text(
                 'Jornada pronta!',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.baloo(27, height: 1.25),
+                style: AppTextStyles.title.copyWith(height: 1.25),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 'Com base nas respostas, $childName vai começar em:',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.nunito(
-                  16,
+                style: AppTextStyles.body.copyWith(
                   color: AppColors.textMuted,
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 22),
-              Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.border, width: 2),
-                ),
+              const SizedBox(height: AppSpacing.xxl),
+              LeleCard(
+                padding: const EdgeInsets.all(AppSpacing.xxl),
+                borderRadius: AppRadius.panel,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -92,33 +95,34 @@ class AssessmentResultScreen extends ConsumerWidget {
                         letterSpacing: 0.7,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(result.moduleTitle, style: AppTextStyles.baloo(22)),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(result.moduleTitle, style: AppTextStyles.heading),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       result.description,
-                      style: AppTextStyles.nunito(
-                        14,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMuted,
                         height: 1.45,
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: AppSpacing.lg),
                     // Wrap, not Row: three tags fit on a wide phone and
                     // need a second line on a narrow one.
                     Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: [
                         for (final tag in result.tags)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.panel,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.chip,
+                              ),
                             ),
                             child: Text(
                               tag,
@@ -134,7 +138,7 @@ class AssessmentResultScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: AppSpacing.xxl),
               LeleButton(
                 label: 'Ir para o painel',
                 onPressed: () => context.goNamed(AppRoutes.dashboard),

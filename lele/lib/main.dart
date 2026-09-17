@@ -8,6 +8,7 @@ import 'app/app.dart';
 import 'core/config/app_config.dart';
 import 'core/firebase/firebase_emulators.dart';
 import 'core/storage/local_storage.dart';
+import 'features/session/application/demo_progress_controller.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -24,6 +25,10 @@ Future<void> main() async {
     if (AppConfig.useEmulator) await connectToEmulators();
   }
   final prefs = await SharedPreferences.getInstance();
+  // XP, coins and the streak belong to the backend once it is on. Drop any
+  // copy a demo run left on this device, so local storage cannot sit there
+  // showing 120 XP while the dashboard shows the 200 the child earned.
+  await DemoProgress.dropBackendOwnedCopy(prefs);
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],

@@ -3,56 +3,35 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/config/app_config.dart';
 import '../../../core/storage/local_storage.dart';
 import '../data/profile_sync_service.dart';
 import '../domain/child_profile.dart';
 
-/// Everything the app knows about the current family: parent, child profile
-/// and — in demo mode only — the gamification totals. With the backend
-/// enabled, XP/coins/streak come from [progressProvider] instead; the
-/// fields here stay as the offline fallback.
+/// Who the app is being used by: the parent and the child profile.
+///
+/// Deliberately no XP, coins or streak. Those are the backend's to mint
+/// (ADR 0003), and keeping a copy here meant persisting numbers that, with
+/// the backend on, no screen ever read — see [DemoProgress].
 class SessionState extends Equatable {
-  const SessionState({
-    required this.parentName,
-    required this.child,
-    required this.xp,
-    required this.coins,
-    required this.streak,
-  });
+  const SessionState({required this.parentName, required this.child});
 
   final String parentName;
   final ChildProfile child;
-  final int xp;
-  final int coins;
-  final int streak;
 
   static const initial = SessionState(
     parentName: 'Ana',
     child: ChildProfile.defaultProfile,
-    xp: 120,
-    coins: 45,
-    streak: 3,
   );
 
-  SessionState copyWith({
-    String? parentName,
-    ChildProfile? child,
-    int? xp,
-    int? coins,
-    int? streak,
-  }) {
+  SessionState copyWith({String? parentName, ChildProfile? child}) {
     return SessionState(
       parentName: parentName ?? this.parentName,
       child: child ?? this.child,
-      xp: xp ?? this.xp,
-      coins: coins ?? this.coins,
-      streak: streak ?? this.streak,
     );
   }
 
   @override
-  List<Object?> get props => [parentName, child, xp, coins, streak];
+  List<Object?> get props => [parentName, child];
 }
 
 class SessionController extends Notifier<SessionState> {
@@ -60,9 +39,6 @@ class SessionController extends Notifier<SessionState> {
   static const _keyChildName = 'session.childName';
   static const _keyChildAge = 'session.childAge';
   static const _keyChildAvatar = 'session.childAvatar';
-  static const _keyXp = 'session.xp';
-  static const _keyCoins = 'session.coins';
-  static const _keyStreak = 'session.streak';
 
   @override
   SessionState build() {
@@ -78,9 +54,6 @@ class SessionController extends Notifier<SessionState> {
         avatar: ChildAvatar
             .values[avatarIndex.clamp(0, ChildAvatar.values.length - 1)],
       ),
-      xp: prefs.getInt(_keyXp) ?? initial.xp,
-      coins: prefs.getInt(_keyCoins) ?? initial.coins,
-      streak: prefs.getInt(_keyStreak) ?? initial.streak,
     );
   }
 
@@ -101,32 +74,13 @@ class SessionController extends Notifier<SessionState> {
     unawaited(sync.syncOnboardingState('child_profile_created'));
   }
 
-  /// Demo-mode rewards for finishing the daily lesson.
-  ///
-  /// In Firebase mode this is a no-op: XP, coins and the streak are minted
-  /// by the completeLesson callable and read back through
-  /// [progressProvider], so the client never adds to its own balance
-  /// (ADR 0003).
-  void completeLesson({int xpEarned = 50, int coinsEarned = 10}) {
-    if (AppConfig.useFirebase) return;
-    state = state.copyWith(
-      xp: state.xp + xpEarned,
-      coins: state.coins + coinsEarned,
-      streak: state.streak + 1,
-    );
-    _persist();
-  }
-
   void _persist() {
     final prefs = ref.read(sharedPreferencesProvider);
     prefs
       ..setString(_keyParentName, state.parentName)
       ..setString(_keyChildName, state.child.name)
       ..setInt(_keyChildAge, state.child.age)
-      ..setInt(_keyChildAvatar, state.child.avatar.index)
-      ..setInt(_keyXp, state.xp)
-      ..setInt(_keyCoins, state.coins)
-      ..setInt(_keyStreak, state.streak);
+      ..setInt(_keyChildAvatar, state.child.avatar.index);
   }
 }
 

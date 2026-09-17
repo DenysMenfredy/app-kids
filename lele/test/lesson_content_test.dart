@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
 import 'package:lele/core/storage/local_storage.dart';
+import 'package:lele/features/lesson/application/lesson_content_provider.dart';
 import 'package:lele/features/lesson/data/lesson_repository.dart';
 import 'package:lele/features/lesson/domain/lesson.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,8 +83,7 @@ const _activityDocs = [
 LessonContent parse({
   Map<String, dynamic> lesson = _lessonDoc,
   List<Map<String, dynamic>> activities = _activityDocs,
-}) =>
-    lessonContentFromMaps('lesson_010', lesson, activities);
+}) => lessonContentFromMaps('lesson_010', lesson, activities);
 
 void main() {
   group('lessonContentFromMaps', () {
@@ -126,23 +126,23 @@ void main() {
 
     test('falls back to derived lowercase when no order is stored', () {
       final activities = _activityDocs
-          .map((a) => a['type'] == 'match'
-              ? {
-                  for (final entry in a.entries)
-                    if (entry.key != 'lowercaseOrder') entry.key: entry.value,
-                }
-              : a)
+          .map(
+            (a) => a['type'] == 'match'
+                ? {
+                    for (final entry in a.entries)
+                      if (entry.key != 'lowercaseOrder') entry.key: entry.value,
+                  }
+                : a,
+          )
           .toList();
       expect(parse(activities: activities).match.lowercase, ['l', 'm', 'n']);
     });
 
     test('rejects a lesson missing an activity type', () {
-      final withoutTrace =
-          _activityDocs.where((a) => a['type'] != 'trace').toList();
-      expect(
-        () => parse(activities: withoutTrace),
-        throwsA(isA<StateError>()),
-      );
+      final withoutTrace = _activityDocs
+          .where((a) => a['type'] != 'trace')
+          .toList();
+      expect(() => parse(activities: withoutTrace), throwsA(isA<StateError>()));
     });
 
     test('survives a lesson document with fields missing', () {
@@ -177,8 +177,9 @@ void main() {
 
   group('LocalLessonRepository', () {
     test('serves the demo lesson whatever id is asked for', () async {
-      final content =
-          await const LocalLessonRepository().loadLesson('lesson_999');
+      final content = await const LocalLessonRepository().loadLesson(
+        'lesson_999',
+      );
       expect(content.id, AppConfig.demoLessonId);
       expect(content.tap.target, 'D');
     });
@@ -186,27 +187,34 @@ void main() {
     test('matches what the backend seeds for that lesson', () async {
       // The offline sample is a copy of backend/seed — if the seed changes
       // and this doesn't, demo mode silently diverges from production.
-      final seed = jsonDecode(
-        File('../backend/seed/activities/activities.json').readAsStringSync(),
-      ) as List;
+      final seed =
+          jsonDecode(
+                File(
+                  '../backend/seed/activities/activities.json',
+                ).readAsStringSync(),
+              )
+              as List;
       final seeded = seed
           .cast<Map<String, dynamic>>()
           .where((a) => a['lessonId'] == AppConfig.demoLessonId)
           .toList();
-      final lessons = jsonDecode(
-        File('../backend/seed/lessons/lessons.json').readAsStringSync(),
-      ) as List;
-      final seededLesson = lessons
-          .cast<Map<String, dynamic>>()
-          .firstWhere((l) => l['id'] == AppConfig.demoLessonId);
+      final lessons =
+          jsonDecode(
+                File('../backend/seed/lessons/lessons.json').readAsStringSync(),
+              )
+              as List;
+      final seededLesson = lessons.cast<Map<String, dynamic>>().firstWhere(
+        (l) => l['id'] == AppConfig.demoLessonId,
+      );
 
       final expected = lessonContentFromMaps(
         AppConfig.demoLessonId,
         seededLesson,
         seeded,
       );
-      final actual =
-          await const LocalLessonRepository().loadLesson(AppConfig.demoLessonId);
+      final actual = await const LocalLessonRepository().loadLesson(
+        AppConfig.demoLessonId,
+      );
       expect(actual, expected);
     });
   });
@@ -220,15 +228,15 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      expect(container.read(lessonRepositoryProvider),
-          isA<LocalLessonRepository>());
-      final content = await container
-          .read(lessonContentProvider(AppConfig.demoLessonId).future);
-      expect(content.listen.answer, 'DADO');
       expect(
-        container.read(currentLessonContentProvider).value,
-        content,
+        container.read(lessonRepositoryProvider),
+        isA<LocalLessonRepository>(),
       );
+      final content = await container.read(
+        lessonContentProvider(AppConfig.demoLessonId).future,
+      );
+      expect(content.listen.answer, 'DADO');
+      expect(container.read(currentLessonContentProvider).value, content);
     });
   });
 }

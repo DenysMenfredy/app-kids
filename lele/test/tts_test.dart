@@ -72,13 +72,15 @@ void main() {
       expect(chosen?.locale, 'pt-BR');
     });
 
-    test('never settles for the platform default when it is another language',
-        () {
-      // The bug this guards: Chrome's default here is German, and a voice
-      // chosen by language alone read Portuguese with German phonetics.
-      final chosen = pickPortugueseVoice(_chromeOnLinux);
-      expect(chosen?.locale, isNot('de-DE'));
-    });
+    test(
+      'never settles for the platform default when it is another language',
+      () {
+        // The bug this guards: Chrome's default here is German, and a voice
+        // chosen by language alone read Portuguese with German phonetics.
+        final chosen = pickPortugueseVoice(_chromeOnLinux);
+        expect(chosen?.locale, isNot('de-DE'));
+      },
+    );
 
     test('accepts the underscore form Android reports', () {
       final chosen = pickPortugueseVoice([
@@ -148,31 +150,30 @@ void main() {
 
     test('keeps asking until the browser has finished loading them', () async {
       var calls = 0;
-      final voices = await awaitVoices(
-        () async {
-          calls++;
-          return calls < 3 ? <TtsVoice>[] : _chromeOnLinux;
-        },
-        gap: Duration.zero,
-      );
+      final voices = await awaitVoices(() async {
+        calls++;
+        return calls < 3 ? <TtsVoice>[] : _chromeOnLinux;
+      }, gap: Duration.zero);
       expect(voices, _chromeOnLinux);
       expect(calls, 3);
     });
 
-    test('gives up rather than waiting forever on a device with none',
-        () async {
-      var calls = 0;
-      final voices = await awaitVoices(
-        () async {
-          calls++;
-          return <TtsVoice>[];
-        },
-        attempts: 4,
-        gap: Duration.zero,
-      );
-      expect(voices, isEmpty);
-      expect(calls, 4);
-    });
+    test(
+      'gives up rather than waiting forever on a device with none',
+      () async {
+        var calls = 0;
+        final voices = await awaitVoices(
+          () async {
+            calls++;
+            return <TtsVoice>[];
+          },
+          attempts: 4,
+          gap: Duration.zero,
+        );
+        expect(voices, isEmpty);
+        expect(calls, 4);
+      },
+    );
   });
 
   group('TtsService', () {
@@ -199,18 +200,20 @@ void main() {
       expect(service.voice?.locale, 'pt-BR');
     });
 
-    test('configures once across a warm-up and the utterances after it',
-        () async {
-      final tts = FakeTts(voices: _chromeOnLinux);
-      final service = TtsService(tts);
-      await Future.wait([
-        service.warmUp(),
-        service.speak('uma'),
-        service.speak('duas'),
-      ]);
-      await service.speak('tres');
-      expect(tts.voiceQueries, 1);
-    });
+    test(
+      'configures once across a warm-up and the utterances after it',
+      () async {
+        final tts = FakeTts(voices: _chromeOnLinux);
+        final service = TtsService(tts);
+        await Future.wait([
+          service.warmUp(),
+          service.speak('uma'),
+          service.speak('duas'),
+        ]);
+        await service.speak('tres');
+        expect(tts.voiceQueries, 1);
+      },
+    );
 
     test('retries on the next utterance when no voices came back', () async {
       // A device that answers empty may simply still be loading. Latching

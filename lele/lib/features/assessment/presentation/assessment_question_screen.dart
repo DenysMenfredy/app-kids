@@ -6,10 +6,13 @@ import '../../../app/router/app_router.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/lele_card.dart';
 import '../../session/application/child_provider.dart';
+import '../application/assessment_content_provider.dart';
 import '../application/assessment_controller.dart';
-import '../data/assessment_repository.dart';
 import '../domain/assessment.dart';
 
 const _optionChipColors = [
@@ -72,13 +75,18 @@ class _Questions extends ConsumerWidget {
     return Stack(
       children: [
         AdaptivePage(
-          padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+          ),
           hasFlexibleChild: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
-                spacing: 8,
+                spacing: AppSpacing.sm,
                 children: [
                   for (var i = 0; i < total; i++)
                     Expanded(
@@ -86,23 +94,23 @@ class _Questions extends ConsumerWidget {
                         height: 8,
                         decoration: BoxDecoration(
                           color: i <= index ? AppColors.teal : AppColors.border,
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(AppRadius.bar),
                         ),
                       ),
                     ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
               Text(
                 'PERGUNTA ${index + 1} DE $total',
                 style: AppTextStyles.eyebrow(AppColors.textFaint),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 question.promptFor(childName),
-                style: AppTextStyles.baloo(24, height: 1.3),
+                style: AppTextStyles.heading.copyWith(height: 1.3),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               for (var i = 0; i < question.options.length; i++) ...[
                 _OptionCard(
                   label: question.options[i].label,
@@ -116,7 +124,7 @@ class _Questions extends ConsumerWidget {
                           question.options[i].id,
                         ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
               ],
             ],
           ),
@@ -141,27 +149,29 @@ class _LoadFailed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(26),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             'Não conseguimos carregar a avaliação',
             textAlign: TextAlign.center,
-            style: AppTextStyles.baloo(22, height: 1.25),
+            style: AppTextStyles.heading.copyWith(height: 1.25),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.md),
           Text(
             'Verifique sua conexão e tente de novo.',
             textAlign: TextAlign.center,
-            style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
           TextButton(
             onPressed: onRetry,
             child: Text(
               'Tentar de novo',
-              style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+              style: AppTextStyles.subheading.copyWith(
+                color: AppColors.orangeDark,
+              ),
             ),
           ),
         ],
@@ -183,38 +193,31 @@ class _OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return LeleCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border, width: 2),
-        ),
-        child: Row(
-          spacing: 14,
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: chipColor,
-                borderRadius: BorderRadius.circular(12),
+      semanticLabel: label,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Row(
+        spacing: AppSpacing.lg,
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: chipColor,
+              borderRadius: BorderRadius.circular(AppRadius.chip),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.body.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.35,
               ),
             ),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTextStyles.nunito(
-                  16,
-                  weight: FontWeight.w700,
-                  height: 1.35,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

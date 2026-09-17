@@ -1,17 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../domain/sign_in_outcome.dart';
 import 'firebase_auth_repository.dart';
-
-/// Thrown by repositories with a message safe to show the user (pt-BR).
-class AuthFailure implements Exception {
-  const AuthFailure(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
 
 /// Authentication boundary. Local mode ships a fake so the full product
 /// flow works offline; Firebase mode talks to Firebase Auth (the backend's
@@ -25,7 +16,14 @@ abstract interface class AuthRepository {
     required String password,
   });
 
-  Future<void> signInWithGoogle();
+  Future<SignInOutcome> signInWithGoogle();
+
+  /// Apple's own identity provider.
+  ///
+  /// Offered on iOS only. App Store review guideline 4.8 requires an
+  /// equivalent Sign in with Apple wherever a third-party sign-in is
+  /// offered, and the Google button above makes that apply to this app.
+  Future<SignInOutcome> signInWithApple();
 
   /// Sends a reset link. Succeeds even for an unknown address, so the screen
   /// can't be used to discover which e-mails have accounts.
@@ -53,8 +51,19 @@ class FakeAuthRepository implements AuthRepository {
     required String password,
   }) => Future.delayed(_latency);
 
+  // Demo mode has no accounts to be returning to, so a provider tap shows
+  // the path this work exists for: the full onboarding a new parent gets.
   @override
-  Future<void> signInWithGoogle() => Future.delayed(_latency);
+  Future<SignInOutcome> signInWithGoogle() async {
+    await Future<void>.delayed(_latency);
+    return SignInOutcome.created;
+  }
+
+  @override
+  Future<SignInOutcome> signInWithApple() async {
+    await Future<void>.delayed(_latency);
+    return SignInOutcome.created;
+  }
 
   @override
   Future<void> sendPasswordReset(String email) => Future.delayed(_latency);

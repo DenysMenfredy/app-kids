@@ -7,13 +7,17 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/app_router.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
-import '../../lesson/data/lesson_sync_service.dart';
+import '../../../core/widgets/motion.dart';
+import '../../lesson/application/lesson_reward_provider.dart';
+import '../../lesson/domain/lesson_reward.dart';
 import '../../session/application/child_provider.dart';
 import '../../session/application/progress_provider.dart';
-import '../../session/domain/child_profile.dart';
+import '../../session/presentation/child_avatar_style.dart';
 
 class RewardScreen extends ConsumerWidget {
   const RewardScreen({super.key});
@@ -29,7 +33,7 @@ class RewardScreen extends ConsumerWidget {
     final coinsEarned = reward?.coinsEarned ?? LessonReward.demo.coinsEarned;
 
     return Scaffold(
-      body: Container(
+      body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -48,65 +52,81 @@ class RewardScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Center(
-                      child: PopIn(
-                        child: LeleMascot(
-                          size: 130,
-                          color: child.avatar.color,
-                          mouthColor: child.avatar.mouthColor,
-                          withEars: true,
+                      // The confetti behind this falls for as long as the
+                      // screen is open; the burst is the arrival itself.
+                      child: BurstOverlay(
+                        trigger: 'reward',
+                        colors: AppColors.celebration,
+                        flecks: 22,
+                        child: PopIn(
+                          child: LeleMascot(
+                            semanticLabel: 'O mascote Lelê comemorando',
+                            size: 130,
+                            color: child.avatar.color,
+                            mouthColor: child.avatar.mouthColor,
+                            withEars: true,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     Text(
                       'Parabéns, ${child.name}!',
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.baloo(32),
+                      style: AppTextStyles.headline,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AppSpacing.xs),
                     Text(
                       'Você completou a lição de hoje',
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.nunito(
-                        16,
+                      style: AppTextStyles.body.copyWith(
                         color: AppColors.textMuted,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 12,
+                      spacing: AppSpacing.md,
                       children: [
                         // An equal share each, so the three tiles shrink
                         // together rather than pushing the last one off.
+                        // Staggered so the three tiles land one after
+                        // another rather than finishing in unison — three
+                        // separate things to watch, not one.
                         Expanded(
                           child: _RewardStat(
-                            value: '+$xpEarned',
+                            count: xpEarned,
+                            prefix: '+',
                             label: '★ XP',
                             color: AppColors.purple,
+                            duration: const Duration(milliseconds: 900),
                           ),
                         ),
                         Expanded(
                           child: _RewardStat(
-                            value: '+$coinsEarned',
+                            count: coinsEarned,
+                            prefix: '+',
                             label: 'moedas',
                             color: AppColors.yellowDark,
+                            duration: const Duration(milliseconds: 1100),
                           ),
                         ),
                         Expanded(
                           child: _RewardStat(
-                            value: '⚡ ${progress.streak}',
+                            count: progress.streak,
+                            prefix: '⚡ ',
                             label: 'dias',
                             color: AppColors.orangeDark,
+                            duration: const Duration(milliseconds: 1300),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _UnlockedBookBanner(
                       onTap: () => context.goNamed(AppRoutes.books),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     LeleButton(
                       label: 'Continuar',
                       onPressed: () => context.goNamed(AppRoutes.childHome),
@@ -124,29 +144,45 @@ class RewardScreen extends ConsumerWidget {
 
 class _RewardStat extends StatelessWidget {
   const _RewardStat({
-    required this.value,
+    required this.count,
     required this.label,
     required this.color,
+    required this.duration,
+    this.prefix = '',
   });
 
-  final String value;
+  /// Counted up to rather than printed: the climbing number is the reward.
+  final int count;
+
+  final String prefix;
   final String label;
   final Color color;
+  final Duration duration;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(minWidth: 86),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: AppColors.border, width: 2),
       ),
       child: Column(
         children: [
-          Text(value, style: AppTextStyles.baloo(24, color: color)),
-          const SizedBox(height: 4),
+          CountUp(
+            value: count,
+            duration: duration,
+            builder: (context, value) => Text(
+              '$prefix$value',
+              style: AppTextStyles.heading.copyWith(color: color),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             label,
             style: AppTextStyles.nunito(
@@ -171,14 +207,17 @@ class _UnlockedBookBanner extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.lg,
+        ),
         decoration: BoxDecoration(
           color: AppColors.purplePale,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           border: Border.all(color: AppColors.purpleBorder, width: 2),
         ),
         child: Row(
-          spacing: 12,
+          spacing: AppSpacing.md,
           children: [
             Container(
               width: 36,
@@ -206,7 +245,9 @@ class _UnlockedBookBanner extends StatelessWidget {
                 children: [
                   Text(
                     'Novo livro desbloqueado!',
-                    style: AppTextStyles.baloo(15, color: AppColors.purpleDark),
+                    style: AppTextStyles.statValue.copyWith(
+                      color: AppColors.purpleDark,
+                    ),
                   ),
                   Text(
                     '"O Sapo Bocudo" te espera',

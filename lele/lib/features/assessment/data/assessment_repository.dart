@@ -148,8 +148,3 @@ final assessmentRepositoryProvider = Provider<AssessmentRepository>((ref) {
   }
   return const LocalAssessmentRepository();
 });
-
-/// The assessment to present. Loaded once per onboarding run.
-final assessmentContentProvider = FutureProvider<Assessment>(
-  (ref) => ref.watch(assessmentRepositoryProvider).loadAssessment(),
-);

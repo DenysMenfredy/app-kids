@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/storage/local_storage.dart';
@@ -27,6 +24,7 @@ import 'package:lele/features/onboarding/presentation/welcome_screen.dart';
 import 'package:lele/features/paywall/presentation/paywall_screen.dart';
 import 'package:lele/features/reward/presentation/reward_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'support/app_fonts.dart';
 
 /// Logical sizes of the devices this app actually has to survive. The small
 /// phone and the landscape rows are where fixed-height layouts break; the
@@ -47,25 +45,25 @@ const devices = <String, Size>{
 };
 
 Map<String, Widget Function()> get screens => {
-      'splash': () => const SplashScreen(),
-      'welcome': () => const WelcomeScreen(),
-      'login': () => const LoginScreen(),
-      'register': () => const RegisterScreen(),
-      'profileSetup': () => const ProfileSetupScreen(),
-      'assessmentIntro': () => const AssessmentIntroScreen(),
-      'assessmentQuestion': () => const AssessmentQuestionScreen(),
-      'assessmentResult': () => const AssessmentResultScreen(),
-      'dashboard': () => const DashboardScreen(),
-      'paywall': () => const PaywallScreen(),
-      'childHome': () => const ChildHomeScreen(),
-      'books': () => const BooksScreen(),
-      'lessonIntro': () => const LessonIntroScreen(),
-      'tapActivity': () => const TapActivityScreen(),
-      'matchActivity': () => const MatchActivityScreen(),
-      'traceActivity': () => const TraceActivityScreen(),
-      'listenActivity': () => const ListenActivityScreen(),
-      'reward': () => const RewardScreen(),
-    };
+  'splash': () => const SplashScreen(),
+  'welcome': () => const WelcomeScreen(),
+  'login': () => const LoginScreen(),
+  'register': () => const RegisterScreen(),
+  'profileSetup': () => const ProfileSetupScreen(),
+  'assessmentIntro': () => const AssessmentIntroScreen(),
+  'assessmentQuestion': () => const AssessmentQuestionScreen(),
+  'assessmentResult': () => const AssessmentResultScreen(),
+  'dashboard': () => const DashboardScreen(),
+  'paywall': () => const PaywallScreen(),
+  'childHome': () => const ChildHomeScreen(),
+  'books': () => const BooksScreen(),
+  'lessonIntro': () => const LessonIntroScreen(),
+  'tapActivity': () => const TapActivityScreen(),
+  'matchActivity': () => const MatchActivityScreen(),
+  'traceActivity': () => const TraceActivityScreen(),
+  'listenActivity': () => const ListenActivityScreen(),
+  'reward': () => const RewardScreen(),
+};
 
 /// Mounts one screen at one size and returns everything that went wrong.
 Future<List<String>> audit(
@@ -92,8 +90,9 @@ Future<List<String>> audit(
         theme: AppTheme.light,
         builder: (context, child) => MediaQuery(
           // What the device's font-size setting actually does to the app.
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(textScale)),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         ),
         home: build(),
@@ -104,9 +103,11 @@ Future<List<String>> audit(
   await tester.pump(const Duration(milliseconds: 500));
 
   // Overflow is reported as a framework error, not a thrown exception.
-  for (var error = tester.takeException();
-      error != null;
-      error = tester.takeException()) {
+  for (
+    var error = tester.takeException();
+    error != null;
+    error = tester.takeException()
+  ) {
     var text = error.toString().split('\n').first.trim();
     if (text.startsWith('Multiple exceptions')) text = 'overflow';
     problems.add(text);
@@ -120,8 +121,10 @@ Future<List<String>> audit(
     final self = find.byElementPredicate((e) => e == element);
     final rect = tester.getRect(self);
     final label = _labelOf(element);
-    final canScroll =
-        find.ancestor(of: self, matching: find.byType(Scrollable)).evaluate().isNotEmpty;
+    final canScroll = find
+        .ancestor(of: self, matching: find.byType(Scrollable))
+        .evaluate()
+        .isNotEmpty;
 
     if (rect.bottom > viewport.bottom + 0.5 && !canScroll) {
       problems.add(
@@ -139,7 +142,9 @@ Future<List<String>> audit(
     for (final labelEl in labels.evaluate()) {
       final para = labelEl.renderObject;
       final text = labelEl.widget;
-      if (para is RenderParagraph && text is Text && (text.data ?? '').isNotEmpty) {
+      if (para is RenderParagraph &&
+          text is Text &&
+          (text.data ?? '').isNotEmpty) {
         // Distinct box tops == distinct rendered lines.
         final boxes = para.getBoxesForSelection(
           TextSelection(baseOffset: 0, extentOffset: text.data!.length),
@@ -157,8 +162,10 @@ Future<List<String>> audit(
           final available = rect.width - 36;
           final ratio = natural <= available ? 1.0 : available / natural;
           if (ratio < 0.75) {
-            problems.add('button label "$label" shrunk to '
-                '${ratio.toStringAsFixed(2)}x — below legibility');
+            problems.add(
+              'button label "$label" shrunk to '
+              '${ratio.toStringAsFixed(2)}x — below legibility',
+            );
           }
         }
       }
@@ -188,39 +195,28 @@ String _labelOf(Element element) {
 /// and iOS's larger sizes, which plenty of parents run day to day.
 const textScales = <double>[1.0, 1.3, 1.6, 2.0];
 
-/// Widget tests use a fallback font whose glyphs are far wider than Baloo 2.
-/// Measuring text against it would exaggerate every wrap and shrink, so load
-/// the real bundled faces before measuring anything.
-Future<void> loadAppFonts() async {
-  for (final family in const {
-    'Baloo 2': ['Baloo2-Bold.ttf', 'Baloo2-ExtraBold.ttf'],
-    'Nunito': ['Nunito-Bold.ttf', 'Nunito-SemiBold.ttf', 'Nunito-Regular.ttf'],
-  }.entries) {
-    final loader = FontLoader(family.key);
-    for (final file in family.value) {
-      final bytes = File('assets/fonts/$file').readAsBytesSync();
-      loader.addFont(Future.value(ByteData.sublistView(bytes)));
-    }
-    await loader.load();
-  }
-}
-
 void main() {
   setUpAll(loadAppFonts);
 
   for (final device in devices.entries) {
     for (final scale in textScales) {
-      testWidgets('layout survives ${device.key} at text scale $scale',
-          (tester) async {
+      testWidgets('layout survives ${device.key} at text scale $scale', (
+        tester,
+      ) async {
         addTearDown(tester.view.reset);
         addTearDown(
-            tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+          tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+        );
 
         final report = <String>[];
         for (final screen in screens.entries) {
           final problems = await audit(
-              tester, screen.key, screen.value, device.value,
-              textScale: scale);
+            tester,
+            screen.key,
+            screen.value,
+            device.value,
+            textScale: scale,
+          );
           for (final problem in problems) {
             // ignore: avoid_print
             print('FAILROW|${device.key} @${scale}x|${screen.key}|$problem');
@@ -228,8 +224,11 @@ void main() {
           }
         }
 
-        expect(report, isEmpty,
-            reason: '${device.key} @${scale}x:\n${report.join('\n')}');
+        expect(
+          report,
+          isEmpty,
+          reason: '${device.key} @${scale}x:\n${report.join('\n')}',
+        );
       });
     }
   }

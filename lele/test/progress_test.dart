@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/lesson/data/lesson_sync_service.dart';
+import 'package:lele/features/lesson/domain/lesson_reward.dart';
+import 'package:lele/features/session/application/demo_progress_controller.dart';
 import 'package:lele/features/session/application/progress_provider.dart';
-import 'package:lele/features/session/application/session_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<ProviderContainer> makeContainer() async {
@@ -59,21 +60,34 @@ void main() {
   });
 
   group('progressProvider (local mode)', () {
-    test('mirrors the on-device session totals', () async {
+    test('mirrors the on-device demo totals', () async {
       final container = await makeContainer();
-      final session = container.read(sessionProvider);
+      final demo = container.read(demoProgressProvider);
       final progress = container.read(progressProvider);
 
-      expect(progress.xp, session.xp);
-      expect(progress.coins, session.coins);
-      expect(progress.streak, session.streak);
+      expect(progress, demo);
+      expect(progress.xp, DemoProgress.seed.xp);
+    });
+
+    test('what it shows is what is on the device', () async {
+      final container = await makeContainer();
+      container.read(demoProgressProvider.notifier).completeLesson();
+
+      final shown = container.read(progressProvider);
+      final prefs = container.read(sharedPreferencesProvider);
+
+      // The reported bug in its simplest form: the number on screen and the
+      // number in local storage have to be the same number.
+      expect(prefs.getInt('session.xp'), shown.xp);
+      expect(prefs.getInt('session.coins'), shown.coins);
+      expect(prefs.getInt('session.streak'), shown.streak);
     });
 
     test('follows the local reward when a lesson completes', () async {
       final container = await makeContainer();
       final before = container.read(progressProvider);
 
-      container.read(sessionProvider.notifier).completeLesson();
+      container.read(demoProgressProvider.notifier).completeLesson();
 
       final after = container.read(progressProvider);
       expect(after.xp, before.xp + 50);

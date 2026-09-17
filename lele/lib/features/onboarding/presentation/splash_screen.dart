@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/app_router.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../../core/widgets/motion.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -14,7 +16,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -30,12 +32,13 @@ class SplashScreen extends StatelessWidget {
               children: [
                 const FloatingWidget(
                   child: LeleMascot(
+                    semanticLabel: 'O mascote Lelê',
                     size: 150,
                     withEars: true,
                     withShadow: true,
                   ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: AppSpacing.xxl),
                 Text(
                   'Lelê',
                   style: AppTextStyles.baloo(
@@ -44,14 +47,16 @@ class SplashScreen extends StatelessWidget {
                     height: 1,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Aprender a ler brincando',
-                  style: AppTextStyles.nunito(17, color: AppColors.orangePale),
+                  style: AppTextStyles.body.copyWith(
+                    color: AppColors.orangePale,
+                  ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: AppSpacing.xxl),
                 const _ShapeStrip(),
-                const SizedBox(height: 40),
+                const SizedBox(height: AppSpacing.xxxl),
                 SizedBox(
                   width: double.infinity,
                   child: LeleButton(
@@ -92,7 +97,7 @@ class _ShapeStrip extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      spacing: 8,
+      spacing: AppSpacing.sm,
       children: [
         shape(AppColors.yellow, angle: 0.17),
         shape(AppColors.teal, round: true),

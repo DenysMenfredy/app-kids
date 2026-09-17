@@ -37,8 +37,7 @@ void main() {
     expect(find.text('Começar'), findsOneWidget);
   });
 
-  testWidgets('parent completes onboarding to the dashboard',
-      (tester) async {
+  testWidgets('parent completes onboarding to the dashboard', (tester) async {
     await pumpApp(tester);
 
     // Splash → welcome carousel.
@@ -55,8 +54,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // Register (fake auth resolves after a short latency).
-    expect(find.text('Conta para os pais — leva menos de 2 minutos.'),
-        findsOneWidget);
+    expect(
+      find.text('Conta para os pais — leva menos de 2 minutos.'),
+      findsOneWidget,
+    );
     // Every field is required now, so fill the form as a parent would.
     final registerFields = find.byType(TextField);
     await tester.enterText(registerFields.at(0), 'Camila');

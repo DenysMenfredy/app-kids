@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../layout/adaptive_page.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+import 'lele_icon_button.dart';
 
 /// Shared chrome for child activities: close button + rounded progress bar,
 /// content area and a fixed-height feedback message slot.
@@ -34,16 +38,29 @@ class ActivityScaffold extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xxl,
+            AppSpacing.md,
+            AppSpacing.xxl,
+            AppSpacing.xxl,
+          ),
           child: Column(
             children: [
               Row(
                 children: [
-                  _CloseButton(onTap: onClose),
-                  const SizedBox(width: 12),
+                  LeleIconButton(
+                    icon: Icons.close_rounded,
+                    onPressed: onClose,
+                    semanticLabel: 'Sair da atividade',
+                    size: 36,
+                    iconSize: 20,
+                    borderRadius: AppRadius.chip,
+                    alignment: Alignment.centerLeft,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppRadius.bar),
                       child: TweenAnimationBuilder<double>(
                         tween: Tween(end: progress),
                         duration: const Duration(milliseconds: 400),
@@ -77,10 +94,7 @@ class ActivityScaffold extends StatelessWidget {
                 child: Center(
                   child: Text(
                     message ?? '',
-                    style: TextStyle(
-                      fontFamily: 'Baloo 2',
-                      fontSize: 19,
-                      fontWeight: FontWeight.w800,
+                    style: AppTextStyles.subheading.copyWith(
                       color: messageColor,
                     ),
                   ),
@@ -88,33 +102,6 @@ class ActivityScaffold extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CloseButton extends StatelessWidget {
-  const _CloseButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.panel,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Icon(
-          Icons.close_rounded,
-          size: 20,
-          color: AppColors.textMuted,
         ),
       ),
     );

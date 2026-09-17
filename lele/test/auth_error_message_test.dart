@@ -19,8 +19,10 @@ void main() {
         authErrorMessage('weak-password'),
         'Senha muito curta — use pelo menos 6 caracteres.',
       );
-      expect(authErrorMessage('network-request-failed'),
-          'Sem conexão. Verifique sua internet.');
+      expect(
+        authErrorMessage('network-request-failed'),
+        'Sem conexão. Verifique sua internet.',
+      );
     });
 
     test('falls back to a generic message for unknown codes', () {

@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/audio/feedback_cues.dart';
+import '../../../../core/services/feedback_service.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_button.dart';
+import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
 import '../../application/lesson_stats_controller.dart';
-import '../../data/lesson_repository.dart';
 import '../../domain/lesson.dart';
 import '../widgets/highlighted_instruction.dart';
 
@@ -41,11 +45,16 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
   void _finish(LessonContent content) {
     if (!_hasTraced) return;
     ref.read(lessonStatsProvider.notifier).recordCorrect();
-    ref.read(ttsServiceProvider).speak('Que capricho!');
+    // Captured before navigating: this screen is disposed by the time the
+    // timer below fires, and reading from `ref` after that throws, which
+    // silently cost the child the hand-off cue.
+    final tts = ref.read(ttsServiceProvider);
+    ref.read(feedbackServiceProvider).play(FeedbackCue.correct);
+    tts.speak('Que capricho!');
     context.goNamed(ref.read(lessonFlowProvider).nextRoute(ActivityType.trace));
     // Hand off to the next activity by speaking its word.
     Future.delayed(const Duration(milliseconds: 700), () {
-      ref.read(ttsServiceProvider).speak(content.listen.speech);
+      tts.speak(content.listen.speech);
     });
   }
 
@@ -60,7 +69,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
       onClose: () => context.goNamed(AppRoutes.childHome),
       child: Column(
         children: [
-          const SizedBox(height: 18),
+          const SizedBox(height: AppSpacing.xl),
           HighlightedInstruction(
             instruction: activity.instruction,
             token: activity.letter,
@@ -72,7 +81,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                 height: 300,
                 decoration: BoxDecoration(
                   color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(AppRadius.panel),
                   border: Border.all(
                     color: AppColors.border,
                     width: 3,
@@ -80,14 +89,17 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(26),
+                  borderRadius: BorderRadius.circular(AppRadius.panel),
                   child: Stack(
                     children: [
                       Center(
                         child: Text(
                           activity.letter,
+                          // Not AppTextStyles: a stroked glyph needs
+                          // `foreground`, and TextStyle asserts that
+                          // `color` is null when it is set.
                           style: TextStyle(
-                            fontFamily: 'Baloo 2',
+                            fontFamily: AppTextStyles.balooFamily,
                             fontSize: 240,
                             fontWeight: FontWeight.w800,
                             foreground: Paint()
@@ -98,11 +110,16 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                         ),
                       ),
                       Positioned.fill(
-                        child: GestureDetector(
-                          onPanStart: (d) => _startStroke(d.localPosition),
-                          onPanUpdate: (d) => _extendStroke(d.localPosition),
-                          child: CustomPaint(
-                            painter: _TracePainter(strokes: _strokes),
+                        child: Semantics(
+                          label:
+                              'Área de desenho. Cubra a letra '
+                              '${activity.letter} com o dedo.',
+                          child: GestureDetector(
+                            onPanStart: (d) => _startStroke(d.localPosition),
+                            onPanUpdate: (d) => _extendStroke(d.localPosition),
+                            child: CustomPaint(
+                              painter: _TracePainter(strokes: _strokes),
+                            ),
                           ),
                         ),
                       ),
@@ -113,25 +130,29 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
             ),
           ),
           Row(
-            spacing: 12,
+            spacing: AppSpacing.md,
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: _clear,
-                  child: Container(
-                    height: 56,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.border, width: 3),
-                    ),
-                    child: Text(
-                      'Limpar',
-                      style: AppTextStyles.baloo(
-                        18,
-                        weight: FontWeight.w700,
-                        color: AppColors.textMuted,
+                child: Semantics(
+                  button: true,
+                  label: 'Limpar o desenho',
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    onTap: _clear,
+                    child: Container(
+                      height: 56,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                        border: Border.all(color: AppColors.border, width: 3),
+                      ),
+                      child: Text(
+                        'Limpar',
+                        style: AppTextStyles.subheading.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),

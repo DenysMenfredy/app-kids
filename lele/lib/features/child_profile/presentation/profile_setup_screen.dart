@@ -4,12 +4,15 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
 import '../../session/application/child_provider.dart';
 import '../../session/application/session_controller.dart';
 import '../../session/domain/child_profile.dart';
+import '../../session/presentation/child_avatar_style.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -68,34 +71,34 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       'Quem vai aprender?',
                       style: AppTextStyles.screenTitle,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     LeleTextField(
                       hint: 'Nome da criança',
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     Text('Idade', style: AppTextStyles.sectionTitle),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.md),
                     Row(
-                      spacing: 10,
+                      spacing: AppSpacing.md,
                       children: [
                         for (final age in const [3, 4, 5, 6, 7])
                           Expanded(child: _ageChip(age)),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     Text(
                       'Escolha o amiguinho',
                       style: AppTextStyles.sectionTitle,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.md),
                     // Wrap: the avatars need a second row on a 320px phone
                     // rather than running off the edge.
                     Wrap(
                       alignment: WrapAlignment.center,
-                      spacing: 14,
-                      runSpacing: 14,
+                      spacing: AppSpacing.lg,
+                      runSpacing: AppSpacing.lg,
                       children: [
                         for (final avatar in ChildAvatar.values)
                           _avatarChip(avatar),
@@ -106,7 +109,12 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(26, 8, 26, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xxl,
+                AppSpacing.sm,
+                AppSpacing.xxl,
+                AppSpacing.xxl,
+              ),
               child: SizedBox(
                 width: double.infinity,
                 child: LeleButton(label: 'Continuar', onPressed: _continue),
@@ -128,7 +136,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected ? AppColors.orange : AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadius.field),
           border: Border.all(
             color: selected ? AppColors.orange : AppColors.border,
             width: 2,
@@ -204,10 +212,10 @@ class _AvatarFace extends StatelessWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 8,
+          spacing: AppSpacing.sm,
           children: [eye(), eye()],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Container(
           width: 16,
           height: 8,

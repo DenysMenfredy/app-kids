@@ -4,8 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/lele_card.dart';
+import '../../../core/widgets/lele_icon_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../../core/widgets/motion.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../session/application/progress_provider.dart';
@@ -24,35 +29,31 @@ class ChildHomeScreen extends ConsumerWidget {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.sm,
+                AppSpacing.xl,
+                AppSpacing.md,
+              ),
               child: Row(
-                spacing: 8,
+                spacing: AppSpacing.sm,
                 children: [
-                  GestureDetector(
-                    onTap: () => context.goNamed(AppRoutes.dashboard),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.panel,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.menu_rounded,
-                        size: 20,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
+                  LeleIconButton(
+                    icon: Icons.menu_rounded,
+                    onPressed: () => context.goNamed(AppRoutes.dashboard),
+                    semanticLabel: 'Abrir a área dos pais',
+                    size: 38,
+                    iconSize: 20,
+                    alignment: Alignment.centerLeft,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   // The stat pills wrap to a second line rather than
                   // pushing each other off the edge of a small phone.
                   Expanded(
                     child: Wrap(
                       alignment: WrapAlignment.end,
-                      spacing: 6,
-                      runSpacing: 6,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
                       children: [
                         _StatPill(
                           color: AppColors.orangeDark,
@@ -96,7 +97,12 @@ class ChildHomeScreen extends ConsumerWidget {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(22, 6, 22, 24),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xxl,
+                  AppSpacing.sm,
+                  AppSpacing.xxl,
+                  AppSpacing.xxl,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -104,9 +110,9 @@ class ChildHomeScreen extends ConsumerWidget {
                       theme: currentModule.lessonTheme,
                       onTap: () => context.goNamed(AppRoutes.lessonIntro),
                     ),
-                    const SizedBox(height: 22),
-                    Text('Sua jornada', style: AppTextStyles.baloo(17)),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: AppSpacing.xxl),
+                    Text('Sua jornada', style: AppTextStyles.subheading),
+                    const SizedBox(height: AppSpacing.sm),
                     for (final (i, module) in journey.indexed)
                       _JourneyRow(
                         module: module,
@@ -115,7 +121,7 @@ class ChildHomeScreen extends ConsumerWidget {
                             ? () => context.goNamed(AppRoutes.lessonIntro)
                             : null,
                       ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: AppSpacing.lg),
                     _BooksCard(onTap: () => context.goNamed(AppRoutes.books)),
                   ],
                 ),
@@ -141,18 +147,18 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return LeleCard(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 2),
-      ),
+      borderRadius: AppRadius.control,
       child: Row(
+        // Without this the Row takes the Wrap's full width, so each pill
+        // became a full-width bar on its own line instead of three chips
+        // sitting together next to the menu button.
+        mainAxisSize: MainAxisSize.min,
         spacing: 5,
         children: [
           icon,
-          Text(value, style: AppTextStyles.baloo(14, color: color)),
+          Text(value, style: AppTextStyles.statValue.copyWith(color: color)),
         ],
       ),
     );
@@ -172,18 +178,18 @@ class _TodayLessonCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.orangeBright, AppColors.orange],
             ),
-            borderRadius: BorderRadius.circular(26),
+            borderRadius: BorderRadius.circular(AppRadius.panel),
             boxShadow: const [
               BoxShadow(color: AppColors.orangeDark, offset: Offset(0, 6)),
             ],
           ),
           child: Row(
-            spacing: 14,
+            spacing: AppSpacing.lg,
             children: [
               const LeleMascot(size: 58),
               Expanded(
@@ -192,13 +198,14 @@ class _TodayLessonCard extends StatelessWidget {
                   children: [
                     Text(
                       'Lição de hoje',
-                      style: AppTextStyles.baloo(19, color: Colors.white),
+                      style: AppTextStyles.subheading.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                     Text(
                       '$theme · 15 min',
-                      style: AppTextStyles.nunito(
-                        13,
-                        weight: FontWeight.w700,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontWeight: FontWeight.w700,
                         color: AppColors.orangePale,
                       ),
                     ),
@@ -260,7 +267,7 @@ class _JourneyRow extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(top: 9, bottom: 9, left: indented ? 44 : 0),
       child: Row(
-        spacing: 14,
+        spacing: AppSpacing.lg,
         children: [
           GestureDetector(
             onTap: onTap,
@@ -299,7 +306,7 @@ class _JourneyRow extends StatelessWidget {
               children: [
                 Text(
                   module.title,
-                  style: AppTextStyles.baloo(15, color: textColor),
+                  style: AppTextStyles.statValue.copyWith(color: textColor),
                 ),
                 Text(
                   statusLabel,
@@ -325,61 +332,53 @@ class _BooksCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return LeleCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: AppColors.border, width: 2),
-        ),
-        child: Row(
-          spacing: 14,
-          children: [
-            Container(
-              width: 44,
-              height: 52,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.purple, AppColors.purpleBright],
-                ),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  bottomLeft: Radius.circular(8),
-                  topRight: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
-                ),
-                border: Border(
-                  left: BorderSide(color: AppColors.purpleDark, width: 6),
-                ),
+      semanticLabel: 'Meus livros',
+      child: Row(
+        spacing: AppSpacing.lg,
+        children: [
+          Container(
+            width: 44,
+            height: 52,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.purple, AppColors.purpleBright],
+              ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8),
+                bottomLeft: Radius.circular(8),
+                topRight: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+              border: Border(
+                left: BorderSide(color: AppColors.purpleDark, width: 6),
               ),
             ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Meus livros', style: AppTextStyles.baloo(16)),
-                  Text(
-                    '2 desbloqueados · 1 novo!',
-                    style: AppTextStyles.nunito(
-                      13,
-                      weight: FontWeight.w700,
-                      color: AppColors.textMuted,
-                    ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Meus livros', style: AppTextStyles.sectionTitle),
+                Text(
+                  '2 desbloqueados · 1 novo!',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textMuted,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              size: 28,
-              color: AppColors.textFaint,
-            ),
-          ],
-        ),
+          ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            size: 28,
+            color: AppColors.textFaint,
+          ),
+        ],
       ),
     );
   }

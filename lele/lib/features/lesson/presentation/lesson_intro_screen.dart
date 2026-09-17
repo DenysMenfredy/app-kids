@@ -3,17 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
-import '../../../core/services/tts_service.dart';
 import '../../../core/layout/adaptive_page.dart';
+import '../../../core/services/tts_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
+import '../../../core/widgets/lele_icon_button.dart';
 import '../../learning/application/journey_provider.dart';
+import '../application/lesson_content_provider.dart';
 import '../application/lesson_controller.dart';
-import '../application/lesson_stats_controller.dart';
-import '../data/lesson_repository.dart';
-import '../data/lesson_sync_service.dart';
+import '../application/lesson_session_controller.dart';
 import '../domain/lesson.dart';
+import 'activity_presentation.dart';
 
 class LessonIntroScreen extends ConsumerWidget {
   const LessonIntroScreen({super.key});
@@ -25,28 +28,22 @@ class LessonIntroScreen extends ConsumerWidget {
       body: SafeArea(
         child: AdaptiveWidth(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xxl,
+              AppSpacing.md,
+              AppSpacing.xxl,
+              AppSpacing.xxl,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () => context.goNamed(AppRoutes.childHome),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: AppColors.panel,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 22,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
+                  child: LeleIconButton(
+                    icon: Icons.close_rounded,
+                    onPressed: () => context.goNamed(AppRoutes.childHome),
+                    semanticLabel: 'Sair da lição',
+                    alignment: Alignment.centerLeft,
                   ),
                 ),
                 Expanded(
@@ -94,47 +91,45 @@ class _Lesson extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   'LIÇÃO $lessonNumber · ${lesson.theme.toUpperCase()}',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.eyebrow(AppColors.teal),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   lesson.title,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.baloo(28, height: 1.2),
+                  style: AppTextStyles.title.copyWith(height: 1.2),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   '${ActivityType.values.length} atividades · cerca de '
                   '${lesson.estimatedMinutes} minutos',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textMuted,
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 for (final type in ActivityType.values) ...[
                   _ActivityRow(presentation: activityPresentation[type]!),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ],
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         LeleButton(
           label: 'Começar!',
           height: 60,
           fontSize: 21,
           onPressed: () {
-            final flow = ref.read(lessonFlowProvider);
-            ref.read(lessonStatsProvider.notifier).start();
-            ref
-                .read(lessonSyncServiceProvider)
-                .lessonStarted(ref.read(currentLessonIdProvider));
+            ref.read(lessonSessionProvider).start();
             ref.read(ttsServiceProvider).speak(lesson.tap.speech);
-            context.goNamed(flow.firstRoute);
+            context.goNamed(ref.read(lessonFlowProvider).firstRoute);
           },
         ),
       ],
@@ -155,20 +150,22 @@ class _LoadFailed extends StatelessWidget {
         Text(
           'Não conseguimos carregar a lição',
           textAlign: TextAlign.center,
-          style: AppTextStyles.baloo(22, height: 1.25),
+          style: AppTextStyles.heading.copyWith(height: 1.25),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.md),
         Text(
           'Verifique sua conexão e tente de novo.',
           textAlign: TextAlign.center,
-          style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: AppSpacing.xl),
         TextButton(
           onPressed: onRetry,
           child: Text(
             'Tentar de novo',
-            style: AppTextStyles.baloo(18, color: AppColors.orangeDark),
+            style: AppTextStyles.subheading.copyWith(
+              color: AppColors.orangeDark,
+            ),
           ),
         ),
       ],
@@ -184,14 +181,17 @@ class _ActivityRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: AppColors.border, width: 2),
       ),
       child: Row(
-        spacing: 14,
+        spacing: AppSpacing.lg,
         children: [
           Container(
             width: 44,
@@ -199,7 +199,7 @@ class _ActivityRow extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: presentation.chipColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.field),
             ),
             child: Icon(presentation.icon, size: 22, color: Colors.white),
           ),
@@ -207,7 +207,7 @@ class _ActivityRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(presentation.title, style: AppTextStyles.baloo(16)),
+                Text(presentation.title, style: AppTextStyles.sectionTitle),
                 Text(
                   presentation.subtitle,
                   style: AppTextStyles.nunito(

@@ -13,6 +13,7 @@ class LeleMascot extends StatelessWidget {
     this.mouthColor = AppColors.mouthBrown,
     this.withEars = false,
     this.withShadow = false,
+    this.semanticLabel,
   });
 
   final double size;
@@ -21,10 +22,17 @@ class LeleMascot extends StatelessWidget {
   final bool withEars;
   final bool withShadow;
 
+  /// Set where the mascot carries meaning rather than decorating — the
+  /// splash and the reward screen, where it is the only thing on screen.
+  /// Left null the face is drawn from bare [Container]s and reaches a
+  /// screen reader as nothing, which is the right outcome for a border
+  /// ornament.
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
     final s = size / 150;
-    return SizedBox(
+    final face = SizedBox(
       width: size,
       height: size,
       child: Stack(
@@ -73,6 +81,9 @@ class LeleMascot extends StatelessWidget {
         ],
       ),
     );
+
+    if (semanticLabel == null) return face;
+    return Semantics(image: true, label: semanticLabel, child: face);
   }
 
   Widget _ear({double? left, double? right, required double s}) {
@@ -111,199 +122,5 @@ class LeleMascot extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-extension on AnimationController {
-  /// Starts or stops a looping decoration animation depending on the
-  /// platform's reduce-motion setting.
-  void syncLoopWithReducedMotion(BuildContext context, {bool reverse = false}) {
-    final disable = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (disable) {
-      stop();
-      value = 0;
-    } else if (!isAnimating) {
-      repeat(reverse: reverse);
-    }
-  }
-}
-
-/// Gentle vertical float, mirroring the `lele-float` keyframes.
-class FloatingWidget extends StatefulWidget {
-  const FloatingWidget({super.key, required this.child, this.offset = 10});
-
-  final Widget child;
-  final double offset;
-
-  @override
-  State<FloatingWidget> createState() => _FloatingWidgetState();
-}
-
-class _FloatingWidgetState extends State<FloatingWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 3),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _controller.syncLoopWithReducedMotion(context, reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(
-          0,
-          -widget.offset * Curves.easeInOut.transform(_controller.value),
-        ),
-        child: child,
-      ),
-      child: widget.child,
-    );
-  }
-}
-
-/// Slow scale pulse, mirroring the `lele-pulse` keyframes.
-class PulsingWidget extends StatefulWidget {
-  const PulsingWidget({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  State<PulsingWidget> createState() => _PulsingWidgetState();
-}
-
-class _PulsingWidgetState extends State<PulsingWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1300),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _controller.syncLoopWithReducedMotion(context, reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: Tween(
-        begin: 1.0,
-        end: 1.05,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
-      child: widget.child,
-    );
-  }
-}
-
-/// Pop-in entrance, mirroring the `lele-pop` keyframes.
-class PopIn extends StatefulWidget {
-  const PopIn({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  State<PopIn> createState() => _PopInState();
-}
-
-class _PopInState extends State<PopIn> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 500),
-  )..forward();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-      child: FadeTransition(
-        opacity: CurvedAnimation(
-          parent: _controller,
-          curve: const Interval(0, 0.4),
-        ),
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-/// Horizontal shake for wrong answers, mirroring the `lele-shake` keyframes.
-class ShakeWidget extends StatefulWidget {
-  const ShakeWidget({super.key, required this.child, required this.trigger});
-
-  final Widget child;
-
-  /// Change this value to replay the shake.
-  final Object? trigger;
-
-  @override
-  State<ShakeWidget> createState() => _ShakeWidgetState();
-}
-
-class _ShakeWidgetState extends State<ShakeWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 400),
-  );
-
-  @override
-  void didUpdateWidget(ShakeWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.trigger != null && widget.trigger != oldWidget.trigger) {
-      _controller.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _controller.value;
-        // 0 → -7px at 25% → +7px at 75% → 0
-        final dx = t == 0 || t == 1
-            ? 0.0
-            : -7 * _wave(t, 0.25) + 7 * _wave(t, 0.75);
-        return Transform.translate(offset: Offset(dx, 0), child: child);
-      },
-      child: widget.child,
-    );
-  }
-
-  double _wave(double t, double center) {
-    final d = (t - center).abs();
-    return d > 0.25 ? 0 : 1 - d / 0.25;
   }
 }

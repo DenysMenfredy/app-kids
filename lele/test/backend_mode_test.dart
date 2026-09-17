@@ -1,11 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
+import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/auth/data/auth_repository.dart';
 import 'package:lele/features/lesson/data/lesson_sync_service.dart';
 import 'package:lele/features/paywall/application/entitlement_provider.dart';
 import 'package:lele/features/paywall/data/subscription_service.dart';
+import 'package:lele/features/paywall/domain/checkout_failure.dart';
+import 'package:lele/features/session/application/demo_progress_controller.dart';
+import 'package:lele/features/session/application/progress_provider.dart';
 import 'package:lele/features/session/data/profile_sync_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// These run in local mode (USE_FIREBASE unset), which is the default for
 /// tests and for development before `flutterfire configure` has run. They
@@ -20,6 +25,42 @@ void main() {
 
   test('local mode is the default', () {
     expect(AppConfig.useFirebase, isFalse);
+  });
+
+  /// The totals shown on screen and the totals on the device have to be the
+  /// same totals. They were not: the session persisted XP, coins and the
+  /// streak in both modes, while with the backend on the dashboard read the
+  /// numbers Firestore minted — 120 stored against 200 shown.
+  ///
+  /// In this mode the device *is* the source, so the startup cleanup that
+  /// drops the backend-owned copy must leave it completely alone.
+  test('what local storage holds is what the screen shows', () async {
+    SharedPreferences.setMockInitialValues({
+      'session.xp': 500,
+      'session.coins': 99,
+      'session.streak': 7,
+    });
+    final prefs = await SharedPreferences.getInstance();
+
+    await DemoProgress.dropBackendOwnedCopy(prefs);
+
+    expect(
+      prefs.getInt('session.xp'),
+      500,
+      reason: 'demo progress is owned here',
+    );
+    expect(prefs.getInt('session.coins'), 99);
+    expect(prefs.getInt('session.streak'), 7);
+
+    final container = ProviderContainer(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    );
+    addTearDown(container.dispose);
+
+    final shown = container.read(progressProvider);
+    expect(shown.xp, prefs.getInt('session.xp'));
+    expect(shown.coins, prefs.getInt('session.coins'));
+    expect(shown.streak, prefs.getInt('session.streak'));
   });
 
   test('auth resolves to the offline fake', () {
@@ -43,8 +84,7 @@ void main() {
     );
   });
 
-  test('checkout reports being unavailable instead of half-working',
-      () async {
+  test('checkout reports being unavailable instead of half-working', () async {
     final service = makeContainer().read(subscriptionServiceProvider);
     expect(service, isA<UnavailableSubscriptionService>());
     await expectLater(
@@ -57,10 +97,7 @@ void main() {
     final container = makeContainer();
     // Hold a subscription: Riverpod auto-disposes providers nobody listens
     // to, which would tear the stream down before it emits.
-    final subscription = container.listen(
-      premiumActiveProvider,
-      (_, _) {},
-    );
+    final subscription = container.listen(premiumActiveProvider, (_, _) {});
     addTearDown(subscription.close);
 
     await expectLater(

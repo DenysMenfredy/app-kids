@@ -4,17 +4,23 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
+import '../../../core/widgets/lele_card.dart';
+import '../../../core/widgets/lele_icon_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
+import '../../../core/widgets/motion.dart';
+import '../../auth/application/auth_controller.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
-import '../../auth/data/auth_repository.dart';
 import '../../paywall/application/entitlement_provider.dart';
 import '../../session/application/child_provider.dart';
 import '../../session/application/parent_provider.dart';
 import '../../session/application/progress_provider.dart';
 import '../../session/domain/child_profile.dart';
+import '../../session/presentation/child_avatar_style.dart';
 
 class _DayActivity {
   const _DayActivity(this.label, this.minutes);
@@ -42,7 +48,7 @@ class DashboardScreen extends ConsumerWidget {
     final child = ref.watch(childProvider);
     final progress = ref.watch(progressProvider);
     // Whoever actually registered, per the backend — not the sample name.
-    final parentName = ref.watch(parentNameProvider);
+    final parentName = ref.watch(parentFirstNameProvider);
     final journey = ref.watch(journeyProvider);
     final currentModule = ref.watch(currentModuleProvider);
 
@@ -52,7 +58,12 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(22, 20, 22, 8),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xxl,
+                  AppSpacing.xl,
+                  AppSpacing.xxl,
+                  AppSpacing.sm,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -64,60 +75,86 @@ class DashboardScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 'Painel dos pais',
-                                style: AppTextStyles.nunito(
-                                  14,
+                                style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textFaint,
                                 ),
                               ),
+                              // One line, always. The header sits above a
+                              // fixed stack of cards, and a greeting that
+                              // wraps pushes all of them down — which is what
+                              // a full name used to do here before the
+                              // greeting was cut to the first name. A first
+                              // name long enough to still not fit is
+                              // ellipsised rather than allowed to wrap.
                               Text(
                                 parentName.isEmpty
                                     ? 'Olá!'
                                     : 'Olá, $parentName',
-                                style: AppTextStyles.baloo(26),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.title,
                               ),
                             ],
                           ),
                         ),
-                        // Flexible: on a 320px phone at a large text scale the chip has
-                        // to give way rather than push the row past the edge.
-                        Flexible(
+                        // Deliberately not Flexible. Flexible and the Expanded
+                        // above are both flex children, so the row splits the
+                        // free space evenly between them — and the chip only
+                        // draws as wide as its text, leaving the rest of its
+                        // half as dead space at the end of the row. That slack
+                        // sat to the right of the sign-out button and pushed it
+                        // off the margin, by 81px on a large phone and 198px on
+                        // a tablet. A plain cap keeps the "give way rather than
+                        // overflow" intent — the label is ellipsised — without
+                        // claiming space it will not use. The cap is needed:
+                        // a non-flex child of a Row is measured unbounded.
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 150),
                           child: _StatusChip(
                             premium: ref.watch(isPremiumProvider),
                             onTap: () => context.goNamed(AppRoutes.paywall),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        // No gap of its own: the sign-out button's touch
+                        // target already reserves 10px inside its left edge,
+                        // which is the separation the design asks for. Adding
+                        // AppSpacing.sm on top read as a double gap.
                         _SignOutButton(
                           onSignOut: () =>
-                              ref.read(authRepositoryProvider).signOut(),
+                              ref.read(authControllerProvider).signOut(),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     _ChildCard(
                       child: child,
                       streak: progress.streak,
                       moduleTitle: currentModule.title,
                       progress: currentModule.progress,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     const _WeekCard(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     Text(
                       'Jornada de aprendizado',
                       style: AppTextStyles.sectionTitle,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.md),
                     for (final module in journey) ...[
                       _ModuleRow(module: module),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppSpacing.md),
                     ],
                   ],
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 8, 22, 20),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xxl,
+                AppSpacing.sm,
+                AppSpacing.xxl,
+                AppSpacing.xl,
+              ),
               child: SizedBox(
                 width: double.infinity,
                 child: LeleButton(
@@ -143,26 +180,13 @@ class _SignOutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Sair da conta',
-      child: GestureDetector(
-        onTap: onSignOut,
-        child: Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.panel,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.logout_rounded,
-            size: 18,
-            color: AppColors.textMuted,
-          ),
-        ),
-      ),
+    return LeleIconButton(
+      icon: Icons.logout_rounded,
+      onPressed: onSignOut,
+      semanticLabel: 'Sair da conta',
+      size: 38,
+      iconSize: 18,
+      alignment: Alignment.centerRight,
     );
   }
 }
@@ -183,17 +207,13 @@ class _ChildCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = (progress * 100).round();
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 2),
-      ),
+    return LeleCard(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.panel,
       child: Column(
         children: [
           Row(
-            spacing: 14,
+            spacing: AppSpacing.lg,
             children: [
               LeleMascot(
                 size: 54,
@@ -206,12 +226,11 @@ class _ChildCard extends StatelessWidget {
                   children: [
                     Text(
                       '${child.name} · ${child.age} anos',
-                      style: AppTextStyles.baloo(19),
+                      style: AppTextStyles.subheading,
                     ),
                     Text(
                       '$moduleTitle · Semana 2',
-                      style: AppTextStyles.nunito(
-                        13,
+                      style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMuted,
                       ),
                     ),
@@ -219,7 +238,7 @@ class _ChildCard extends StatelessWidget {
                 ),
               ),
               Row(
-                spacing: 4,
+                spacing: AppSpacing.xs,
                 children: [
                   const Icon(
                     Icons.bolt_rounded,
@@ -228,44 +247,55 @@ class _ChildCard extends StatelessWidget {
                   ),
                   Text(
                     '$streak',
-                    style: AppTextStyles.baloo(15, color: AppColors.orangeDark),
+                    style: AppTextStyles.statValue.copyWith(
+                      color: AppColors.orangeDark,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
                 child: Text(
                   'Progresso do módulo',
-                  style: AppTextStyles.nunito(
-                    13,
-                    weight: FontWeight.w700,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,
                   ),
                 ),
               ),
-              Text(
-                '$percent%',
-                style: AppTextStyles.nunito(
-                  13,
-                  weight: FontWeight.w800,
-                  color: AppColors.teal,
+              CountUp(
+                value: percent,
+                builder: (context, value) => Text(
+                  '$value%',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.teal,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.sm),
+          // Filled rather than drawn: a parent opening the dashboard after
+          // a lesson sees the week's work arrive, and the bar and the
+          // percentage above it move together.
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 12,
-              backgroundColor: AppColors.panel,
-              valueColor: const AlwaysStoppedAnimation(AppColors.teal),
+            borderRadius: BorderRadius.circular(AppRadius.bar),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(end: progress),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 12,
+                backgroundColor: AppColors.panel,
+                valueColor: const AlwaysStoppedAnimation(AppColors.teal),
+              ),
             ),
           ),
         ],
@@ -287,24 +317,20 @@ class _WeekCard extends StatelessWidget {
         .toDouble();
     const today = 4; // highlighted bar in the design (sexta-feira)
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border, width: 2),
-      ),
+    return LeleCard(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      borderRadius: AppRadius.panel,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Esta semana', style: AppTextStyles.sectionTitle),
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSpacing.lg),
           // The bars keep a fixed plot area; the row's height then follows
           // the day labels, which grow with the text scale. A fixed 90px box
           // overflowed by 2px the moment they did.
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            spacing: 10,
+            spacing: AppSpacing.md,
             children: [
               for (var i = 0; i < _week.length; i++)
                 Expanded(
@@ -336,7 +362,7 @@ class _WeekCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         _week[i].label,
                         maxLines: 1,
@@ -353,10 +379,10 @@ class _WeekCard extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             '$lessons lições completas · $minutes min de prática',
-            style: AppTextStyles.nunito(13, color: AppColors.textMuted),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),
@@ -393,14 +419,14 @@ class _ModuleRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.field),
         border: Border.all(
           color: isCurrent ? AppColors.orange : AppColors.border,
           width: 2,
         ),
       ),
       child: Row(
-        spacing: 12,
+        spacing: AppSpacing.md,
         children: [
           Container(
             width: 38,
@@ -408,28 +434,26 @@ class _ModuleRow extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: chipColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.control),
             ),
             child: Text(
               '${module.number}',
-              style: AppTextStyles.baloo(16, color: Colors.white),
+              style: AppTextStyles.sectionTitle.copyWith(color: Colors.white),
             ),
           ),
           Expanded(
             child: Text(
               module.title,
-              style: AppTextStyles.nunito(
-                15,
-                weight: FontWeight.w700,
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.w700,
                 color: titleColor,
               ),
             ),
           ),
           Text(
             statusLabel,
-            style: AppTextStyles.nunito(
-              13,
-              weight: FontWeight.w800,
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: FontWeight.w800,
               color: statusColor,
             ),
           ),
@@ -449,10 +473,13 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: 9,
+      ),
       decoration: BoxDecoration(
         color: premium ? AppColors.greenPale : AppColors.purplePale,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.control),
       ),
       // Shortened to leave room for sign-out; the paywall spells the offer
       // out in full.
@@ -460,8 +487,7 @@ class _StatusChip extends StatelessWidget {
         premium ? 'Premium ativo' : 'Teste grátis',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.baloo(
-          13,
+        style: AppTextStyles.micro.copyWith(
           color: premium ? AppColors.greenDark : AppColors.purple,
         ),
       ),

@@ -3,18 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/app_router.dart';
+import '../../../../core/audio/feedback_cues.dart';
+import '../../../../core/services/feedback_service.dart';
 import '../../../../core/services/tts_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/activity_scaffold.dart';
-import '../../../../core/widgets/lele_mascot.dart';
+import '../../../../core/widgets/motion.dart';
 import '../../../learning/application/journey_provider.dart';
+import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_session_controller.dart';
 import '../../application/lesson_stats_controller.dart';
-import '../../data/lesson_repository.dart';
-import '../../data/lesson_sync_service.dart';
 import '../../domain/lesson.dart';
-import '../../../session/application/session_controller.dart';
 
 class ListenActivityScreen extends ConsumerStatefulWidget {
   const ListenActivityScreen({super.key});
@@ -29,45 +32,43 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
   bool _done = false;
   int _wrongAttempts = 0;
 
+  /// The lesson this screen is playing, pinned on first resolve.
+  ///
+  /// Answering correctly finishes the lesson, which advances
+  /// [currentLessonIdProvider] to the next one. Following that here swapped
+  /// the celebration for a loading spinner in the second before the reward
+  /// screen opens — on Firebase that is a live fetch of a lesson the child
+  /// is not playing yet, right at the moment they got the answer right.
+  LessonContent? _content;
+
   void _onTap(ListenActivity activity, String word) {
     if (_done) return;
     if (word == activity.answer) {
       ref.read(lessonStatsProvider.notifier).recordCorrect();
+      // The last answer of the lesson: the bigger cue.
+      ref.read(feedbackServiceProvider).play(FeedbackCue.celebrate);
       ref.read(ttsServiceProvider).speak('Parabéns!');
       setState(() {
         _picked = word;
         _done = true;
       });
-      // Report the finished lesson right away; the backend decides the
-      // reward (ADR 0003). The celebration animation covers the round trip,
-      // and a slow network can't hold the child on this screen.
-      final stats = ref.read(lessonStatsProvider);
-      final finishedLessonId = ref.read(currentLessonIdProvider);
-      final rewardFuture = ref
-          .read(lessonSyncServiceProvider)
-          .lessonCompleted(
-            finishedLessonId,
-            durationSeconds: stats.durationSeconds(DateTime.now()),
-            score: stats.score,
-            attempts: stats.attempts,
-            correctAnswers: stats.correctAnswers,
-            wrongAnswers: stats.wrongAnswers,
-          )
-          .timeout(const Duration(seconds: 3), onTimeout: () => null);
-      // Demo mode only — the backend owns both of these once it is on.
-      ref.read(sessionProvider.notifier).completeLesson();
-      ref.read(demoLessonProvider.notifier).completed(finishedLessonId);
+      // Reported right away rather than on the reward screen: the
+      // celebration animation is what covers the round trip.
+      final session = ref.read(lessonSessionProvider);
+      final rewardFuture = session.complete();
 
       Future.delayed(const Duration(milliseconds: 1000), () async {
         final reward = await rewardFuture;
         if (!mounted) return;
-        ref.read(lastLessonRewardProvider.notifier).set(reward);
+        session.publishReward(reward);
         context.goNamed(
           ref.read(lessonFlowProvider).nextRoute(ActivityType.listen),
         );
       });
     } else {
       ref.read(lessonStatsProvider.notifier).recordWrong();
+      // This activity said nothing at all on a wrong word before.
+      ref.read(feedbackServiceProvider).play(FeedbackCue.wrong);
       setState(() {
         _picked = word;
         _wrongAttempts++;
@@ -80,7 +81,10 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final content = ref.watch(currentLessonContentProvider).value;
+    // Watched every build so the subscription stays live; pinned once it
+    // first resolves.
+    final resolved = ref.watch(currentLessonContentProvider).value;
+    final content = _content ??= resolved;
     if (content == null) return const ActivityLoading();
     final activity = content.listen;
     final flow = ref.watch(lessonFlowProvider);
@@ -96,41 +100,46 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       scrollableContent: true,
       child: Column(
         children: [
-          const SizedBox(height: 18),
-          Text(activity.instruction, style: AppTextStyles.baloo(23)),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.xl),
+          Text(activity.instruction, style: AppTextStyles.heading),
+          const SizedBox(height: AppSpacing.lg),
           PulsingWidget(
-            child: GestureDetector(
-              onTap: () => ref.read(ttsServiceProvider).speak(activity.speech),
-              child: Container(
-                width: 110,
-                height: 110,
-                decoration: const BoxDecoration(
-                  color: AppColors.purple,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.purpleDark,
-                      offset: Offset(0, 7),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.volume_up_rounded,
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                    Text(
-                      'ouvir',
-                      style: AppTextStyles.baloo(
-                        13,
-                        color: AppColors.purpleText,
+            child: Semantics(
+              button: true,
+              label: 'Ouvir a palavra',
+              excludeSemantics: true,
+              child: GestureDetector(
+                onTap: () =>
+                    ref.read(ttsServiceProvider).speak(activity.speech),
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: const BoxDecoration(
+                    color: AppColors.purple,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purpleDark,
+                        offset: Offset(0, 7),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.volume_up_rounded,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                      Text(
+                        'ouvir',
+                        style: AppTextStyles.micro.copyWith(
+                          color: AppColors.purpleText,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -147,7 +156,7 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
                     wrongAttempts: _wrongAttempts,
                     onTap: () => _onTap(activity, word),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                 ],
               ],
             ),
@@ -184,7 +193,7 @@ class _WordCard extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: isRight ? AppColors.green : AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isRight
               ? AppColors.greenDark
@@ -202,23 +211,34 @@ class _WordCard extends StatelessWidget {
       ),
       child: Text(
         word,
-        style: AppTextStyles.baloo(
-          28,
+        style: AppTextStyles.wordGlyph.copyWith(
           color: isRight
               ? Colors.white
               : isWrong
               ? AppColors.red
               : AppColors.textDark,
-          letterSpacing: 3.4,
         ),
       ),
     );
 
-    return GestureDetector(
-      onTap: onTap,
-      child: isRight
-          ? PopIn(child: card)
-          : ShakeWidget(trigger: isWrong ? wrongAttempts : null, child: card),
+    return Semantics(
+      button: true,
+      selected: picked,
+      label: word,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: BurstOverlay(
+          trigger: isRight ? word : null,
+          colors: AppColors.celebration,
+          child: isRight
+              ? PopIn(child: card)
+              : ShakeWidget(
+                  trigger: isWrong ? wrongAttempts : null,
+                  child: card,
+                ),
+        ),
+      ),
     );
   }
 }

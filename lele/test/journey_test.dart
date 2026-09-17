@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/config/app_config.dart';
-import 'package:lele/features/learning/application/journey_provider.dart';
 import 'package:lele/core/storage/local_storage.dart';
+import 'package:lele/features/learning/application/journey_provider.dart';
 import 'package:lele/features/learning/domain/learning_module.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 List<int> _numbersWith(List<LearningModule> journey, ModuleStatus status) =>
     journey.where((m) => m.status == status).map((m) => m.number).toList();
@@ -38,21 +38,34 @@ void main() {
       // Two copies of the module list exist: this one, and the seeded
       // documents the assessment result screen shows a title from. They
       // drifted once already, so the seed is the reference.
-      final seeded = (jsonDecode(
-        File('../backend/seed/modules/modules.json').readAsStringSync(),
-      ) as List)
-          .cast<Map<String, dynamic>>();
+      final seeded =
+          (jsonDecode(
+                    File(
+                      '../backend/seed/modules/modules.json',
+                    ).readAsStringSync(),
+                  )
+                  as List)
+              .cast<Map<String, dynamic>>();
 
       expect(curriculum, hasLength(seeded.length));
       for (final module in seeded) {
         final own = curriculum.firstWhere((m) => m.number == module['number']);
         expect(own.title, module['title'], reason: 'title ${module['id']}');
-        expect(own.lessonTheme, module['lessonTheme'],
-            reason: 'theme ${module['id']}');
-        expect(own.firstLessonId, module['firstLessonId'],
-            reason: 'first lesson ${module['id']}');
-        expect(own.lessonCount, module['lessonCount'],
-            reason: 'lesson count ${module['id']}');
+        expect(
+          own.lessonTheme,
+          module['lessonTheme'],
+          reason: 'theme ${module['id']}',
+        );
+        expect(
+          own.firstLessonId,
+          module['firstLessonId'],
+          reason: 'first lesson ${module['id']}',
+        );
+        expect(
+          own.lessonCount,
+          module['lessonCount'],
+          reason: 'lesson count ${module['id']}',
+        );
       }
     });
 
@@ -64,8 +77,11 @@ void main() {
         'lesson_008',
         'lesson_014',
       ]) {
-        expect(moduleForLesson(firstLessonId), isNotNull,
-            reason: firstLessonId);
+        expect(
+          moduleForLesson(firstLessonId),
+          isNotNull,
+          reason: firstLessonId,
+        );
       }
     });
 
@@ -108,18 +124,25 @@ void main() {
       expect(journey[6].progress, 0);
     });
 
-    test('the first lesson of a module starts that module, not the previous',
-        () {
-      expect(_numbersWith(resolveJourney('lesson_004'), ModuleStatus.current),
-          [2]);
-      expect(_numbersWith(resolveJourney('lesson_008'), ModuleStatus.current),
-          [3]);
-    });
+    test(
+      'the first lesson of a module starts that module, not the previous',
+      () {
+        expect(
+          _numbersWith(resolveJourney('lesson_004'), ModuleStatus.current),
+          [2],
+        );
+        expect(
+          _numbersWith(resolveJourney('lesson_008'), ModuleStatus.current),
+          [3],
+        );
+      },
+    );
 
     test('an unplaced or malformed lesson id starts at the beginning', () {
       expect(_numbersWith(resolveJourney(''), ModuleStatus.current), [1]);
-      expect(
-          _numbersWith(resolveJourney('nonsense'), ModuleStatus.current), [1]);
+      expect(_numbersWith(resolveJourney('nonsense'), ModuleStatus.current), [
+        1,
+      ]);
     });
 
     test('a lesson past the curriculum stays on the final module', () {

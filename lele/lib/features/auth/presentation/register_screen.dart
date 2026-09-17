@@ -4,12 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_radius.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_text_field.dart';
-import '../../session/application/session_controller.dart';
-import '../data/auth_repository.dart';
+import '../application/auth_controller.dart';
+import '../domain/auth_failure.dart';
 import '../domain/credentials.dart';
+import '../domain/sign_in_outcome.dart';
+import 'apple_sign_in_button.dart';
+import 'google_sign_in_button.dart';
+import 'or_divider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -53,32 +59,61 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return nameError == null && emailError == null && passwordError == null;
   }
 
+  void _showFailure(AuthFailure failure) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(failure.message),
+        backgroundColor: AppColors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _signUpWithGoogle() =>
+      _withProvider(() => ref.read(authControllerProvider).signInWithGoogle());
+
+  Future<void> _signUpWithApple() =>
+      _withProvider(() => ref.read(authControllerProvider).signInWithApple());
+
+  /// A provider tap on the sign-up screen is the same call as on sign-in —
+  /// Google decides whether this is a new account, not the screen it was
+  /// tapped from. A parent who already has one is simply signed in.
+  Future<void> _withProvider(Future<SignInOutcome> Function() action) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final outcome = await action();
+      if (!mounted) return;
+      switch (outcome) {
+        case SignInOutcome.created:
+          context.goNamed(AppRoutes.profileSetup);
+        case SignInOutcome.returning:
+          context.goNamed(AppRoutes.dashboard);
+        case SignInOutcome.cancelled:
+          break;
+      }
+    } on AuthFailure catch (failure) {
+      if (mounted) _showFailure(failure);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _signUp() async {
     if (_busy || !_validate()) return;
     setState(() => _busy = true);
     final name = _nameController.text.trim();
     try {
       await ref
-          .read(authRepositoryProvider)
+          .read(authControllerProvider)
           .signUp(
             name: name,
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-      // The name the parent just gave is what the dashboard greets them by,
-      // here and on every device they sign in from.
-      ref.read(sessionProvider.notifier).setParentName(name);
       if (mounted) context.goNamed(AppRoutes.profileSetup);
     } on AuthFailure catch (failure) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(failure.message),
-            backgroundColor: AppColors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (mounted) _showFailure(failure);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -94,12 +129,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text('Criar conta', style: AppTextStyles.screenTitle),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Conta para os pais — leva menos de 2 minutos.',
                 style: AppTextStyles.subtitle,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
               LeleTextField(
                 hint: 'Seu nome',
                 controller: _nameController,
@@ -112,7 +147,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 },
                 onSubmitted: (_) => _emailFocus.requestFocus(),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               LeleTextField(
                 hint: 'E-mail',
                 controller: _emailController,
@@ -126,7 +161,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 },
                 onSubmitted: (_) => _passwordFocus.requestFocus(),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               LeleTextField(
                 hint: 'Senha',
                 controller: _passwordController,
@@ -156,9 +191,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : 'Esconder senha',
                 ),
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: AppSpacing.xl),
               const _LgpdNotice(),
-              const SizedBox(height: 18),
+              const SizedBox(height: AppSpacing.xl),
               LeleButton(
                 label: _busy ? 'Criando conta...' : 'Criar conta',
                 enabled: !_busy,
@@ -168,12 +203,32 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     : AppColors.orangeDark,
                 onPressed: _signUp,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: AppSpacing.md),
+              // Google asks for the provider to be offered where accounts
+              // are created, not only where they are entered. A parent who
+              // starts here and taps Google ends up in exactly the same
+              // place as one who fills the form: profile setup.
+              const OrDivider(),
+              const SizedBox(height: AppSpacing.md),
+              if (AppleSignInButton.isSupported) ...[
+                AppleSignInButton(
+                  onPressed: _busy ? null : _signUpWithApple,
+                  label: 'Criar conta com Apple',
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              GoogleSignInButton(
+                onPressed: _busy ? null : _signUpWithGoogle,
+                label: 'Criar conta com Google',
+              ),
+              const SizedBox(height: AppSpacing.xxxl),
               Center(
                 child: Text.rich(
                   TextSpan(
                     text: 'Já tem conta? ',
-                    style: AppTextStyles.nunito(15, color: AppColors.textMuted),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textMuted,
+                    ),
                     children: [
                       WidgetSpan(
                         child: GestureDetector(
@@ -182,9 +237,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : () => context.goNamed(AppRoutes.login),
                           child: Text(
                             'Entrar',
-                            style: AppTextStyles.nunito(
-                              15,
-                              weight: FontWeight.w800,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w800,
                               color: AppColors.orangeDark,
                             ),
                           ),
@@ -208,14 +262,17 @@ class _LgpdNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
         color: AppColors.panel,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.field),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 10,
+        spacing: AppSpacing.md,
         children: [
           Container(
             width: 20,
@@ -223,7 +280,7 @@ class _LgpdNotice extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.teal,
-              borderRadius: BorderRadius.circular(7),
+              borderRadius: BorderRadius.circular(AppRadius.bar),
             ),
             child: const Icon(
               Icons.check_rounded,
@@ -235,8 +292,7 @@ class _LgpdNotice extends StatelessWidget {
             child: Text(
               'Aceito os Termos de Uso e a Política de Privacidade. Seus '
               'dados e os do seu filho estão protegidos (LGPD).',
-              style: AppTextStyles.nunito(
-                13,
+              style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textMuted,
                 height: 1.4,
               ),
