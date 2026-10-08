@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Firebase's local emulators use HTTP. Limit this exception to the
+         local hosts listed in the development-only network policy. -->
+    <application
+        android:networkSecurityConfig="@xml/firebase_emulator_network_security_config"/>
 </manifest>

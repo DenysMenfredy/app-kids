@@ -162,6 +162,55 @@ flutter test           # 129 tests
 flutter analyze        # zero issues
 ```
 
+### Firebase emulators on Android
+
+From the repository root, start the backend in one terminal:
+
+```bash
+cd backend
+nvm use
+./dev.sh
+```
+
+Start an Android virtual device, then run the app in a second terminal:
+
+```bash
+cd lele
+flutter run --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATOR=true
+```
+
+Android virtual devices reach the host at `10.0.2.2`. Firebase Auth uses
+HTTP on port 9099, so the debug and profile source sets allow cleartext
+traffic only to `10.0.2.2`, `localhost` and `127.0.0.1`. Release builds do
+not include this exception and reject `USE_EMULATOR=true` (ADR 0009).
+After changing an Android manifest or network policy, stop the running app
+and run the command again to rebuild and reinstall it; hot reload and hot
+restart cannot apply native configuration changes.
+
+Demo Firebase options also need to satisfy native SDK format checks: the
+emulator API key is deliberately fake but has the 39-character format
+required by Firebase Installations. A short key such as `demo-api-key`
+allows Auth REST signup but can fail native Functions calls before they
+reach the emulator (ADR 0010). After changing Firebase initialization
+options, stop the app and start a fresh `flutter run` to reset the native
+SDK instance.
+
+For a physical Android device connected over USB, forward the emulator
+ports and use the permitted loopback host:
+
+```bash
+adb reverse tcp:9099 tcp:9099
+adb reverse tcp:8080 tcp:8080
+adb reverse tcp:5001 tcp:5001
+flutter run --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATOR=true \
+  --dart-define=EMULATOR_HOST=127.0.0.1
+```
+
+A custom LAN address supplied through `EMULATOR_HOST` also needs an
+explicit entry in the debug/profile network policies. Emulator mode skips
+App Check activation (ADR 0004), so Firebase Auth may log
+`No AppCheckProvider installed`; that warning does not block local signup.
+
 ### Releasing on Android
 
 Release builds are signed from `android/key.properties`, which is gitignored

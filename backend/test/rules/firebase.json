@@ -1,5 +1,5 @@
 {
-  "_comment": "Ports for the rules tests only, so `npm test` here can run alongside a live ./dev.sh stack. The rules under test are loaded by the test file itself from ../../firestore.rules.",
+  "_comment": "The rules tests use project demo-letrando-rules and separate ports, so npm test can run alongside ./dev.sh without replacing its hub locator. The test file loads ../../firestore.rules.",
   "emulators": {
     "firestore": {
       "port": 8085

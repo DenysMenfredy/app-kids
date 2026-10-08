@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Profile builds also support local Firebase emulators. Release
+         builds do not include this manifest or its network policy. -->
+    <application
+        android:networkSecurityConfig="@xml/firebase_emulator_network_security_config"/>
 </manifest>

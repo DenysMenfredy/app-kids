@@ -196,6 +196,26 @@ pointing the Flutter app at it.
 server-side assessment scoring → reward granting/idempotency → denied client
 XP write.
 
+If signup succeeds but saving a child's profile fails, check the Functions
+terminal for `Loaded functions definitions from source` and a
+`createChildProfile` initialization message. A terminal waiting at
+`Prompting for parameters` can have open emulator ports while every callable
+still returns 404. The committed `functions/.env.demo-letrando` supplies
+fake payment parameters and explicitly disables web checkout so startup
+does not wait for that prompt. Restart `./dev.sh` after adding a callable or
+changing its configuration; normal shutdown exports the local data.
+
+`No AppCheckProvider installed` in an Android emulator run is a separate SDK
+warning: the app intentionally skips App Check in emulator mode, and the
+callables skip only attestation enforcement there (ADR 0004). Auth and child
+ownership checks still run. A missing-provider warning alone does not mean
+that a child-profile request was rejected.
+
+The Rules suite uses `demo-letrando-rules` with separate ports, while
+`dev.sh` uses `demo-letrando`. Both the project IDs and ports must differ:
+the Firebase CLI stores its emulator hub locator per project, so reusing
+the development project can break discovery and data export after tests.
+
 ## Commands
 
 ```bash

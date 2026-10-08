@@ -32,7 +32,9 @@ const STRANGER = "stranger_uid";
 
 before(async () => {
   env = await initializeTestEnvironment({
-    projectId: "demo-letrando",
+    // Separate from ./dev.sh: sharing a project ID overwrites the live
+    // emulator hub's locator file even when the ports are different.
+    projectId: "demo-letrando-rules",
     firestore: {
       rules: readFileSync(new URL("../../firestore.rules", import.meta.url), "utf8"),
     },

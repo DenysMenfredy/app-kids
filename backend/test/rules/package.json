@@ -5,7 +5,7 @@
   "description": "Firestore Security Rules tests — run against the emulator",
   "type": "module",
   "scripts": {
-    "test": "firebase emulators:exec --only firestore --project demo-letrando \"node --test firestore.rules.test.mjs\""
+    "test": "firebase emulators:exec --only firestore --project demo-letrando-rules \"node --test firestore.rules.test.mjs\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.0",

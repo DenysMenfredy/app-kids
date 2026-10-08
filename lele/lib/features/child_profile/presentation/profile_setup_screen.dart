@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -57,6 +58,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Future<void> _continue() async {
     if (_saving) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final name = _nameController.text.trim();
     setState(() => _saving = true);
     try {
@@ -76,12 +78,20 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           widget.editExisting ? AppRoutes.dashboard : AppRoutes.assessmentIntro,
         );
       }
-    } catch (_) {
+    } catch (error, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Child profile save failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+          SnackBar(
+            content: const Text(
               'Não foi possível salvar. Verifique sua conexão e tente novamente.',
+            ),
+            action: SnackBarAction(
+              label: 'Tentar novamente',
+              onPressed: _continue,
             ),
           ),
         );

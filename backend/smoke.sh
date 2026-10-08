@@ -143,16 +143,14 @@ check "client cannot complete a session without activity evidence" "$r"
 SESSION_DOC=$(curl -s "${FS}/users/${UID_}/sessions/${SESSION}" -H "Authorization: Bearer $TOKEN")
 ACTIVITY_LIST=$(python3 -c "import sys,json; f=json.load(sys.stdin)['fields']['activityIds']['arrayValue']['values']; print(','.join(x['stringValue'] for x in f))" <<<"$SESSION_DOC")
 IFS=, read -r -a ACTIVITY_IDS <<<"$ACTIVITY_LIST"
-attempt_number=0
 submit_attempt() {
   local activity_id="$1"
   local response_json="$2"
-  local request_id="${3:-}"
+  # Callers supply the logical request ID: $(submit_attempt ...) runs in a
+  # subshell, so incrementing a global counter here would reset on each call
+  # and make different answers look like retries of the first wrong answer.
+  local request_id="$3"
   local payload
-  attempt_number=$((attempt_number + 1))
-  if [ -z "$request_id" ]; then
-    request_id="smoke_${attempt_number}"
-  fi
   payload=$(python3 -c 'import json,sys; print(json.dumps({"data":{"childId":sys.argv[1],"sessionId":sys.argv[2],"activityId":sys.argv[3],"requestId":sys.argv[4],"response":json.loads(sys.argv[5])}},separators=(",",":")))' \
     "$CHILD_ID" "$SESSION" "$activity_id" "$request_id" "$response_json")
   curl -s -X POST "${FN}/submitActivityAttempt" \
@@ -168,33 +166,40 @@ for ACTIVITY_ID in "${ACTIVITY_IDS[@]}"; do
       LABELS=$(python3 -c 'import json,sys; f=json.load(sys.stdin)["fields"]; a=[x["mapValue"]["fields"] for x in f["options"]["arrayValue"]["values"]]; good=next(x["label"]["stringValue"] for x in a if x["correct"]["booleanValue"]); bad=next(x["label"]["stringValue"] for x in a if not x["correct"]["booleanValue"]); print(json.dumps([bad,good]))' <<<"$ACTIVITY")
       BAD=$(python3 -c "import sys,json;print(json.dumps({'selectedLabel':json.loads(sys.argv[1])[0]}))" "$LABELS")
       GOOD=$(python3 -c "import sys,json;print(json.dumps({'selectedLabel':json.loads(sys.argv[1])[1]}))" "$LABELS")
-      WRONG=$(submit_attempt "$ACTIVITY_ID" "$BAD")
+      WRONG=$(submit_attempt "$ACTIVITY_ID" "$BAD" "smoke_${ACTIVITY_ID}_wrong")
       grep -q '"correct":false' <<<"$WRONG" && r=ok || r=no
       check "backend marks a wrong tap answer incorrect" "$r"
-      RIGHT=$(submit_attempt "$ACTIVITY_ID" "$GOOD")
+      RIGHT=$(submit_attempt "$ACTIVITY_ID" "$GOOD" "smoke_${ACTIVITY_ID}_correct")
       grep -q '"correct":true' <<<"$RIGHT" && r=ok || r=no
       check "backend scores the correct tap answer" "$r"
-      DUPLICATE=$(submit_attempt "$ACTIVITY_ID" "$GOOD" "smoke_2")
+      # A changed payload with the same ID must still return the stored score.
+      DUPLICATE=$(submit_attempt "$ACTIVITY_ID" "$BAD" "smoke_${ACTIVITY_ID}_correct")
       grep -q '"correct":true' <<<"$DUPLICATE" && r=ok || r=no
       check "repeated request ID returns the stored score" "$r"
       ;;
     match)
       PAIRS=$(python3 -c 'import json,sys; f=json.load(sys.stdin)["fields"]; [print(json.dumps({"upper":x["mapValue"]["fields"]["upper"]["stringValue"],"lower":x["mapValue"]["fields"]["lower"]["stringValue"]})) for x in f["pairs"]["arrayValue"]["values"]]' <<<"$ACTIVITY")
+      pair_number=0
+      r=ok
       while IFS= read -r PAIR; do
-        MATCH=$(submit_attempt "$ACTIVITY_ID" "$PAIR")
-        grep -q '"correct":true' <<<"$MATCH" && r=ok || r=no
+        pair_number=$((pair_number + 1))
+        MATCH=$(submit_attempt "$ACTIVITY_ID" "$PAIR" "smoke_${ACTIVITY_ID}_pair_${pair_number}")
+        if ! grep -q '"correct":true' <<<"$MATCH"; then
+          r=no
+          break
+        fi
       done <<<"$PAIRS"
       check "backend scores every published letter pair" "$r"
       ;;
     trace)
       TRACE='{"strokeCount":1,"pointCount":8,"durationMillis":500}'
-      RESULT=$(submit_attempt "$ACTIVITY_ID" "$TRACE")
+      RESULT=$(submit_attempt "$ACTIVITY_ID" "$TRACE" "smoke_${ACTIVITY_ID}_trace")
       grep -q '"activityCompleted":true' <<<"$RESULT" && r=ok || r=no
       check "backend accepts bounded trace gesture metadata" "$r"
       ;;
     listen)
       GOOD=$(python3 -c 'import json,sys; f=json.load(sys.stdin)["fields"]; a=[x["mapValue"]["fields"] for x in f["options"]["arrayValue"]["values"]]; label=next(x["label"]["stringValue"] for x in a if x["correct"]["booleanValue"]); print(json.dumps({"selectedLabel":label}))' <<<"$ACTIVITY")
-      RESULT=$(submit_attempt "$ACTIVITY_ID" "$GOOD")
+      RESULT=$(submit_attempt "$ACTIVITY_ID" "$GOOD" "smoke_${ACTIVITY_ID}_listen")
       grep -q '"correct":true' <<<"$RESULT" && r=ok || r=no
       check "backend scores the correct listening answer" "$r"
       ;;

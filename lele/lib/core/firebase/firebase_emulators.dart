@@ -18,7 +18,10 @@ const _functionsPort = 5001;
 /// The emulators must run under the same project id — `backend/dev.sh` passes
 /// `--project demo-letrando`.
 const demoFirebaseOptions = FirebaseOptions(
-  apiKey: 'demo-api-key',
+  // Firebase Installations validates API-key syntax even when Functions
+  // calls target an emulator. This deliberately fake, 39-character key
+  // passes that local check without identifying a real Firebase project.
+  apiKey: 'AIzaSy000000000000000000000000000000000',
   appId: '1:000000000000:web:0000000000000000',
   messagingSenderId: '000000000000',
   projectId: 'demo-letrando',
