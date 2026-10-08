@@ -1,8 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -12,6 +15,7 @@ import '../application/auth_controller.dart';
 import '../domain/auth_failure.dart';
 import '../domain/credentials.dart';
 import '../domain/sign_in_outcome.dart';
+import 'apple_account_prompt.dart';
 import 'apple_sign_in_button.dart';
 import 'google_sign_in_button.dart';
 import 'or_divider.dart';
@@ -32,6 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   String? _passwordError;
   bool _obscurePassword = true;
   bool _busy = false;
+  bool _redirectScheduled = false;
 
   @override
   void dispose() {
@@ -83,10 +88,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ),
   );
 
-  Future<void> _signInWithApple() => _run(
-    () async =>
-        _continueFrom(await ref.read(authControllerProvider).signInWithApple()),
-  );
+  Future<void> _signInWithApple() => _run(() async {
+    final auth = ref.read(authControllerProvider);
+    final outcome = await auth.signInWithApple();
+    if (outcome == SignInOutcome.created && AppConfig.useFirebase) {
+      if (!mounted) return;
+      final continueWithApple = await showAppleAccountCreationPrompt(context);
+      if (!mounted) return;
+      if (continueWithApple != true) {
+        await auth.signOut();
+        if (!mounted) return;
+        _showMessage(
+          'Entre na sua conta existente e conecte o Apple ID nas opções da conta.',
+        );
+        return;
+      }
+    }
+    _continueFrom(outcome);
+  });
 
   /// Sends the parent wherever the sign-in actually left them.
   ///
@@ -139,8 +158,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  void _scheduleDashboardRedirect() {
+    if (_busy || _redirectScheduled || !mounted) return;
+    _redirectScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _redirectScheduled = false;
+      if (!mounted || _busy) return;
+      if (ref.read(firebaseAuthProvider).currentUser == null) return;
+      context.goNamed(AppRoutes.dashboard);
+    });
+  }
+
+  bool _isCurrentFirebaseUser(AsyncValue<User?> state) {
+    if (state.isLoading || state.hasError) return false;
+    final user = state.value;
+    return user != null &&
+        ref.read(firebaseAuthProvider).currentUser?.uid == user.uid;
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.useFirebase) {
+      ref.listen<AsyncValue<User?>>(firebaseAuthUserProvider, (_, next) {
+        if (_isCurrentFirebaseUser(next)) _scheduleDashboardRedirect();
+      });
+      final authState = ref.watch(firebaseAuthUserProvider);
+      if (_isCurrentFirebaseUser(authState) && !_busy) {
+        _scheduleDashboardRedirect();
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(

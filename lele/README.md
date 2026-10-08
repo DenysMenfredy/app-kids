@@ -269,7 +269,10 @@ Firestore.
 - Sign-in validates and reports errors per field, but there is no e-mail
   verification step and no account deletion yet (the latter is an LGPD
   requirement tracked in the backend README).
-- One child profile per account (`AppConfig.primaryChildId`), though the
-  backend data model supports several.
+- Firebase mode supports multiple server-issued child profiles per parent;
+  demo mode keeps one local profile. Legacy `primary` records remain readable
+  until the staging migration is counted and rehearsed.
+- The static book shelf is demo-only. Firebase mode shows an empty-library
+  state until a published backend book catalog and real pages are available.
 - FCM device registration (`registerDevice`) is not called from the app yet,
   so daily reminders won't reach a device.

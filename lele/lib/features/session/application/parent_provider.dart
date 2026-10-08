@@ -10,20 +10,31 @@ import 'session_controller.dart';
 /// `users/{uid}.displayName` is the record of who registered; the Firebase
 /// Auth profile is the fallback for the moment between sign-up and the
 /// Firestore write landing. Empty when neither is known yet.
-final remoteParentNameProvider = StreamProvider<String>((ref) {
-  if (!AppConfig.useFirebase) return Stream.value('');
-  final auth = ref.watch(firebaseAuthProvider);
-  final firestore = ref.watch(firestoreProvider);
+final remoteParentNameProvider = Provider<AsyncValue<String>>((ref) {
+  if (!AppConfig.useFirebase) return const AsyncData('');
 
-  return auth.authStateChanges().asyncExpand((user) {
-    if (user == null) return Stream.value('');
-    return firestore.doc('users/${user.uid}').snapshots().map((snapshot) {
-      final stored = (snapshot.data()?['displayName'] as String?)?.trim();
-      if (stored != null && stored.isNotEmpty) return stored;
-      return user.displayName?.trim() ?? '';
-    });
-  });
+  final authState = ref.watch(firebaseAuthUserProvider);
+  if (authState.isLoading) return const AsyncLoading();
+  if (authState.hasError) {
+    return AsyncError(authState.error!, authState.stackTrace!);
+  }
+  final user = authState.value;
+  if (user == null) return const AsyncData('');
+
+  return ref.watch(
+    _parentNameForUidProvider((uid: user.uid, fallback: user.displayName)),
+  );
 });
+
+final _parentNameForUidProvider = StreamProvider.autoDispose
+    .family<String, ({String uid, String? fallback})>((ref, scope) {
+      final firestore = ref.watch(firestoreProvider);
+      return firestore.doc('users/${scope.uid}').snapshots().map((snapshot) {
+        final stored = (snapshot.data()?['displayName'] as String?)?.trim();
+        if (stored != null && stored.isNotEmpty) return stored;
+        return scope.fallback?.trim() ?? '';
+      });
+    });
 
 /// The name to greet the parent by.
 ///

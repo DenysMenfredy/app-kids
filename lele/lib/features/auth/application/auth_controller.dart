@@ -39,6 +39,14 @@ class AuthController {
 
   Future<SignInOutcome> signInWithApple() => _repository.signInWithApple();
 
+  Future<AppleAccountLinkOutcome> linkAppleAccount() {
+    final repository = _repository;
+    if (repository is AppleAccountLinkRepository) {
+      return (repository as AppleAccountLinkRepository).linkAppleAccount();
+    }
+    return Future.value(AppleAccountLinkOutcome.cancelled);
+  }
+
   Future<void> sendPasswordReset(String email) =>
       _repository.sendPasswordReset(email);
 

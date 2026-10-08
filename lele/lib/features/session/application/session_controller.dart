@@ -117,6 +117,17 @@ class SessionController extends Notifier<SessionState> {
     _persist();
   }
 
+  /// Clears a removed selection after the server confirms no child profiles
+  /// remain for this parent. The placeholder ID is never treated as a
+  /// server-issued child; creating a profile still goes through the backend.
+  void resetChildSelection() {
+    state = state.copyWith(
+      child: ChildProfile.defaultProfile,
+      childId: AppConfig.primaryChildId,
+    );
+    _persist();
+  }
+
   void _persist() {
     final prefs = ref.read(sharedPreferencesProvider);
     final scope = ref.read(sessionStorageScopeProvider);

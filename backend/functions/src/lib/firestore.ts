@@ -8,6 +8,8 @@ export const paths = {
     `users/${uid}/childCreationRequests`,
   devices: (uid: string) => `users/${uid}/devices`,
   subscriptions: (uid: string) => `users/${uid}/subscriptions`,
+  /** Server-owned one-time trial eligibility and Checkout reservation. */
+  billingTrial: (uid: string) => `users/${uid}/billing/trial`,
   entitlements: (uid: string) => `users/${uid}/entitlements`,
   notifications: (uid: string) => `users/${uid}/notifications`,
   notificationPreferences: (uid: string) =>
@@ -20,6 +22,9 @@ export const paths = {
   /** Stored placement produced by an assessment, one per child. */
   assessmentResults: (uid: string) => `users/${uid}/assessmentResults`,
   webhookEvents: "webhookEvents",
+  /** Server-created Stripe Checkout -> parent and customer identity maps. */
+  stripeCheckoutSessions: "stripeCheckoutSessions",
+  stripeCustomers: "stripeCustomers",
   products: "products",
   /** Global assessment content (questions + placement bands). */
   assessments: "assessments",

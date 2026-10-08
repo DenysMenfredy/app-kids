@@ -14,6 +14,7 @@ import '../../../core/widgets/lele_icon_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../../core/widgets/motion.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../auth/presentation/apple_account_link_button.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../paywall/application/entitlement_provider.dart';
@@ -47,6 +48,26 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(remoteChildrenProvider, (_, next) {
+      if (next.isLoading || next.hasError || !next.hasValue) return;
+      final children = next.requireValue;
+      final session = ref.read(sessionProvider);
+      if (children.isEmpty) {
+        if (session.childId != AppConfig.primaryChildId ||
+            session.child != ChildProfile.defaultProfile) {
+          ref.read(sessionProvider.notifier).resetChildSelection();
+        }
+        return;
+      }
+      if (children.any((child) => child.id == session.childId)) return;
+
+      final fallback = children.firstWhere(
+        (child) => child.id == AppConfig.primaryChildId,
+        orElse: () => children.first,
+      );
+      ref.read(sessionProvider.notifier).selectChild(fallback);
+    });
+
     final child = ref.watch(childProvider);
     final progress = ref.watch(progressProvider);
     // Whoever actually registered, per the backend — not the sample name.
@@ -137,6 +158,7 @@ class DashboardScreen extends ConsumerWidget {
                     if (AppConfig.useFirebase) ...[
                       const SizedBox(height: AppSpacing.xs),
                       const _ChildProfileSwitcher(),
+                      const AppleAccountLinkButton(),
                     ],
                     const SizedBox(height: AppSpacing.lg),
                     const _WeekCard(),

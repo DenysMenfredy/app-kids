@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -13,6 +14,7 @@ import '../application/auth_controller.dart';
 import '../domain/auth_failure.dart';
 import '../domain/credentials.dart';
 import '../domain/sign_in_outcome.dart';
+import 'apple_account_prompt.dart';
 import 'apple_sign_in_button.dart';
 import 'google_sign_in_button.dart';
 import 'or_divider.dart';
@@ -72,18 +74,45 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Future<void> _signUpWithGoogle() =>
       _withProvider(() => ref.read(authControllerProvider).signInWithGoogle());
 
-  Future<void> _signUpWithApple() =>
-      _withProvider(() => ref.read(authControllerProvider).signInWithApple());
+  Future<void> _signUpWithApple() => _withProvider(
+    () => ref.read(authControllerProvider).signInWithApple(),
+    appleSignIn: true,
+  );
 
   /// A provider tap on the sign-up screen is the same call as on sign-in —
   /// Google decides whether this is a new account, not the screen it was
   /// tapped from. A parent who already has one is simply signed in.
-  Future<void> _withProvider(Future<SignInOutcome> Function() action) async {
+  Future<void> _withProvider(
+    Future<SignInOutcome> Function() action, {
+    bool appleSignIn = false,
+  }) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
       final outcome = await action();
       if (!mounted) return;
+      if (appleSignIn &&
+          outcome == SignInOutcome.created &&
+          AppConfig.useFirebase) {
+        final continueWithApple = await showAppleAccountCreationPrompt(context);
+        if (!mounted) return;
+        if (continueWithApple != true) {
+          await ref.read(authControllerProvider).signOut();
+          if (mounted) {
+            final messenger = ScaffoldMessenger.of(context);
+            context.goNamed(AppRoutes.login);
+            messenger.showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Entre na sua conta existente e conecte o Apple ID nas opções da conta.',
+                ),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          return;
+        }
+      }
       switch (outcome) {
         case SignInOutcome.created:
           context.goNamed(AppRoutes.profileSetup);
@@ -213,7 +242,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               if (AppleSignInButton.isSupported) ...[
                 AppleSignInButton(
                   onPressed: _busy ? null : _signUpWithApple,
-                  label: 'Criar conta com Apple',
+                  label: 'Continuar com Apple',
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],

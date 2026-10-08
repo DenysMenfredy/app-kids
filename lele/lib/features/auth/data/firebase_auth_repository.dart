@@ -9,7 +9,8 @@ import 'auth_repository.dart';
 /// Firebase Auth implementation (spec §3). The backend's onUserCreated
 /// trigger bootstraps the Firestore profile when an account is created;
 /// this class only handles identity.
-class FirebaseAuthRepository implements AuthRepository {
+class FirebaseAuthRepository
+    implements AuthRepository, AppleAccountLinkRepository {
   FirebaseAuthRepository(this._auth);
 
   final FirebaseAuth _auth;
@@ -79,6 +80,32 @@ class FirebaseAuthRepository implements AuthRepository {
     // — a new family, with premium inactive. See ADR 0005; the linking and
     // duplicate-account paths it requires are not built yet.
     return _providerSignIn(AppleAuthProvider());
+  }
+
+  @override
+  Future<AppleAccountLinkOutcome> linkAppleAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('Entre novamente para conectar sua conta Apple.');
+    }
+    if (user.providerData.any(
+      (provider) => provider.providerId == 'apple.com',
+    )) {
+      return AppleAccountLinkOutcome.alreadyLinked;
+    }
+
+    try {
+      await user.linkWithProvider(AppleAuthProvider());
+      return AppleAccountLinkOutcome.linked;
+    } on FirebaseAuthException catch (e) {
+      if (isSignInCancellation(e.code)) {
+        return AppleAccountLinkOutcome.cancelled;
+      }
+      if (e.code == 'provider-already-linked') {
+        return AppleAccountLinkOutcome.alreadyLinked;
+      }
+      throw AuthFailure(appleLinkErrorMessage(e.code));
+    }
   }
 
   @override
@@ -169,6 +196,25 @@ String authErrorMessage(String code) {
       return 'Sem conexão. Verifique sua internet.';
     default:
       return 'Não foi possível entrar agora. Tente novamente.';
+  }
+}
+
+String appleLinkErrorMessage(String code) {
+  switch (code) {
+    case 'credential-already-in-use':
+    case 'account-exists-with-different-credential':
+    case 'email-already-in-use':
+      return 'Este Apple ID já está conectado a outra conta do Lelê. Saia e '
+          'entre pela conta que já usa Apple; as contas não são unidas '
+          'automaticamente.';
+    case 'requires-recent-login':
+      return 'Por segurança, entre novamente antes de conectar sua conta Apple.';
+    case 'network-request-failed':
+      return 'Sem conexão. Verifique sua internet e tente novamente.';
+    case 'operation-not-allowed':
+      return 'O acesso com Apple ainda não está configurado para este app.';
+    default:
+      return 'Não foi possível conectar sua conta Apple agora. Tente novamente.';
   }
 }
 

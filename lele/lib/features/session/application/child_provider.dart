@@ -7,25 +7,38 @@ import '../domain/child_record.dart';
 import 'session_controller.dart';
 
 /// All children belonging to the currently authenticated parent.
-final remoteChildrenProvider = StreamProvider<List<ChildRecord>>((ref) {
-  if (!AppConfig.useFirebase) return Stream.value(const []);
-  final auth = ref.watch(firebaseAuthProvider);
-  final firestore = ref.watch(firestoreProvider);
+///
+/// The Firestore stream is keyed by UID so a new account never temporarily
+/// inherits the previous account's last AsyncValue while its first snapshot
+/// is loading.
+final remoteChildrenProvider = Provider<AsyncValue<List<ChildRecord>>>((ref) {
+  if (!AppConfig.useFirebase) return const AsyncData([]);
 
-  return auth.authStateChanges().asyncExpand((user) {
-    if (user == null) return Stream<List<ChildRecord>>.value(const []);
-    return firestore
-        .collection('users/${user.uid}/children')
-        .snapshots()
-        .map(
-          (snapshot) => [
-            for (final document in snapshot.docs)
-              if (_profileFrom(document.data()) case final profile?)
-                ChildRecord(id: document.id, profile: profile),
-          ],
-        );
-  });
+  final authState = ref.watch(firebaseAuthUserProvider);
+  if (authState.isLoading) return const AsyncLoading();
+  if (authState.hasError) {
+    return AsyncError(authState.error!, authState.stackTrace!);
+  }
+
+  final user = authState.value;
+  if (user == null) return const AsyncData([]);
+  return ref.watch(_childrenForParentProvider(user.uid));
 });
+
+final _childrenForParentProvider = StreamProvider.autoDispose
+    .family<List<ChildRecord>, String>((ref, uid) {
+      final firestore = ref.watch(firestoreProvider);
+      return firestore
+          .collection('users/$uid/children')
+          .snapshots()
+          .map(
+            (snapshot) => [
+              for (final document in snapshot.docs)
+                if (_profileFrom(document.data()) case final profile?)
+                  ChildRecord(id: document.id, profile: profile),
+            ],
+          );
+    });
 
 /// The selected child ID, with a stable fallback after a reinstall or when
 /// a previously selected profile has been removed from the parent's list.
@@ -33,7 +46,8 @@ final activeChildIdProvider = Provider<String>((ref) {
   final savedId = ref.watch(sessionProvider.select((state) => state.childId));
   if (!AppConfig.useFirebase) return savedId;
   final children = ref.watch(remoteChildrenProvider).value;
-  if (children == null || children.isEmpty) return savedId;
+  if (children == null) return savedId;
+  if (children.isEmpty) return AppConfig.primaryChildId;
   for (final child in children) {
     if (child.id == savedId) return savedId;
   }

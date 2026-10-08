@@ -64,10 +64,10 @@ String? _authRedirect(FirebaseAuth auth, GoRouterState state) {
   if (!signedIn) {
     return _publicRoutes.contains(location) ? null : '/login';
   }
-  // A signed-in parent has no use for the splash or the sign-in form.
-  // Registration is deliberately left alone: it sends itself on to profile
-  // setup, and redirecting here would race that.
-  if (location == '/' || location == '/login') return '/dashboard';
+  // Registration and login complete their own post-auth routing. In
+  // particular, provider sign-in may need to ask a new Apple identity
+  // whether the parent already has an account before onboarding starts.
+  if (location == '/') return '/dashboard';
   return null;
 }
 

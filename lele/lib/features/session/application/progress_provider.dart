@@ -9,30 +9,39 @@ import 'demo_progress_controller.dart';
 /// Streams `users/{uid}/gamification/{childId}` — the document only
 /// completeLesson writes (ADR 0003). A child who has never finished a
 /// lesson has no document yet, which reads as zero.
-final remoteProgressProvider = StreamProvider<Progress>((ref) {
-  if (!AppConfig.useFirebase) {
-    return Stream.value(Progress.zero);
-  }
-  final auth = ref.watch(firebaseAuthProvider);
-  final firestore = ref.watch(firestoreProvider);
-  final childId = ref.watch(activeChildIdProvider);
+final remoteProgressProvider = Provider<AsyncValue<Progress>>((ref) {
+  if (!AppConfig.useFirebase) return const AsyncData(Progress.zero);
 
-  return auth.authStateChanges().asyncExpand((user) {
-    if (user == null) return Stream.value(Progress.zero);
-    return firestore
-        .doc('users/${user.uid}/gamification/$childId')
-        .snapshots()
-        .map((snapshot) {
-          final data = snapshot.data();
-          if (data == null) return Progress.zero;
-          return Progress(
-            xp: (data['xp'] as num?)?.toInt() ?? 0,
-            coins: (data['coins'] as num?)?.toInt() ?? 0,
-            streak: (data['streak'] as num?)?.toInt() ?? 0,
-          );
-        });
-  });
+  final authState = ref.watch(firebaseAuthUserProvider);
+  if (authState.isLoading) return const AsyncLoading();
+  if (authState.hasError) {
+    return AsyncError(authState.error!, authState.stackTrace!);
+  }
+  final user = authState.value;
+  if (user == null) return const AsyncData(Progress.zero);
+
+  final childId = ref.watch(activeChildIdProvider);
+  return ref.watch(
+    _progressForChildProvider((uid: user.uid, childId: childId)),
+  );
 });
+
+final _progressForChildProvider = StreamProvider.autoDispose
+    .family<Progress, ({String uid, String childId})>((ref, scope) {
+      final firestore = ref.watch(firestoreProvider);
+      return firestore
+          .doc('users/${scope.uid}/gamification/${scope.childId}')
+          .snapshots()
+          .map((snapshot) {
+            final data = snapshot.data();
+            if (data == null) return Progress.zero;
+            return Progress(
+              xp: (data['xp'] as num?)?.toInt() ?? 0,
+              coins: (data['coins'] as num?)?.toInt() ?? 0,
+              streak: (data['streak'] as num?)?.toInt() ?? 0,
+            );
+          });
+    });
 
 /// XP, coins and streak for the UI.
 ///
@@ -41,7 +50,8 @@ final remoteProgressProvider = StreamProvider<Progress>((ref) {
 /// on-device session values so the prototype still works offline.
 final progressProvider = Provider<Progress>((ref) {
   if (!AppConfig.useFirebase) return ref.watch(demoProgressProvider);
-  // While a refresh is in flight Riverpod keeps the previous value, so the
-  // numbers don't flicker back to zero between snapshots.
+  // A refresh for the same UID/child keeps its last snapshot to avoid a
+  // flicker. Changing UID or child switches to a different family provider,
+  // which has no previous account's value to expose.
   return ref.watch(remoteProgressProvider).value ?? Progress.zero;
 });

@@ -9,20 +9,31 @@ import '../domain/learning_module.dart';
 /// Streams `currentLessonId` from the child profile — the field
 /// submitAssessment writes when it places the child (ADR 0003). Null until
 /// the profile exists or an assessment has been submitted.
-final remoteCurrentLessonIdProvider = StreamProvider<String?>((ref) {
-  if (!AppConfig.useFirebase) return Stream.value(null);
-  final auth = ref.watch(firebaseAuthProvider);
-  final firestore = ref.watch(firestoreProvider);
-  final childId = ref.watch(activeChildIdProvider);
+final remoteCurrentLessonIdProvider = Provider<AsyncValue<String?>>((ref) {
+  if (!AppConfig.useFirebase) return const AsyncData(null);
 
-  return auth.authStateChanges().asyncExpand((user) {
-    if (user == null) return Stream<String?>.value(null);
-    return firestore
-        .doc('users/${user.uid}/children/$childId')
-        .snapshots()
-        .map((snapshot) => snapshot.data()?['currentLessonId'] as String?);
-  });
+  final authState = ref.watch(firebaseAuthUserProvider);
+  if (authState.isLoading) return const AsyncLoading();
+  if (authState.hasError) {
+    return AsyncError(authState.error!, authState.stackTrace!);
+  }
+  final user = authState.value;
+  if (user == null) return const AsyncData(null);
+
+  final childId = ref.watch(activeChildIdProvider);
+  return ref.watch(
+    _currentLessonForChildProvider((uid: user.uid, childId: childId)),
+  );
 });
+
+final _currentLessonForChildProvider = StreamProvider.autoDispose
+    .family<String?, ({String uid, String childId})>((ref, scope) {
+      final firestore = ref.watch(firestoreProvider);
+      return firestore
+          .doc('users/${scope.uid}/children/${scope.childId}')
+          .snapshots()
+          .map((snapshot) => snapshot.data()?['currentLessonId'] as String?);
+    });
 
 /// Where the child is in demo mode.
 ///

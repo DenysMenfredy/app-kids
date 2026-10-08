@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -16,6 +17,7 @@ class BooksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const showDemoBooks = !AppConfig.useFirebase;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -44,37 +46,81 @@ class BooksScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Complete lições para desbloquear novos livros!',
+                showDemoBooks
+                    ? 'Complete lições para desbloquear novos livros!'
+                    : 'Sua biblioteca vai guardar as histórias da sua jornada.',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.textMuted,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              GridView.count(
-                // Two covers on a phone, more once there is room — a
-                // two-column grid on a tablet leaves each cover absurdly
-                // large.
-                crossAxisCount: switch (context.windowClass) {
-                  WindowClass.compact => 2,
-                  WindowClass.medium => 3,
-                  WindowClass.expanded => 4,
-                },
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.lg,
-                crossAxisSpacing: AppSpacing.lg,
-                // The title under each cover grows with the text scale, so
-                // the tile has to get taller with it or the column overflows.
-                childAspectRatio:
-                    0.82 /
-                    (1 + (MediaQuery.textScalerOf(context).scale(1) - 1) * 0.6),
-                children: [
-                  for (final book in bookLibrary) _BookTile(book: book),
-                ],
-              ),
+              if (showDemoBooks)
+                GridView.count(
+                  // Two covers on a phone, more once there is room — a
+                  // two-column grid on a tablet leaves each cover absurdly
+                  // large.
+                  crossAxisCount: switch (context.windowClass) {
+                    WindowClass.compact => 2,
+                    WindowClass.medium => 3,
+                    WindowClass.expanded => 4,
+                  },
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: AppSpacing.lg,
+                  crossAxisSpacing: AppSpacing.lg,
+                  // The title under each cover grows with the text scale, so
+                  // the tile has to get taller with it or the column overflows.
+                  childAspectRatio:
+                      0.82 /
+                      (1 +
+                          (MediaQuery.textScalerOf(context).scale(1) - 1) *
+                              0.6),
+                  children: [
+                    for (final book in bookLibrary) _BookTile(book: book),
+                  ],
+                )
+              else
+                const _EmptyLibrary(),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _EmptyLibrary extends StatelessWidget {
+  const _EmptyLibrary();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      decoration: BoxDecoration(
+        color: AppColors.panel,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.auto_stories_rounded,
+            size: 56,
+            color: AppColors.teal,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Ainda não há livros disponíveis',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.sectionTitle,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Quando novas histórias forem publicadas, elas aparecerão aqui.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
+          ),
+        ],
       ),
     );
   }

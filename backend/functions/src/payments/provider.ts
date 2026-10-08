@@ -9,15 +9,23 @@ export interface CheckoutSessionRequest {
   uid: string;
   email: string | undefined;
   planId: string;
+  /** Present only while the backend holds this account's one-time trial. */
+  trialReservationId?: string;
   successUrl: string;
   cancelUrl: string;
+}
+
+export interface CheckoutSession {
+  id: string;
+  url: string;
+  expiresAt: number;
 }
 
 export interface PaymentProvider {
   readonly id: PaymentProviderId;
 
-  /** Creates a hosted checkout for the plan; returns the redirect URL. */
-  createCheckoutSession(request: CheckoutSessionRequest): Promise<string>;
+  /** Creates a hosted checkout; Premium still comes only from a webhook. */
+  createCheckoutSession(request: CheckoutSessionRequest): Promise<CheckoutSession>;
 
   /** Creates a self-service billing portal session for an existing customer. */
   createCustomerPortalSession(

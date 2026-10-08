@@ -114,15 +114,7 @@ void main() {
 
   test('premium is inactive without a backend (fails safe)', () async {
     final container = makeContainer();
-    // Hold a subscription: Riverpod auto-disposes providers nobody listens
-    // to, which would tear the stream down before it emits.
-    final subscription = container.listen(premiumActiveProvider, (_, _) {});
-    addTearDown(subscription.close);
-
-    await expectLater(
-      container.read(premiumActiveProvider.future),
-      completion(isFalse),
-    );
+    expect(container.read(premiumActiveProvider).value, isFalse);
     expect(container.read(isPremiumProvider), isFalse);
   });
 }

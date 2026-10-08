@@ -1,6 +1,6 @@
 # ADR 0005 — Apple sign-in may create a second account, and uid stays the only key
 
-Date: 2026-09-17 · Status: accepted
+Date: 2026-09-17 · Status: accepted; Flutter implementation added 2026-10-08
 
 ## Context
 
@@ -76,12 +76,20 @@ longer reach. Nothing in the system detects this.
 ## Consequences
 
 - Apple sign-in ships on iOS and satisfies guideline 4.8.
-- Two decisions above are **not yet implemented and are release blockers for
-  the iOS build**: the "Conectar Apple" linking action (decision 3) and the
-  duplicate-account prompt (decision 4). Shipping Apple sign-in without them
-  means a returning subscriber can silently lose paid access — the worst
-  version of this failure, because it is invisible until they look for
-  premium content.
+- The Flutter client now offers an explicit Apple-linking action on the
+  authenticated parent dashboard and prompts newly created Apple identities
+  before child-profile onboarding. Choosing an existing account signs out
+  and returns the parent to sign-in; it never merges UIDs based on email.
+- Apple buttons use one of Apple's supported button titles consistently;
+  the account-link action explains its purpose alongside the standard button.
+- Firebase Auth creates a new identity before that prompt can appear. If the
+  parent chooses the existing-account path, the new UID keeps its bootstrap
+  profile but has no child/progress data and remains signed out. Deleting it
+  would require a separate account-deletion flow and Apple credential
+  revocation policy.
+- These flows remain release gates until exercised on physical iOS with both
+  email/Google accounts and existing Apple-linked accounts. A support
+  procedure is also still needed for independently existing identities.
 - A parent who duplicates anyway needs a support route. There is no
   self-service recovery: the Stripe subscription carries the old uid in
   immutable metadata, so re-pointing it is an operator action against Stripe

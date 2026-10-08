@@ -35,7 +35,16 @@ abstract interface class AuthRepository {
   String? get currentUserId;
 }
 
-class FakeAuthRepository implements AuthRepository {
+/// Optional capability for a signed-in parent to attach an Apple identity to
+/// the current Firebase UID. It is separate from sign-in so providers that do
+/// not support linking do not gain implicit account-merging behavior.
+abstract interface class AppleAccountLinkRepository {
+  Future<AppleAccountLinkOutcome> linkAppleAccount();
+}
+
+enum AppleAccountLinkOutcome { linked, alreadyLinked, cancelled }
+
+class FakeAuthRepository implements AuthRepository, AppleAccountLinkRepository {
   const FakeAuthRepository();
 
   static const _latency = Duration(milliseconds: 350);
@@ -64,6 +73,10 @@ class FakeAuthRepository implements AuthRepository {
     await Future<void>.delayed(_latency);
     return SignInOutcome.created;
   }
+
+  @override
+  Future<AppleAccountLinkOutcome> linkAppleAccount() async =>
+      AppleAccountLinkOutcome.linked;
 
   @override
   Future<void> sendPasswordReset(String email) => Future.delayed(_latency);
