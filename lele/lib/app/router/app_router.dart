@@ -7,13 +7,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/firebase/firebase_providers.dart';
-
 import '../../features/assessment/presentation/assessment_intro_screen.dart';
 import '../../features/assessment/presentation/assessment_question_screen.dart';
 import '../../features/assessment/presentation/assessment_result_screen.dart';
 import '../../features/auth/presentation/email_verification_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/books/presentation/book_reader_screen.dart';
 import '../../features/books/presentation/books_screen.dart';
 import '../../features/child_home/presentation/child_home_screen.dart';
 import '../../features/child_profile/presentation/profile_setup_screen.dart';
@@ -49,6 +49,7 @@ abstract final class AppRoutes {
   static const activityListen = 'activityListen';
   static const reward = 'reward';
   static const books = 'books';
+  static const bookReader = 'bookReader';
 }
 
 /// Screens a signed-out visitor is allowed to see.
@@ -227,6 +228,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/books',
         name: AppRoutes.books,
         builder: (context, state) => const BooksScreen(),
+        routes: [
+          GoRoute(
+            path: ':bookId',
+            name: AppRoutes.bookReader,
+            builder: (context, state) =>
+                BookReaderScreen(bookId: state.pathParameters['bookId']!),
+          ),
+        ],
       ),
     ],
   );

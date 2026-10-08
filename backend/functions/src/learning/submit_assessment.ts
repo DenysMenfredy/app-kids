@@ -84,7 +84,6 @@ export const submitAssessment = onCall(
     await batch.commit();
 
     trackServerEvent("assessment_completed", uid, {
-      childId,
       assessmentId,
       score,
       moduleNumber: placement.moduleNumber,

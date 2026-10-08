@@ -211,6 +211,39 @@ explicit entry in the debug/profile network policies. Emulator mode skips
 App Check activation (ADR 0004), so Firebase Auth may log
 `No AppCheckProvider installed`; that warning does not block local signup.
 
+### Book library
+
+The library loads published `books` metadata and reads authorized pages from
+`bookContents`. The initial catalog contains six original short pt-BR stories:
+`O Sapo e a Lua` and `A Festa das Vogais` are free; the other four require the
+server-owned `premium_books` entitlement. Reader controls include page turns,
+pt-BR read-aloud, replay and return to the shelf. A bookmark resumes the selected
+child's last page without granting XP or coins.
+
+`backend/dev.sh` seeds books automatically, including into existing emulator
+exports. To refresh only books while the demo backend is already running:
+
+```bash
+cd backend
+nvm use
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm --prefix functions run seed -- \
+  --project demo-letrando --only books,bookContents
+```
+
+The integration check requires those same running emulators:
+
+```bash
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+npm --prefix functions run test:books:smoke
+```
+
+Real projects require the new Rules and `saveBookBookmark` callable deployed,
+plus catalog/page publication. An editor first upserts `books` metadata and
+matching `bookContents`, then publishes the `books` document through
+`manageContent`; publication validates every page and publishes both documents
+atomically. See ADR 0012. Demo mode bundles only the two free sample texts.
+
 ### Releasing on Android
 
 Release builds are signed from `android/key.properties`, which is gitignored

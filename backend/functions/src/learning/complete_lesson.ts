@@ -276,7 +276,6 @@ export const completeLesson = onCall(
     if (result.awarded) {
       trackServerEvent("lesson_completed", uid, {
         lessonId,
-        childId,
         score: result.score,
         durationSeconds: result.durationSeconds,
         streak: result.streak,

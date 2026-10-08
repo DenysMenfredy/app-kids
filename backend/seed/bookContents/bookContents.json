@@ -1,0 +1,185 @@
+[
+  {
+    "id": "sapo",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "Na beira da lagoa, o sapo Sabi viu uma luz redonda no céu.",
+        "illustration": "pond"
+      },
+      {
+        "id": "p2",
+        "text": "— Olá, Lua! — disse Sabi. A Lua brilhou bem alto.",
+        "illustration": "moon"
+      },
+      {
+        "id": "p3",
+        "text": "Sabi pulou para tocar a luz. Plim! Caiu na água e fez muitas ondas.",
+        "illustration": "frog"
+      },
+      {
+        "id": "p4",
+        "text": "Quando a água ficou calma, a Lua apareceu de novo na lagoa.",
+        "illustration": "pond"
+      },
+      {
+        "id": "p5",
+        "text": "Sabi sorriu. — Você fica no céu, e eu fico aqui. Boa noite, Lua!",
+        "illustration": "moon"
+      }
+    ]
+  },
+  {
+    "id": "vogais",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "A levou uma abelha para a festa. A abelha voou: zum, zum, zum!",
+        "illustration": "letters"
+      },
+      {
+        "id": "p2",
+        "text": "E levou uma estrela de papel. Ela brilhou na parede da sala.",
+        "illustration": "moon"
+      },
+      {
+        "id": "p3",
+        "text": "I levou o desenho de uma ilha. Na ilha havia sol e areia.",
+        "illustration": "sun"
+      },
+      {
+        "id": "p4",
+        "text": "O levou um ovo pintado. Que ovo redondo e colorido!",
+        "illustration": "party"
+      },
+      {
+        "id": "p5",
+        "text": "U levou uvas para todos. As cinco amigas cantaram: A, E, I, O, U!",
+        "illustration": "vowels"
+      }
+    ]
+  },
+  {
+    "id": "bicho",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "O gato Guga encontrou uma letra G no jardim. — É a primeira letra do meu nome!",
+        "illustration": "cat"
+      },
+      {
+        "id": "p2",
+        "text": "A cadela Cacá encontrou uma letra C perto da casa. — Esta é a minha!",
+        "illustration": "dog"
+      },
+      {
+        "id": "p3",
+        "text": "O sapo Sabi chegou pulando. Trouxe um S grande e um s pequeno.",
+        "illustration": "frog"
+      },
+      {
+        "id": "p4",
+        "text": "Os três amigos fizeram uma placa: G, C, S. Agora cada bicho tinha a sua letra.",
+        "illustration": "letters"
+      }
+    ]
+  },
+  {
+    "id": "trem",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "O trem chegou: piuí! No primeiro vagão estava a sílaba CA.",
+        "illustration": "train"
+      },
+      {
+        "id": "p2",
+        "text": "No segundo vagão estava SA. CA com SA formou CASA. Uma casa com um belo jardim!",
+        "illustration": "flowers"
+      },
+      {
+        "id": "p3",
+        "text": "Depois embarcaram BO e LA. BO com LA formou BOLA. A bola pulou no vagão.",
+        "illustration": "train"
+      },
+      {
+        "id": "p4",
+        "text": "MA e LA viajaram juntas. MA com LA formou MALA. A mala guardou os brinquedos.",
+        "illustration": "family"
+      },
+      {
+        "id": "p5",
+        "text": "O trem seguiu contente: CASA, BOLA, MALA! Que outras palavras podem viajar?",
+        "illustration": "party"
+      }
+    ]
+  },
+  {
+    "id": "rimas",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "No jardim havia uma flor. A flor ganhou água e muito amor.",
+        "illustration": "flowers"
+      },
+      {
+        "id": "p2",
+        "text": "Uma borboleta pousou na janela. — Que tarde tão bela!",
+        "illustration": "butterfly"
+      },
+      {
+        "id": "p3",
+        "text": "O gato brincou com um novelo. Depois dormiu perto do chinelo.",
+        "illustration": "cat"
+      },
+      {
+        "id": "p4",
+        "text": "O sol foi descansar no horizonte. As rimas ficaram na nossa fonte: flor e amor, janela e bela!",
+        "illustration": "sun"
+      }
+    ]
+  },
+  {
+    "id": "historia",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "published": true,
+    "pages": [
+      {
+        "id": "p1",
+        "text": "Lia abriu um caderno e desenhou um caminho. — Hoje vou contar uma história!",
+        "illustration": "book"
+      },
+      {
+        "id": "p2",
+        "text": "No caminho havia uma árvore. Debaixo dela morava um passarinho.",
+        "illustration": "forest"
+      },
+      {
+        "id": "p3",
+        "text": "Lia desenhou uma amiga para brincar. As duas ouviram o passarinho cantar.",
+        "illustration": "family"
+      },
+      {
+        "id": "p4",
+        "text": "Lia mostrou o caderno à família. Todos sorriram. Uma ideia, um desenho e uma história para contar!",
+        "illustration": "party"
+      }
+    ]
+  }
+]

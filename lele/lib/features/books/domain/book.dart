@@ -1,64 +1,72 @@
 import 'package:equatable/equatable.dart';
 
-/// A book in the child's library.
-///
-/// Carries what the book *is*. How its cover is painted lives in
-/// `presentation/book_cover_style.dart`, keyed by [id] — a colour on a
-/// domain model is a decision the backend would have no way to express when
-/// this catalog stops being hardcoded.
+enum BookAccess { free, premium }
+
+typedef ReadingScope = ({String uid, String childId});
+
+/// Published catalog metadata; protected page text is loaded separately.
 class Book extends Equatable {
   const Book({
     required this.id,
     required this.title,
-    required this.initial,
-    this.locked = false,
-    this.isNew = false,
-    this.unlockHint,
+    required this.description,
+    required this.coverKey,
+    required this.pageCount,
+    required this.access,
+    required this.contentVersion,
+    required this.order,
   });
 
   final String id;
   final String title;
-
-  /// Large letter shown on the cover.
-  final String initial;
-
-  final bool locked;
-  final bool isNew;
-  final String? unlockHint;
+  final String description;
+  final String coverKey;
+  final int pageCount;
+  final BookAccess access;
+  final int contentVersion;
+  final int order;
 
   @override
-  List<Object?> get props => [id, title, initial, locked, isNew, unlockHint];
+  List<Object?> get props => [
+    id,
+    title,
+    description,
+    coverKey,
+    pageCount,
+    access,
+    contentVersion,
+    order,
+  ];
 }
 
-const bookLibrary = [
-  Book(id: 'sapo', title: 'O Sapo Bocudo', initial: 'S', isNew: true),
-  Book(id: 'vogais', title: 'A Festa das Vogais', initial: 'A'),
-  Book(
-    id: 'bicho',
-    title: 'Bicho de Letra',
-    initial: 'B',
-    locked: true,
-    unlockHint: '3 lições',
-  ),
-  Book(
-    id: 'trem',
-    title: 'O Trem das Sílabas',
-    initial: 'T',
-    locked: true,
-    unlockHint: '5 lições',
-  ),
-  Book(
-    id: 'rimas',
-    title: 'Rimas da Floresta',
-    initial: 'R',
-    locked: true,
-    unlockHint: '8 lições',
-  ),
-  Book(
-    id: 'historia',
-    title: 'Minha 1ª História',
-    initial: 'H',
-    locked: true,
-    unlockHint: 'Módulo 7',
-  ),
-];
+class BookPage extends Equatable {
+  const BookPage({
+    required this.id,
+    required this.text,
+    required this.illustration,
+  });
+  final String id;
+  final String text;
+  final String illustration;
+  @override
+  List<Object?> get props => [id, text, illustration];
+}
+
+class BookContent {
+  const BookContent({required this.book, required this.pages});
+  final Book book;
+  final List<BookPage> pages;
+}
+
+/// Navigation state only; this never grants learning rewards.
+class BookBookmark {
+  const BookBookmark({required this.pageIndex, required this.contentVersion});
+  final int pageIndex;
+  final int contentVersion;
+}
+
+class BookFailure implements Exception {
+  const BookFailure(this.message, {this.premiumRequired = false});
+  final String message;
+  final bool premiumRequired;
+}

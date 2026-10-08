@@ -124,6 +124,28 @@ service cloud.firestore {
           || hasFullCurriculumEntitlement(request.auth.uid));
     }
 
+    function hasPremiumBooksEntitlement(uid) {
+      let path = /databases/$(database)/documents/users/$(uid)/entitlements/premium;
+      return exists(path) && get(path).data.active == true
+        && get(path).data.features is list
+        && get(path).data.features.hasAny(['premium_books'])
+        && get(path).data.validFrom is timestamp
+        && get(path).data.validFrom <= request.time
+        && get(path).data.validUntil is timestamp
+        && get(path).data.validUntil > request.time;
+    }
+
+    function canReadBook(bookId) {
+      let path = /databases/$(database)/documents/books/$(bookId);
+      return exists(path) && get(path).data.published == true
+        && get(path).data.schemaVersion == 1
+        && get(path).data.pageCount is int && get(path).data.pageCount > 0
+        && get(path).data.pageCount <= 40
+        && (get(path).data.access == 'free'
+          || (get(path).data.access == 'premium'
+            && hasPremiumBooksEntitlement(request.auth.uid)));
+    }
+
     function canReadLessonPayload(lessonId) {
       let lessonPath = /databases/$(database)/documents/lessons/$(lessonId);
       return exists(lessonPath)
@@ -165,6 +187,12 @@ service cloud.firestore {
         // Deletion will be a backend lifecycle operation: client deletion
         // would leave progress behind and permit recreate under the same ID.
         allow delete: if false;
+
+        match /bookmarks/{bookId} {
+          allow read: if isOwner(uid)
+            && exists(/databases/$(database)/documents/users/$(uid)/children/$(childId));
+          allow write: if false; // validated by saveBookBookmark, no rewards
+        }
       }
 
       match /devices/{deviceId} {
@@ -260,6 +288,21 @@ service cloud.firestore {
       // bands they carry are only ever interpreted by the backend.
       allow read: if signedIn() && isPublished();
       allow write: if false;
+    }
+
+    match /books/{bookId} {
+      // Covers are metadata only; page text lives in bookContents.
+      allow read: if signedIn() && isPublished();
+      allow write: if false;
+    }
+
+    match /bookContents/{bookId} {
+      allow get: if signedIn() && isPublished() && canReadBook(bookId)
+        && resource.data.schemaVersion == 1
+        && resource.data.contentVersion == get(/databases/$(database)/documents/books/$(bookId)).data.contentVersion
+        && resource.data.pages is list
+        && resource.data.pages.size() == get(/databases/$(database)/documents/books/$(bookId)).data.pageCount;
+      allow list, write: if false;
     }
 
     match /products/{productId} {

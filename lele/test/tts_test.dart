@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:lele/core/services/tts_service.dart';
@@ -60,6 +62,12 @@ class FakeTts extends FlutterTts {
 
   @override
   Future<dynamic> stop() async {}
+}
+
+class DelayedVoiceTts extends FakeTts {
+  final ready = Completer<List<dynamic>>();
+  @override
+  Future<dynamic> get getVoices => ready.future;
 }
 
 void main() {
@@ -177,6 +185,20 @@ void main() {
   });
 
   group('TtsService', () {
+    test(
+      'stopping while voices load cancels the pending page narration',
+      () async {
+        final tts = DelayedVoiceTts();
+        final service = TtsService(tts);
+        final pending = service.speak('Uma página antiga');
+        await service.stop();
+        tts.ready.complete([
+          {'name': 'Português', 'locale': 'pt-BR'},
+        ]);
+        await pending;
+        expect(tts.spoken, isEmpty);
+      },
+    );
     test('picks pt-BR even when the voice list loads late', () async {
       // The reported bug: Chrome returned no voices at the moment the engine
       // was configured, so nothing was selected and it read pt-BR text with

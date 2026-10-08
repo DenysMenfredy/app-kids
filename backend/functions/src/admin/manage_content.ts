@@ -4,6 +4,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { db } from "../lib/firestore";
 import { enforceAppCheck, requireRole, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
+import { bookPublicationProblem } from "../domain/books";
 
 /**
  * Content management (spec §5, §13). Content is configuration-driven:
@@ -16,6 +17,8 @@ const CONTENT_COLLECTIONS = new Set([
   "lessons",
   "activities",
   "assessments",
+  "books",
+  "bookContents",
 ]);
 
 type Action = "upsert" | "publish" | "unpublish";
@@ -43,8 +46,11 @@ export const manageContent = onCall(
     switch (action) {
       case "upsert": {
         const content = request.data?.content;
-        if (typeof content !== "object" || content === null) {
+        if (typeof content !== "object" || content === null || Array.isArray(content)) {
           throw new HttpsError("invalid-argument", "Conteúdo ausente.");
+        }
+        if (collection === "books" && "pages" in content) {
+          throw new HttpsError("invalid-argument", "Páginas pertencem a bookContents.");
         }
         // New content is never auto-published; publishing is explicit.
         await ref.set(
@@ -60,6 +66,27 @@ export const manageContent = onCall(
       }
       case "publish":
       case "unpublish": {
+        if (collection === "bookContents" && action === "publish") {
+          throw new HttpsError("failed-precondition", "Publique o livro em books para validar suas páginas.");
+        }
+        if (collection === "books") {
+          const contentRef = db().collection("bookContents").doc(docId);
+          await db().runTransaction(async (tx) => {
+            const [book, content] = await Promise.all([tx.get(ref), tx.get(contentRef)]);
+            if (!book.exists) throw new HttpsError("not-found", "Livro não encontrado.");
+            if (action === "publish") {
+              const problem = bookPublicationProblem(docId, book.data()!, content.data() ?? {});
+              if (problem) throw new HttpsError("failed-precondition", problem);
+            }
+            const update = {
+              published: action === "publish",
+              updatedAt: FieldValue.serverTimestamp(), updatedBy: editorUid,
+            };
+            tx.set(ref, update, { merge: true });
+            if (content.exists) tx.set(contentRef, update, { merge: true });
+          });
+          break;
+        }
         const snap = await ref.get();
         if (!snap.exists) {
           throw new HttpsError("not-found", "Documento não encontrado.");

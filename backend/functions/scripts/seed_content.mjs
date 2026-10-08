@@ -15,7 +15,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { cert, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { bookPublicationProblem } from "../lib/domain/books.js";
 
 const seedRoot = join(dirname(fileURLToPath(import.meta.url)), "../../seed");
 
@@ -50,7 +51,12 @@ const db = getFirestore();
 /** Each subdirectory of seed/ is a Firestore collection. */
 const collections = readdirSync(seedRoot, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
-  .map((entry) => entry.name);
+  .map((entry) => entry.name)
+  .filter((name) => !arg("only") || arg("only").split(",").includes(name));
+
+if (collections.includes("books") !== collections.includes("bookContents")) {
+  throw new Error("Seed books and bookContents together.");
+}
 
 /**
  * A seed file holds either one document or an array of them — collections
@@ -68,8 +74,20 @@ function documentsIn(collection, file) {
   });
 }
 
+const books = collections.includes("books")
+  ? documentsIn("books", "books.json") : [];
+const bookContents = collections.includes("bookContents")
+  ? new Map(documentsIn("bookContents", "bookContents.json")) : new Map();
+// Validate the complete catalog before any Firestore writes.
+for (const [id, book] of books) {
+  const problem = bookPublicationProblem(id, book, bookContents.get(id) ?? {});
+  if (problem) throw new Error(`${id}: ${problem}`);
+}
+if (books.length !== bookContents.size) throw new Error("Orphaned book content.");
+
 let written = 0;
 for (const collection of collections) {
+  if (collection === "books" || collection === "bookContents") continue;
   for (const file of readdirSync(join(seedRoot, collection)).filter((f) =>
     f.endsWith(".json"),
   )) {
@@ -91,5 +109,18 @@ for (const collection of collections) {
     console.log(`seeded ${collection}/${file} — ${documents.length} document(s)`);
   }
 }
+// Publish each catalog entry and its pages in the same atomic batch.
+for (let start = 0; start < books.length; start += 200) {
+  const batch = db.batch();
+  for (const [id, book] of books.slice(start, start + 200)) {
+    batch.set(db.collection("books").doc(id), { ...book, updatedAt: FieldValue.serverTimestamp() });
+    batch.set(db.collection("bookContents").doc(id), {
+      ...bookContents.get(id), updatedAt: FieldValue.serverTimestamp(),
+    });
+    written += 2;
+  }
+  await batch.commit();
+}
+if (books.length > 0) console.log(`seeded ${books.length} books with complete pages`);
 console.log(`done — ${written} document(s) into ${projectId}`);
 process.exit(0);

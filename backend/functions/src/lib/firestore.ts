@@ -34,6 +34,9 @@ export const paths = {
   activities: "activities",
   /** Global module metadata used by the free/Premium access policy. */
   modules: "modules",
+  /** Catalog metadata and independently authorized book pages. */
+  books: "books",
+  bookContents: "bookContents",
 } as const;
 
 /** Default entitlement document id — one active entitlement per user (MVP). */

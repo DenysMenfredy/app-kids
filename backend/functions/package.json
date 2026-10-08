@@ -11,6 +11,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "tsc && node --test \"lib/**/*.test.js\"",
+    "test:books:smoke": "node scripts/books_smoke.mjs",
     "lint": "eslint src",
     "serve": "npm run build && firebase emulators:start --only functions",
     "deploy:dev": "firebase deploy --only functions --project dev",

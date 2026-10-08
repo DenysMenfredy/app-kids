@@ -1,0 +1,74 @@
+[
+  {
+    "id": "sapo",
+    "title": "O Sapo e a Lua",
+    "description": "Uma noite de pulos e descobertas na lagoa.",
+    "coverKey": "frog",
+    "access": "free",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 5,
+    "order": 0,
+    "published": true
+  },
+  {
+    "id": "vogais",
+    "title": "A Festa das Vogais",
+    "description": "A, E, I, O e U têm uma surpresa para você.",
+    "coverKey": "vowels",
+    "access": "free",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 5,
+    "order": 1,
+    "published": true
+  },
+  {
+    "id": "bicho",
+    "title": "Bicho de Letra",
+    "description": "Cada bichinho descobre a letra do seu nome.",
+    "coverKey": "cat",
+    "access": "premium",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 4,
+    "order": 2,
+    "published": true
+  },
+  {
+    "id": "trem",
+    "title": "O Trem das Sílabas",
+    "description": "Embarque para juntar pedacinhos de palavras.",
+    "coverKey": "train",
+    "access": "premium",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 5,
+    "order": 3,
+    "published": true
+  },
+  {
+    "id": "rimas",
+    "title": "Rimas no Jardim",
+    "description": "Ouça as palavras que combinam no final.",
+    "coverKey": "flowers",
+    "access": "premium",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 4,
+    "order": 4,
+    "published": true
+  },
+  {
+    "id": "historia",
+    "title": "Minha Primeira História",
+    "description": "Uma aventura pequena pode virar uma grande história.",
+    "coverKey": "book",
+    "access": "premium",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "pageCount": 4,
+    "order": 5,
+    "published": true
+  }
+]

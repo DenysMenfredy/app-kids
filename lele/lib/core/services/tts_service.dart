@@ -94,6 +94,7 @@ class TtsService {
   /// How long to leave between asks while the platform loads its voices.
   final Duration voiceWait;
   bool _configured = false;
+  int _speechGeneration = 0;
 
   /// Shared by every caller while a configure pass is in flight. Without it,
   /// a `speak` arriving during the warm-up would start a second pass and
@@ -193,9 +194,12 @@ class TtsService {
 
   Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
+    final generation = ++_speechGeneration;
     await _configure();
+    if (generation != _speechGeneration) return;
     try {
       await _tts.stop();
+      if (generation != _speechGeneration) return;
       await _tts.speak(text);
     } catch (error) {
       debugPrint('TTS speak failed: $error');
@@ -207,6 +211,7 @@ class TtsService {
   Future<void> warmUp() => _configure();
 
   Future<void> stop() async {
+    _speechGeneration++;
     try {
       await _tts.stop();
     } catch (_) {}

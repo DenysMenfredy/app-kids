@@ -12,6 +12,7 @@ import '../../../core/widgets/lele_card.dart';
 import '../../../core/widgets/lele_icon_button.dart';
 import '../../../core/widgets/lele_mascot.dart';
 import '../../../core/widgets/motion.dart';
+import '../../books/application/book_providers.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
 import '../../learning/domain/module_access.dart';
@@ -360,13 +361,13 @@ class _JourneyRow extends StatelessWidget {
   }
 }
 
-class _BooksCard extends StatelessWidget {
+class _BooksCard extends ConsumerWidget {
   const _BooksCard({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return LeleCard(
       onTap: onTap,
       semanticLabel: 'Meus livros',
@@ -376,6 +377,7 @@ class _BooksCard extends StatelessWidget {
           Container(
             width: 44,
             height: 52,
+            alignment: Alignment.center,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -392,6 +394,11 @@ class _BooksCard extends StatelessWidget {
                 left: BorderSide(color: AppColors.purpleDark, width: 6),
               ),
             ),
+            child: const Icon(
+              Icons.auto_stories_rounded,
+              size: 26,
+              color: Colors.white,
+            ),
           ),
           Expanded(
             child: Column(
@@ -399,7 +406,7 @@ class _BooksCard extends StatelessWidget {
               children: [
                 Text('Meus livros', style: AppTextStyles.sectionTitle),
                 Text(
-                  '2 desbloqueados · 1 novo!',
+                  ref.watch(bookShelfSubtitleProvider),
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textMuted,

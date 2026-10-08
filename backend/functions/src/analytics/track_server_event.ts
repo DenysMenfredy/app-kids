@@ -1,4 +1,5 @@
 import { logger } from "firebase-functions/v2";
+import { redactChildIdentifiers } from "../lib/log_sanitizer";
 
 /**
  * Server-side product analytics (spec §17). Events are written as
@@ -23,7 +24,7 @@ export function trackServerEvent(
   logger.info("letrando_event", {
     event,
     uid,
-    params,
+    params: redactChildIdentifiers(params),
     at: new Date().toISOString(),
   });
 }

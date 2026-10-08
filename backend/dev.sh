@@ -52,24 +52,24 @@ fi
 echo "==> Building Cloud Functions"
 npm --prefix functions run build
 
-# Seed once, in the background, as soon as Firestore answers. The metadata
-# file is what an export actually writes, so a run that was interrupted before
-# it could export gets reseeded instead of starting with an empty database.
-if [ ! -f "$DATA_DIR/firebase-export-metadata.json" ]; then
-  rm -rf "$DATA_DIR"
-  (
-    for _ in $(seq 1 60); do
-      if curl -sf "http://localhost:${FIRESTORE_PORT}/" >/dev/null 2>&1; then
-        echo "==> Seeding curriculum into the emulator"
-        FIRESTORE_EMULATOR_HOST="localhost:${FIRESTORE_PORT}" \
-          npm --prefix functions run seed -- --project "$PROJECT"
-        exit 0
-      fi
-      sleep 1
-    done
-    echo "!! Firestore emulator never came up; seed skipped." >&2
-  ) &
+# Existing emulator exports predate the book catalog. Refresh only committed
+# books on startup; a new database still gets the full curriculum seed.
+SEED_ARGS=()
+if [ -f "$DATA_DIR/firebase-export-metadata.json" ]; then
+  SEED_ARGS=(--only books,bookContents)
 fi
+(
+  for _ in $(seq 1 60); do
+    if curl -sf "http://localhost:${FIRESTORE_PORT}/" >/dev/null 2>&1; then
+      echo "==> Seeding published demo content into the emulator"
+      FIRESTORE_EMULATOR_HOST="localhost:${FIRESTORE_PORT}" \
+        npm --prefix functions run seed -- --project "$PROJECT" "${SEED_ARGS[@]}"
+      exit 0
+    fi
+    sleep 1
+  done
+  echo "!! Firestore emulator never came up; seed skipped." >&2
+) &
 
 echo "==> Starting emulators (project: $PROJECT)"
 echo "    Emulator UI: http://localhost:4000"

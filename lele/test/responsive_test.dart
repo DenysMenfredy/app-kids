@@ -10,6 +10,7 @@ import 'package:lele/features/assessment/presentation/assessment_question_screen
 import 'package:lele/features/assessment/presentation/assessment_result_screen.dart';
 import 'package:lele/features/auth/presentation/login_screen.dart';
 import 'package:lele/features/auth/presentation/register_screen.dart';
+import 'package:lele/features/books/presentation/book_reader_screen.dart';
 import 'package:lele/features/books/presentation/books_screen.dart';
 import 'package:lele/features/child_home/presentation/child_home_screen.dart';
 import 'package:lele/features/child_profile/presentation/profile_setup_screen.dart';
@@ -57,6 +58,7 @@ Map<String, Widget Function()> get screens => {
   'paywall': () => const PaywallScreen(),
   'childHome': () => const ChildHomeScreen(),
   'books': () => const BooksScreen(),
+  'bookReader': () => const BookReaderScreen(bookId: 'sapo'),
   'lessonIntro': () => const LessonIntroScreen(),
   'tapActivity': () => const TapActivityScreen(),
   'matchActivity': () => const MatchActivityScreen(),

@@ -30,6 +30,7 @@ export { updateProgress } from "./learning/update_progress";
 
 // profiles/
 export { createChildProfile } from "./profiles/create_child_profile";
+export { saveBookBookmark } from "./books/save_book_bookmark";
 
 // admin/
 export { manageContent } from "./admin/manage_content";

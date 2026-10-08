@@ -57,6 +57,94 @@ const asStranger = () => env.authenticatedContext(STRANGER).firestore();
 const asAnon = () => env.unauthenticatedContext().firestore();
 const asAdmin = (fn) => env.withSecurityRulesDisabled(fn);
 
+describe("book catalog, protected pages and child bookmarks", () => {
+  beforeEach(async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`users/${PARENT}/children/child1`).set({ name: "Lucas", age: 4, avatarId: "orange" });
+      for (const [id, access, published] of [
+        ["free", "free", true], ["premium", "premium", true], ["draft", "free", false],
+      ]) {
+        await db.doc(`books/${id}`).set({
+          published, access, schemaVersion: 1, contentVersion: 1, pageCount: 1,
+        });
+        await db.doc(`bookContents/${id}`).set({
+          published, schemaVersion: 1, contentVersion: 1,
+          pages: [{ id: "p1", text: "Uma história.", illustration: "book" }],
+        });
+      }
+      await db.doc(`users/${PARENT}/children/child1/bookmarks/free`).set({
+        bookId: "free", contentVersion: 1, pageIndex: 0,
+      });
+    });
+  });
+
+  it("lists published covers without exposing Premium pages", async () => {
+    const snapshot = await assertSucceeds(getDocs(query(collection(asParent(), "books"),
+      where("published", "==", true))));
+    assert.equal(snapshot.size, 2);
+    await assertFails(getDocs(collection(asParent(), "books")));
+    await assertFails(asParent().doc("books/draft").get());
+    await assertFails(asAnon().doc("books/free").get());
+    await assertSucceeds(asParent().doc("bookContents/free").get());
+    await assertFails(asParent().doc("bookContents/premium").get());
+    await assertFails(getDocs(collection(asParent(), "bookContents")));
+    await assertFails(asAnon().doc("bookContents/free").get());
+  });
+
+  it("requires the current premium_books entitlement and excludes other families", async () => {
+    const valid = {
+      active: true, features: ["premium_books"],
+      validFrom: Timestamp.fromDate(new Date(Date.now() - 60_000)),
+      validUntil: Timestamp.fromDate(new Date(Date.now() + 60_000)),
+    };
+    const setEntitlement = (data) => asAdmin((ctx) => ctx.firestore()
+      .doc(`users/${PARENT}/entitlements/premium`).set(data));
+    await setEntitlement(valid);
+    await assertSucceeds(asParent().doc("bookContents/premium").get());
+    await assertFails(asStranger().doc("bookContents/premium").get());
+    for (const invalid of [
+      { ...valid, active: false }, { ...valid, features: ["full_curriculum"] },
+      { ...valid, validUntil: Timestamp.fromDate(new Date(0)) },
+      { ...valid, validFrom: Timestamp.fromDate(new Date(Date.now() + 60_000)) },
+    ]) {
+      await setEntitlement(invalid);
+      await assertFails(asParent().doc("bookContents/premium").get());
+    }
+  });
+
+  it("denies drafts, missing classifications, mismatched versions and page counts", async () => {
+    await assertFails(asParent().doc("bookContents/draft").get());
+    for (const change of [
+      { published: false }, { access: "unknown" }, { contentVersion: 2 },
+      { pageCount: 0 }, { pageCount: 2 }, { schemaVersion: 2 },
+    ]) {
+      await asAdmin((ctx) => ctx.firestore().doc("books/free").set({
+        published: true, access: "free", schemaVersion: 1, contentVersion: 1, pageCount: 1,
+        ...change,
+      }));
+      await assertFails(asParent().doc("bookContents/free").get());
+    }
+    await asAdmin((ctx) => ctx.firestore().doc("books/free").delete());
+    await assertFails(asParent().doc("bookContents/free").get());
+  });
+
+  it("limits bookmarks to the parent and existing child; direct writes are denied", async () => {
+    const path = `users/${PARENT}/children/child1/bookmarks/free`;
+    await assertSucceeds(asParent().doc(path).get());
+    await assertSucceeds(getDocs(collection(asParent(), `users/${PARENT}/children/child1/bookmarks`)));
+    await assertFails(asStranger().doc(path).get());
+    await assertFails(asAnon().doc(path).get());
+    await assertFails(asParent().doc(path).update({ pageIndex: 999 }));
+    await assertFails(asParent().doc(path).delete());
+    await assertFails(asParent().doc(`users/${PARENT}/children/child1/bookmarks/new`).set({ pageIndex: 0 }));
+    await assertFails(asParent().doc("books/free").update({ access: "free" }));
+    await assertFails(asParent().doc("bookContents/premium").set({ published: true, pages: [] }));
+    await asAdmin((ctx) => ctx.firestore().doc(`users/${PARENT}/children/child1`).delete());
+    await assertFails(asParent().doc(path).get());
+  });
+});
+
 describe("user profile", () => {
   it("owner can read and write own profile with allowed fields", async () => {
     await assertSucceeds(

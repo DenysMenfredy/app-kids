@@ -1,4 +1,5 @@
 import { logger } from "firebase-functions/v2";
+import { redactChildIdentifiers } from "./log_sanitizer";
 
 /**
  * Structured logging helper (spec §20: structured logs). Every log line
@@ -16,7 +17,7 @@ export function log(
   message: string,
   fields: Record<string, unknown> = {},
 ): void {
-  logger.info(message, { domain, ...fields });
+  logger.info(message, { domain, ...redactChildIdentifiers(fields) as object });
 }
 
 export function logError(
@@ -24,5 +25,5 @@ export function logError(
   message: string,
   fields: Record<string, unknown> = {},
 ): void {
-  logger.error(message, { domain, ...fields });
+  logger.error(message, { domain, ...redactChildIdentifiers(fields) as object });
 }
