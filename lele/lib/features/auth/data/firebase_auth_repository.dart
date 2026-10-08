@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
+import '../domain/apple_account_link_outcome.dart';
 import '../domain/auth_failure.dart';
 import '../domain/sign_in_outcome.dart';
 import 'auth_repository.dart';
@@ -17,6 +18,19 @@ class FirebaseAuthRepository
 
   @override
   String? get currentUserId => _auth.currentUser?.uid;
+
+  @override
+  String? get currentUserEmail => _auth.currentUser?.email;
+
+  @override
+  bool get requiresEmailVerification {
+    final user = _auth.currentUser;
+    return user != null &&
+        user.providerData.any(
+          (provider) => provider.providerId == 'password',
+        ) &&
+        !user.emailVerified;
+  }
 
   @override
   Future<void> signIn({required String email, required String password}) {
@@ -77,8 +91,8 @@ class FirebaseAuthRepository
     // Unlike Google, this does NOT reliably resolve to an existing account.
     // A parent who picks Apple's "Hide My Email" arrives with a relay
     // address that matches nothing, and Firebase correctly mints a new uid
-    // — a new family, with premium inactive. See ADR 0005; the linking and
-    // duplicate-account paths it requires are not built yet.
+    // — a new family, with premium inactive. See ADR 0005 for the explicit
+    // account-linking path; email-based account merging is never attempted.
     return _providerSignIn(AppleAuthProvider());
   }
 
@@ -121,6 +135,26 @@ class FirebaseAuthRepository
       }
     });
   }
+
+  @override
+  Future<void> sendEmailVerification() => _guard(() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw const AuthFailure('Entre novamente para confirmar seu e-mail.');
+    }
+    await user.sendEmailVerification();
+  });
+
+  @override
+  Future<bool> refreshEmailVerification() => _guard(() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    await user.reload();
+    final refreshedUser = _auth.currentUser;
+    if (refreshedUser == null) return false;
+    await refreshedUser.getIdToken(true);
+    return refreshedUser.emailVerified;
+  });
 
   @override
   Future<void> signOut() => _auth.signOut();

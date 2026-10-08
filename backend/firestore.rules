@@ -24,6 +24,12 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function canManageChildProfile() {
+      return request.auth.token.email_verified == true
+        || request.auth.token.firebase.sign_in_provider == 'google.com'
+        || request.auth.token.firebase.sign_in_provider == 'apple.com';
+    }
+
     function incomingKeysOnly(allowed) {
       return request.resource.data.keys().hasOnly(allowed);
     }
@@ -150,6 +156,7 @@ service cloud.firestore {
         // Parents can edit only the bounded profile fields on existing docs.
         allow create: if false;
         allow update: if isOwner(uid)
+          && canManageChildProfile()
           && validChild()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(childEditableKeys())

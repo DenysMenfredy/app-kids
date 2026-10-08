@@ -2,24 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
-import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../application/auth_controller.dart';
-import '../data/auth_repository.dart';
+import '../domain/apple_account_link_outcome.dart';
 import '../domain/auth_failure.dart';
 import 'apple_sign_in_button.dart';
-
-final appleAccountLinkedProvider = StreamProvider<bool>((ref) {
-  if (!AppConfig.useFirebase) return Stream.value(false);
-  final auth = ref.watch(firebaseAuthProvider);
-  return auth.userChanges().map(
-    (user) =>
-        user?.providerData.any(
-          (provider) => provider.providerId == 'apple.com',
-        ) ??
-        false,
-  );
-});
 
 /// Lets a signed-in parent attach Apple to their existing Firebase UID.
 class AppleAccountLinkButton extends ConsumerStatefulWidget {

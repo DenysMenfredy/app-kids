@@ -11,6 +11,7 @@ import '../../core/firebase/firebase_providers.dart';
 import '../../features/assessment/presentation/assessment_intro_screen.dart';
 import '../../features/assessment/presentation/assessment_question_screen.dart';
 import '../../features/assessment/presentation/assessment_result_screen.dart';
+import '../../features/auth/presentation/email_verification_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/books/presentation/books_screen.dart';
@@ -33,6 +34,7 @@ abstract final class AppRoutes {
   static const welcome = 'welcome';
   static const login = 'login';
   static const register = 'register';
+  static const emailVerification = 'emailVerification';
   static const profileSetup = 'profileSetup';
   static const assessmentIntro = 'assessmentIntro';
   static const assessmentQuestions = 'assessmentQuestions';
@@ -64,11 +66,33 @@ String? _authRedirect(FirebaseAuth auth, GoRouterState state) {
   if (!signedIn) {
     return _publicRoutes.contains(location) ? null : '/login';
   }
+  if (location == '/profile-setup' && _requiresEmailVerification(auth)) {
+    final query = state.uri.queryParameters;
+    final next = query['edit'] == 'true'
+        ? 'edit-child'
+        : query['new'] == 'true'
+        ? 'add-child'
+        : 'new-child';
+    return Uri(
+      path: '/verify-email',
+      queryParameters: {'next': next},
+    ).toString();
+  }
+  if (location == '/verify-email') {
+    return null;
+  }
   // Registration and login complete their own post-auth routing. In
   // particular, provider sign-in may need to ask a new Apple identity
   // whether the parent already has an account before onboarding starts.
   if (location == '/') return '/dashboard';
   return null;
+}
+
+bool _requiresEmailVerification(FirebaseAuth auth) {
+  final user = auth.currentUser;
+  return user != null &&
+      user.providerData.any((provider) => provider.providerId == 'password') &&
+      !user.emailVerified;
 }
 
 /// Bridges the auth stream to something GoRouter can listen to, so the
@@ -89,7 +113,7 @@ class _AuthRefresh extends ChangeNotifier {
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final auth = AppConfig.useFirebase ? ref.watch(firebaseAuthProvider) : null;
-  final refresh = auth == null ? null : _AuthRefresh(auth.authStateChanges());
+  final refresh = auth == null ? null : _AuthRefresh(auth.userChanges());
   ref.onDispose(() => refresh?.dispose());
 
   return GoRouter(
@@ -118,6 +142,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/register',
         name: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        name: AppRoutes.emailVerification,
+        builder: (context, state) => EmailVerificationScreen(
+          nextStep: state.uri.queryParameters['next'] ?? 'dashboard',
+          sendOnOpen: state.uri.queryParameters['send'] == 'true',
+        ),
       ),
       GoRoute(
         path: '/profile-setup',

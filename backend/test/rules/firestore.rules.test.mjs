@@ -50,6 +50,9 @@ beforeEach(async () => {
 });
 
 const asParent = () => env.authenticatedContext(PARENT).firestore();
+const asVerifiedParent = () => env.authenticatedContext(PARENT, {
+  email_verified: true,
+}).firestore();
 const asStranger = () => env.authenticatedContext(STRANGER).firestore();
 const asAnon = () => env.unauthenticatedContext().firestore();
 const asAdmin = (fn) => env.withSecurityRulesDisabled(fn);
@@ -118,10 +121,15 @@ describe("children (parent/child boundary, spec §19)", () => {
         avatarId: "orange",
       }),
     );
-    const child = asParent().doc(`users/${PARENT}/children/generated-id`);
+    const child = asVerifiedParent().doc(`users/${PARENT}/children/generated-id`);
     await assertFails(
       asParent().doc(`users/${PARENT}/children/client-chosen-id`).set({
         name: "Lucas", age: 4, avatarId: "orange",
+      }),
+    );
+    await assertFails(
+      asParent().doc(`users/${PARENT}/children/generated-id`).update({
+        name: "Lucas A.", avatarId: "teal",
       }),
     );
     await assertSucceeds(child.update({ name: "Lucas A.", avatarId: "teal" }));
@@ -142,14 +150,14 @@ describe("children (parent/child boundary, spec §19)", () => {
       }, { merge: true }),
     );
     await assertSucceeds(
-      asParent().doc(`users/${PARENT}/children/child1`).set({
+      asVerifiedParent().doc(`users/${PARENT}/children/child1`).set({
         name: "Lucas A.", avatarId: "teal",
       }, { merge: true }),
     );
   });
 
   it("denies placement and journey mutations on create, merge, replace and delete", async () => {
-    const ref = asParent().doc(`users/${PARENT}/children/child1`);
+    const ref = asVerifiedParent().doc(`users/${PARENT}/children/child1`);
     await assertFails(ref.set({ name: "Lucas", currentLessonId: "lesson_037" }));
     await asAdmin((ctx) =>
       ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
@@ -165,7 +173,7 @@ describe("children (parent/child boundary, spec §19)", () => {
   });
 
   it("rejects invalid child names, ages, avatars and timestamps", async () => {
-    const ref = asParent().doc(`users/${PARENT}/children/child1`);
+    const ref = asVerifiedParent().doc(`users/${PARENT}/children/child1`);
     await asAdmin((ctx) =>
       ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
         name: "Lucas", age: 4, avatarId: "orange",
@@ -185,7 +193,7 @@ describe("children (parent/child boundary, spec §19)", () => {
       }),
     );
     await assertFails(
-      asParent().doc(`users/${PARENT}/children/child1`).update({
+      asVerifiedParent().doc(`users/${PARENT}/children/child1`).update({
         school: "Escola X", // not allowed by the child-data constraint
       }),
     );

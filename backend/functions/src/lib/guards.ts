@@ -27,6 +27,22 @@ export function requireAuth(request: CallableRequest): string {
   return uid;
 }
 
+/**
+ * Email/password parents must confirm ownership of their address before
+ * creating a child profile or starting checkout. Federated Google and Apple
+ * sign-ins remain available without a second verification step.
+ */
+export function requireVerifiedParentEmail(request: CallableRequest): void {
+  const provider = request.auth?.token?.firebase?.sign_in_provider;
+  const emailVerified = request.auth?.token?.email_verified === true;
+  if (provider === "password" && !emailVerified) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Confirme seu e-mail antes de cadastrar um perfil infantil ou iniciar uma assinatura.",
+    );
+  }
+}
+
 export function requireRole(request: CallableRequest, ...roles: Role[]): string {
   const uid = requireAuth(request);
   const role = request.auth?.token?.role as Role | undefined;

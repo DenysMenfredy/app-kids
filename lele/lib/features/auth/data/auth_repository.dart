@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../domain/apple_account_link_outcome.dart';
 import '../domain/sign_in_outcome.dart';
 import 'firebase_auth_repository.dart';
 
@@ -29,6 +30,16 @@ abstract interface class AuthRepository {
   /// can't be used to discover which e-mails have accounts.
   Future<void> sendPasswordReset(String email);
 
+  Future<void> sendEmailVerification();
+
+  /// Reloads the current Firebase user and refreshes the ID token so server
+  /// callables receive the latest `email_verified` claim.
+  Future<bool> refreshEmailVerification();
+
+  String? get currentUserEmail;
+
+  bool get requiresEmailVerification;
+
   Future<void> signOut();
 
   /// Firebase UID when signed in with Firebase, null otherwise.
@@ -41,8 +52,6 @@ abstract interface class AuthRepository {
 abstract interface class AppleAccountLinkRepository {
   Future<AppleAccountLinkOutcome> linkAppleAccount();
 }
-
-enum AppleAccountLinkOutcome { linked, alreadyLinked, cancelled }
 
 class FakeAuthRepository implements AuthRepository, AppleAccountLinkRepository {
   const FakeAuthRepository();
@@ -82,10 +91,22 @@ class FakeAuthRepository implements AuthRepository, AppleAccountLinkRepository {
   Future<void> sendPasswordReset(String email) => Future.delayed(_latency);
 
   @override
+  Future<void> sendEmailVerification() => Future<void>.delayed(_latency);
+
+  @override
+  Future<bool> refreshEmailVerification() async => true;
+
+  @override
   Future<void> signOut() => Future.delayed(_latency);
 
   @override
   String? get currentUserId => null;
+
+  @override
+  String? get currentUserEmail => null;
+
+  @override
+  bool get requiresEmailVerification => false;
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {

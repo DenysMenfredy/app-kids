@@ -3,13 +3,19 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { parseChildProfile } from "../domain/child_profile";
 import { db, paths } from "../lib/firestore";
-import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
+import {
+  enforceAppCheck,
+  requireAuth,
+  requireString,
+  requireVerifiedParentEmail,
+} from "../lib/guards";
 
 /** Creates a minimal child profile with an ID allocated by Firestore Admin. */
 export const createChildProfile = onCall(
   { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
+    requireVerifiedParentEmail(request);
     const requestId = requireString(request.data?.requestId, "requestId", {
       maxLength: 80,
     });

@@ -8,6 +8,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
+import '../../auth/application/auth_controller.dart';
 import '../application/checkout_controller.dart';
 import '../domain/checkout_failure.dart';
 import '../domain/plan.dart';
@@ -32,6 +33,13 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   Future<void> _startCheckout() async {
     if (_busy) return;
+    if (ref.read(authControllerProvider).requiresEmailVerification) {
+      context.goNamed(
+        AppRoutes.emailVerification,
+        queryParameters: const {'next': 'paywall'},
+      );
+      return;
+    }
     final checkout = ref.read(checkoutControllerProvider);
     if (!checkout.paymentsEnabled) {
       return;
@@ -59,6 +67,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     final paymentsEnabled = ref
         .watch(checkoutControllerProvider)
         .paymentsEnabled;
+    final needsEmailVerification = ref
+        .watch(authControllerProvider)
+        .requiresEmailVerification;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -136,6 +147,8 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               LeleButton(
                 label: !paymentsEnabled
                     ? 'Assinaturas em breve'
+                    : needsEmailVerification
+                    ? 'Confirme seu e-mail para continuar'
                     : _busy
                     ? 'Abrindo pagamento...'
                     : 'Começar teste grátis de 7 dias',

@@ -49,10 +49,22 @@ class ScriptedAuth implements AuthRepository {
   Future<void> sendPasswordReset(String email) async {}
 
   @override
+  Future<void> sendEmailVerification() async {}
+
+  @override
+  Future<bool> refreshEmailVerification() async => true;
+
+  @override
   Future<void> signOut() async {}
 
   @override
   String? get currentUserId => null;
+
+  @override
+  String? get currentUserEmail => null;
+
+  @override
+  bool get requiresEmailVerification => false;
 }
 
 /// The screens the flow can land on, stubbed so arrival is unambiguous.

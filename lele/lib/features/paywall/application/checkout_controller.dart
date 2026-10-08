@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../auth/data/auth_repository.dart';
 import '../data/subscription_service.dart';
 import '../domain/checkout_failure.dart';
 
@@ -28,6 +29,11 @@ class CheckoutController {
   /// Throws [CheckoutFailure] with a message safe to show the parent, both
   /// when the backend refuses and when the device cannot open the page.
   Future<void> start(String backendPlanId) async {
+    if (_ref.read(authRepositoryProvider).requiresEmailVerification) {
+      throw const CheckoutFailure(
+        'Confirme seu e-mail antes de iniciar uma assinatura.',
+      );
+    }
     if (!paymentsEnabled) {
       throw const CheckoutFailure(
         'Assinaturas indisponíveis nesta versão beta.',

@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
+import '../../../core/firebase/firebase_providers.dart';
 import '../../session/application/session_controller.dart';
 import '../data/auth_repository.dart';
+import '../domain/apple_account_link_outcome.dart';
 import '../domain/sign_in_outcome.dart';
 
 /// What the sign-in and registration screens actually do.
@@ -50,7 +53,30 @@ class AuthController {
   Future<void> sendPasswordReset(String email) =>
       _repository.sendPasswordReset(email);
 
+  Future<void> sendEmailVerification() => _repository.sendEmailVerification();
+
+  Future<bool> refreshEmailVerification() =>
+      _repository.refreshEmailVerification();
+
+  String? get currentUserEmail => _repository.currentUserEmail;
+
+  bool get requiresEmailVerification => _repository.requiresEmailVerification;
+
   Future<void> signOut() => _repository.signOut();
 }
 
 final authControllerProvider = Provider<AuthController>(AuthController.new);
+
+/// Whether the current Firebase account already has an Apple identity.
+/// Keeps the auth SDK stream out of presentation widgets.
+final appleAccountLinkedProvider = StreamProvider<bool>((ref) {
+  if (!AppConfig.useFirebase) return Stream.value(false);
+  final auth = ref.watch(firebaseAuthProvider);
+  return auth.userChanges().map(
+    (user) =>
+        user?.providerData.any(
+          (provider) => provider.providerId == 'apple.com',
+        ) ??
+        false,
+  );
+});

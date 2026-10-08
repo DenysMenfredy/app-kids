@@ -140,7 +140,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-      if (mounted) context.goNamed(AppRoutes.profileSetup);
+      if (mounted && AppConfig.useFirebase) {
+        context.goNamed(
+          AppRoutes.emailVerification,
+          queryParameters: const {'next': 'new-child', 'send': 'true'},
+        );
+      } else if (mounted) {
+        context.goNamed(AppRoutes.profileSetup);
+      }
     } on AuthFailure catch (failure) {
       if (mounted) _showFailure(failure);
     } finally {

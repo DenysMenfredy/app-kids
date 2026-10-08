@@ -2,9 +2,10 @@
 
 Source: `../../Lele_Plano_Execucao_MVP.md`. This is a code-and-local-test
 inventory, not evidence of Firebase console configuration or a deploy.
-The 2026-10-08 Flutter changes passed Dart analysis, emulator hot restart and
-runtime-error inspection; Functions passed `tsc --noEmit`. Automated test
-suites were not run in this pass.
+The 2026-10-08 Flutter changes passed whole-project Dart analysis, emulator
+hot restart and runtime-error inspection; Functions passed `tsc --noEmit`.
+Automated suites were not run in this pass; email-verification tests and
+emulator/device validation remain outstanding.
 
 ## F0 inventory
 
@@ -41,7 +42,7 @@ available via `/home/denys7/.nvm/versions/node/v22.19.0/bin` on this host.
 | T06 | Partial | Cached profile/selection is UID-namespaced; child, parent-name, progress, journey and entitlement streams now switch to UID/child-keyed providers so the previous account's last snapshot is not shown while another scope loads. Lesson stats reset on parent/child changes and lesson writes remain bound to the starting child. Offline/logout/restart device checks and Firestore SDK cache strategy remain open. |
 | T09, T11–T12 | Partial; guarded | Backend now reserves one seven-day no-card trial per parent, cancels at trial end if no payment method is added, stores server-created Checkout/customer mappings, and uses retryable webhook leases plus current Stripe subscription retrieval. No user-facing trial-ending notice is wired, the signed Stripe integration matrix has not run, and checkout remains disabled by default behind the web App Check ID. Portal UI and native billing remain incomplete. |
 | T10 | Partial | Firestore Rules tests pass for module 1 and current `full_curriculum` entitlement access; lesson-session callables enforce the same boundary and child UI routes later modules to the paywall. Real book payloads and protected Storage media remain unimplemented. |
-| T07 | Partial | Newly created Apple identities are prompted before child-profile onboarding; signed-in parents can link Apple to the current UID from the dashboard. No email-based merge is attempted. Email verification, physical iOS validation, and a support path for independently existing accounts remain open. |
+| T07 | Partial | New email/password accounts must verify before child setup; resend/check flows refresh Firebase user and ID-token state. Firestore Rules and the child-profile and checkout callables enforce the boundary; Google/Apple are exempt. ADR 0011 records the decision. Auth-emulator delivery, rules/Functions tests, physical iOS validation, and support for independently existing Apple accounts remain open. |
 | T14 | Partial | The hardcoded shelf is now limited to demo mode; Firebase mode does not advertise books until published backend content exists. Backend catalog, actual pages/media and reading-position sync remain open. |
 | T08, T13, T16–T20 | Open | Implement in the order and with the gates in the execution plan. |
 | T15 | Partial | Server-owned sessions and scored attempts now cover tap/listen choices and match pairs; trace stores bounded gesture metadata without raw handwriting. Run emulator integration/retry tests, then complete pause/resume, elapsed active-time semantics, and privacy-reviewed trace criteria. |

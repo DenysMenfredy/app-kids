@@ -7,7 +7,12 @@ import {
 } from "../config";
 import { isKnownPlan } from "../domain/plans";
 import { db, paths } from "../lib/firestore";
-import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
+import {
+  enforceAppCheck,
+  requireAuth,
+  requireString,
+  requireVerifiedParentEmail,
+} from "../lib/guards";
 import { log, logError } from "../lib/logger";
 import { isApprovedWebCheckoutApp } from "./checkout_channel";
 import { stripeProvider } from "./stripe_provider";
@@ -32,6 +37,7 @@ export const createCheckoutSession = onCall(
   },
   async (request) => {
     const uid = requireAuth(request);
+    requireVerifiedParentEmail(request);
     const allowedAppId = stripeWebCheckoutAppId.value();
     if (!isApprovedWebCheckoutApp(allowedAppId, request.app?.appId)) {
       throw new HttpsError(
