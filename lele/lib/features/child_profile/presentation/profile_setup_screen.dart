@@ -15,7 +15,14 @@ import '../../session/domain/child_profile.dart';
 import '../../session/presentation/child_avatar_style.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
-  const ProfileSetupScreen({super.key});
+  const ProfileSetupScreen({
+    super.key,
+    this.createNew = false,
+    this.editExisting = false,
+  });
+
+  final bool createNew;
+  final bool editExisting;
 
   @override
   ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
@@ -25,14 +32,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   late final TextEditingController _nameController;
   late int _age;
   late ChildAvatar _avatar;
+  bool _saving = false;
+  late final String? _createRequestId;
 
   @override
   void initState() {
     super.initState();
-    final child = ref.read(childProvider);
+    final child = widget.createNew
+        ? ChildProfile.defaultProfile
+        : ref.read(childProvider);
     _nameController = TextEditingController(text: child.name);
     _age = child.age;
     _avatar = child.avatar;
+    _createRequestId = widget.createNew
+        ? DateTime.now().microsecondsSinceEpoch.toRadixString(36)
+        : null;
   }
 
   @override
@@ -41,18 +55,40 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     super.dispose();
   }
 
-  void _continue() {
+  Future<void> _continue() async {
+    if (_saving) return;
     final name = _nameController.text.trim();
-    ref
-        .read(sessionProvider.notifier)
-        .saveChildProfile(
-          ChildProfile(
-            name: name.isEmpty ? ChildProfile.defaultProfile.name : name,
-            age: _age,
-            avatar: _avatar,
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(sessionProvider.notifier)
+          .saveChildProfile(
+            ChildProfile(
+              name: name.isEmpty ? ChildProfile.defaultProfile.name : name,
+              age: _age,
+              avatar: _avatar,
+            ),
+            createNew: widget.createNew,
+            requestId: _createRequestId,
+          );
+      if (mounted) {
+        context.goNamed(
+          widget.editExisting ? AppRoutes.dashboard : AppRoutes.assessmentIntro,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Não foi possível salvar. Verifique sua conexão e tente novamente.',
+            ),
           ),
         );
-    context.goNamed(AppRoutes.assessmentIntro);
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -117,7 +153,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               ),
               child: SizedBox(
                 width: double.infinity,
-                child: LeleButton(label: 'Continuar', onPressed: _continue),
+                child: LeleButton(
+                  label: _saving ? 'Salvando...' : 'Continuar',
+                  enabled: !_saving,
+                  onPressed: _continue,
+                ),
               ),
             ),
           ],

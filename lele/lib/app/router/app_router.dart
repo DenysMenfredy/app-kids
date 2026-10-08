@@ -122,7 +122,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile-setup',
         name: AppRoutes.profileSetup,
-        builder: (context, state) => const ProfileSetupScreen(),
+        builder: (context, state) => ProfileSetupScreen(
+          createNew: state.uri.queryParameters['new'] == 'true',
+          editExisting: state.uri.queryParameters['edit'] == 'true',
+        ),
       ),
       GoRoute(
         path: '/assessment',

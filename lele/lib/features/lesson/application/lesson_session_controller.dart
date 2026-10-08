@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../learning/application/journey_provider.dart';
+import '../../session/application/child_provider.dart';
 import '../../session/application/demo_progress_controller.dart';
+import '../../session/application/session_controller.dart';
 import '../data/lesson_sync_service.dart';
 import '../domain/lesson_reward.dart';
 import 'lesson_reward_provider.dart';
@@ -15,19 +19,43 @@ import 'lesson_stats_controller.dart';
 /// meant a widget had to know the order to do them in. They are the lesson
 /// session, so they live here.
 class LessonSessionController {
-  const LessonSessionController(this._ref);
+  LessonSessionController(this._ref);
 
   final Ref _ref;
+  String? _activeChildId;
+  String? _activeOwnerScope;
 
   /// How long to wait for the backend before the child moves on regardless.
   static const _rewardTimeout = Duration(seconds: 3);
 
   /// Begins a run: clears the stats and reports the start.
   void start() {
+    final childId = _ref.read(activeChildIdProvider);
+    _activeChildId = childId;
+    _activeOwnerScope = _ref.read(sessionStorageScopeProvider);
     _ref.read(lessonStatsProvider.notifier).start();
-    _ref
-        .read(lessonSyncServiceProvider)
-        .lessonStarted(_ref.read(currentLessonIdProvider));
+    unawaited(
+      _ref
+          .read(lessonSyncServiceProvider)
+          .lessonStarted(_ref.read(currentLessonIdProvider), childId),
+    );
+  }
+
+  /// Queues an answer with the backend; the server determines correctness.
+  void recordAttempt(String activityId, Map<String, Object?> response) {
+    if (_activeOwnerScope != _ref.read(sessionStorageScopeProvider)) return;
+    final childId = _activeChildId ?? _ref.read(activeChildIdProvider);
+    if (childId == null) return;
+    unawaited(
+      _ref
+          .read(lessonSyncServiceProvider)
+          .activityAttempt(
+            _ref.read(currentLessonIdProvider),
+            childId,
+            activityId,
+            response,
+          ),
+    );
   }
 
   /// Reports the finished lesson and returns what the backend granted.
@@ -38,18 +66,15 @@ class LessonSessionController {
   /// when the backend is unreachable or slow, which the reward screen shows
   /// as a completed lesson with no deltas.
   Future<LessonReward?> complete() {
-    final stats = _ref.read(lessonStatsProvider);
+    if (_activeOwnerScope != _ref.read(sessionStorageScopeProvider)) {
+      return Future.value(null);
+    }
     final finishedLessonId = _ref.read(currentLessonIdProvider);
+    final childId = _activeChildId ?? _ref.read(activeChildIdProvider);
+    if (childId == null) return Future.value(null);
     final reward = _ref
         .read(lessonSyncServiceProvider)
-        .lessonCompleted(
-          finishedLessonId,
-          durationSeconds: stats.durationSeconds(DateTime.now()),
-          score: stats.score,
-          attempts: stats.attempts,
-          correctAnswers: stats.correctAnswers,
-          wrongAnswers: stats.wrongAnswers,
-        )
+        .lessonCompleted(finishedLessonId, childId)
         .timeout(_rewardTimeout, onTimeout: () => null);
 
     // Demo mode only — the backend owns both of these once it is on.

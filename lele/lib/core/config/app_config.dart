@@ -29,7 +29,21 @@ abstract final class AppConfig {
   /// Region where all Letrando Cloud Functions are deployed.
   static const String functionsRegion = 'southamerica-east1';
 
-  /// Single-child MVP: the one child profile lives under a fixed doc id.
+  /// Public reCAPTCHA site key for a real Firebase web build. A real web
+  /// project must supply this before App Check is activated. Never use a
+  /// debug provider or a Firebase emulator in a release build.
+  static const String appCheckWebSiteKey = String.fromEnvironment(
+    'APP_CHECK_RECAPTCHA_SITE_KEY',
+  );
+
+  /// Stripe Checkout is a web-only channel. Keep it disabled until the
+  /// seven-day trial and the web App Check registration are verified.
+  static const bool enableWebCheckout = bool.fromEnvironment(
+    'ENABLE_WEB_CHECKOUT',
+  );
+
+  /// Legacy profile ID used only to find accounts created before server-issued
+  /// child IDs were introduced.
   static const String primaryChildId = 'primary';
 
   /// Assessment document served during onboarding (backend `assessments/`).

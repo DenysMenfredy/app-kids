@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../session/application/child_provider.dart';
+import '../../session/application/session_controller.dart';
+
 /// Accumulates answer stats across the four activities of a lesson run so
 /// the backend's completeLesson callable receives real data.
 class LessonStats extends Equatable {
@@ -42,7 +45,12 @@ class LessonStats extends Equatable {
 
 class LessonStatsController extends Notifier<LessonStats> {
   @override
-  LessonStats build() => const LessonStats();
+  LessonStats build() {
+    // Changing parent or child invalidates the previous run's local summary.
+    ref.watch(sessionStorageScopeProvider);
+    ref.watch(activeChildIdProvider);
+    return const LessonStats();
+  }
 
   void start() => state = LessonStats(startedAt: DateTime.now());
 

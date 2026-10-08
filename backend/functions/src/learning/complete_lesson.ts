@@ -7,20 +7,25 @@ import {
   GamificationState,
   initialGamification,
 } from "../domain/gamification";
+import { mayCompleteLesson } from "../domain/lesson_completion";
+import {
+  ActivityDocument,
+  ActivityProgress,
+  summarizeLessonSession,
+} from "../domain/lesson_sessions";
 import { localDateIso } from "../domain/time";
 import { db, paths } from "../lib/firestore";
 import { findNextLessonId } from "./next_lesson";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
+import { hasLessonAccess } from "./lesson_access";
 
 /**
  * Marks a lesson completed and grants its rewards (spec §15, §16).
  *
- * XP, coins and the daily streak are server-owned: the client reports what
- * happened in the lesson, the backend decides what it is worth (ADR 0003).
- * The reward is applied inside a transaction that first checks whether this
- * lesson was already completed, so retries and replays never mint extra XP
- * (spec §20: progress updates must be safe to retry).
+ * XP, coins, score and answer counts are server-owned. Completion requires a
+ * server-created session whose activity answers were scored against published
+ * content. The reward transaction is idempotent per child and lesson.
  */
 export const completeLesson = onCall(
   { enforceAppCheck },
@@ -32,16 +37,25 @@ export const completeLesson = onCall(
     const childId = requireString(request.data?.childId, "childId", {
       maxLength: 64,
     });
+    const sessionId = requireString(request.data?.sessionId, "sessionId", {
+      maxLength: 64,
+    });
 
-    const [child, user] = await Promise.all([
-      db().collection(paths.children(uid)).doc(childId).get(),
+    const lessonRef = db().collection(paths.lessons).doc(lessonId);
+    const [lesson, user] = await Promise.all([
+      lessonRef.get(),
       db().doc(paths.user(uid)).get(),
     ]);
-    if (!child.exists) {
-      throw new HttpsError("not-found", "Perfil da criança não encontrado.");
+    const lessonData = lesson.data();
+    if (!lessonData || lessonData.published !== true) {
+      throw new HttpsError("not-found", "Lição indisponível.");
+    }
+    const courseId = lessonData.courseId;
+    const lessonNumber = lessonData.number;
+    if (typeof courseId !== "string" || typeof lessonNumber !== "number") {
+      throw new HttpsError("internal", "Lição sem percurso válido.");
     }
 
-    const stats = validateStats(request.data);
     const timezone =
       (user.get("timezone") as string | undefined) ?? "America/Sao_Paulo";
     let today: string;
@@ -51,9 +65,11 @@ export const completeLesson = onCall(
       today = localDateIso(new Date(), "America/Sao_Paulo");
     }
 
-    // Resolved before the transaction: a query can't be part of one, and
-    // the curriculum is static content that won't change underneath us.
-    const nextLessonId = await findNextLessonId(db(), lessonId);
+    // The next-lesson query must run before the transaction. Re-read the
+    // current lesson in the transaction so an unpublish cannot race a grant.
+    const nextLessonId = await findNextLessonId(
+      db(), courseId, lessonNumber,
+    );
 
     const childRef = db().collection(paths.children(uid)).doc(childId);
     const progressRef = db()
@@ -62,13 +78,112 @@ export const completeLesson = onCall(
     const gamificationRef = db()
       .collection(paths.gamification(uid))
       .doc(childId);
+    const sessionRef = db().collection(paths.sessions(uid)).doc(sessionId);
 
     const result = await db().runTransaction(async (tx) => {
-      const [progressSnap, gamificationSnap, childSnap] = await Promise.all([
+      const sessionSnap = await tx.get(sessionRef);
+      if (!sessionSnap.exists) {
+        throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
+      }
+      const session = sessionSnap.data()!;
+      const activityIds = session.activityIds;
+      if (
+        session.childId !== childId ||
+        session.lessonId !== lessonId ||
+        !Array.isArray(activityIds) ||
+        activityIds.length !== 4 ||
+        (session.status !== "active" && session.status !== "completed")
+      ) {
+        throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
+      }
+      const activityRefs = activityIds.map((activityId: unknown) => {
+        if (typeof activityId !== "string" || activityId.length > 64) {
+          throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
+        }
+        return db().collection(paths.activities).doc(activityId);
+      });
+      const [progressSnap, gamificationSnap, childSnap, currentLesson,
+        ...activitySnaps] = await Promise.all([
         tx.get(progressRef),
         tx.get(gamificationRef),
         tx.get(childRef),
+        tx.get(lessonRef),
+        ...activityRefs.map((ref) => tx.get(ref)),
       ]);
+
+      if (!childSnap.exists) {
+        throw new HttpsError("not-found", "Perfil da criança não encontrado.");
+      }
+      const currentLessonData = currentLesson.data();
+      if (!currentLessonData || currentLessonData.published !== true) {
+        throw new HttpsError("not-found", "Lição indisponível.");
+      }
+      if (
+        !Array.isArray(currentLessonData.activityIds) ||
+        currentLessonData.activityIds.length !== activityIds.length ||
+        currentLessonData.activityIds.some((id: unknown, index: number) =>
+          id !== activityIds[index],
+        )
+      ) {
+        throw new HttpsError("failed-precondition", "Manifesto da sessão alterado.");
+      }
+      if (currentLessonData.courseId !== courseId ||
+          currentLessonData.number !== lessonNumber) {
+        throw new HttpsError("aborted", "Lição alterada; tente novamente.");
+      }
+      if (!await hasLessonAccess(tx, uid, currentLessonData)) {
+        throw new HttpsError("permission-denied", "Esta lição exige Premium.");
+      }
+      if (!mayCompleteLesson(
+        { id: lessonId, courseId: currentLessonData.courseId,
+          published: currentLessonData.published },
+        { currentCourseId: childSnap.get("currentCourseId"),
+          currentLessonId: childSnap.get("currentLessonId") },
+        progressSnap.get("status") === "completed",
+      )) {
+        throw new HttpsError(
+          "failed-precondition", "Lição fora do percurso da criança.",
+        );
+      }
+
+      if (activitySnaps.some((activity) =>
+        !activity.exists || activity.get("published") !== true ||
+        activity.get("lessonId") !== lessonId,
+      )) {
+        throw new HttpsError("failed-precondition", "Conteúdo da sessão indisponível.");
+      }
+      const activities = activitySnaps.map((activity) => ({
+        ...activity.data(),
+        id: activity.id,
+      })) as ActivityDocument[];
+      if (
+        activities.map((activity) => activity.type).join(",") !==
+        "tap,match,trace,listen"
+      ) {
+        throw new HttpsError("failed-precondition", "Tipos de atividade alterados.");
+      }
+      const activityProgress = (session.activityProgress ?? {}) as Record<
+        string,
+        ActivityProgress
+      >;
+      const startedAt = session.startedAt?.toDate?.();
+      if (!(startedAt instanceof Date) || Number.isNaN(startedAt.getTime())) {
+        throw new HttpsError("failed-precondition", "Sessão sem início válido.");
+      }
+      let stats;
+      try {
+        stats = summarizeLessonSession(
+          activities,
+          activityProgress,
+          startedAt,
+          new Date(),
+        );
+      } catch {
+        throw new HttpsError(
+          "failed-precondition",
+          "Conclua as atividades antes de finalizar a lição.",
+        );
+      }
 
       const current: GamificationState = gamificationSnap.exists
         ? {
@@ -116,6 +231,11 @@ export const completeLesson = onCall(
         },
         { merge: true },
       );
+      tx.set(sessionRef, {
+        status: "completed",
+        completedAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      }, { merge: true });
 
       if (alreadyCompleted) {
         return {
@@ -123,6 +243,8 @@ export const completeLesson = onCall(
           xpEarned: 0,
           coinsEarned: 0,
           nextLessonId: advanceTo,
+          score: stats.score,
+          durationSeconds: stats.durationSeconds,
           ...current,
         };
       }
@@ -145,6 +267,8 @@ export const completeLesson = onCall(
         xpEarned: next.xp - current.xp,
         coinsEarned: next.coins - current.coins,
         nextLessonId: advanceTo,
+        score: stats.score,
+        durationSeconds: stats.durationSeconds,
         ...next,
       };
     });
@@ -153,8 +277,8 @@ export const completeLesson = onCall(
       trackServerEvent("lesson_completed", uid, {
         lessonId,
         childId,
-        score: stats.score,
-        durationSeconds: stats.durationSeconds,
+        score: result.score,
+        durationSeconds: result.durationSeconds,
         streak: result.streak,
       });
     }
@@ -183,29 +307,3 @@ export const completeLesson = onCall(
     };
   },
 );
-
-interface LessonStats {
-  durationSeconds: number;
-  score: number;
-  attempts: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-}
-
-function validateStats(data: unknown): LessonStats {
-  const d = (data ?? {}) as Record<string, unknown>;
-  const int = (value: unknown, field: string, max: number): number => {
-    const n = typeof value === "number" ? Math.trunc(value) : NaN;
-    if (Number.isNaN(n) || n < 0 || n > max) {
-      throw new HttpsError("invalid-argument", `Campo inválido: ${field}`);
-    }
-    return n;
-  };
-  return {
-    durationSeconds: int(d.durationSeconds ?? 0, "durationSeconds", 24 * 3600),
-    score: int(d.score ?? 0, "score", 100),
-    attempts: int(d.attempts ?? 0, "attempts", 10_000),
-    correctAnswers: int(d.correctAnswers ?? 0, "correctAnswers", 10_000),
-    wrongAnswers: int(d.wrongAnswers ?? 0, "wrongAnswers", 10_000),
-  };
-}

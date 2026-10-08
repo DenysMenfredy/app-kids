@@ -28,3 +28,9 @@ export const stripePriceFounderAnnual = defineString(
 export const checkoutReturnUrl = defineString("CHECKOUT_RETURN_URL", {
   default: "https://letrando.app/checkout",
 });
+
+/** A verified App Check app ID for the web checkout channel. The default disables
+ * checkout, including direct calls from the mobile beta. */
+export const stripeWebCheckoutAppId = defineString(
+  "STRIPE_WEB_CHECKOUT_APP_ID", { default: "disabled" },
+);

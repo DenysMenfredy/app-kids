@@ -1,10 +1,15 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
-import { checkoutReturnUrl, stripeSecretKey } from "../config";
+import {
+  checkoutReturnUrl,
+  stripeSecretKey,
+  stripeWebCheckoutAppId,
+} from "../config";
 import { isKnownPlan } from "../domain/plans";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log, logError } from "../lib/logger";
+import { isApprovedWebCheckoutApp } from "./checkout_channel";
 import { stripeProvider } from "./stripe_provider";
 
 /**
@@ -20,6 +25,13 @@ export const createCheckoutSession = onCall(
   },
   async (request) => {
     const uid = requireAuth(request);
+    const allowedAppId = stripeWebCheckoutAppId.value();
+    if (!isApprovedWebCheckoutApp(allowedAppId, request.app?.appId)) {
+      throw new HttpsError(
+        "permission-denied",
+        "Checkout indisponível neste aplicativo.",
+      );
+    }
     const planId = requireString(request.data?.planId, "planId", {
       maxLength: 64,
     });

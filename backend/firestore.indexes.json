@@ -43,6 +43,15 @@
       ]
     },
     {
+      "collectionGroup": "lessons",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "number", "order": "ASCENDING" },
+        { "fieldPath": "published", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "activities",
       "queryScope": "COLLECTION",
       "fields": [

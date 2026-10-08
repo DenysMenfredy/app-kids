@@ -15,9 +15,9 @@ like an auth failure and is easy to misdiagnose. The emulator has no app
 binary to attest and no App Check backend to issue tokens, so nothing local
 can produce that header.
 
-Second, and more importantly: **the Flutter app has no App Check
-integration**. It never sends the header, so the same rejection would happen
-against a real project, not just the emulator.
+At the time of this decision the Flutter app had no App Check integration.
+The client integration was added on 2026-10-07; physical-device attestation
+and Firebase console registration remain unverified.
 
 ## Decision
 
@@ -27,18 +27,19 @@ against a real project, not just the emulator.
    attestation is meaningless, skips it. Authentication and role checks are
    untouched in both cases — App Check attests the caller's *binary*, not
    the caller's *identity*, so this never widens who may do what.
-2. The app's missing App Check integration is recorded as a release blocker
-   rather than worked around. Before any deployment that real devices talk
-   to, the app must add `firebase_app_check` and activate a provider (Play
-   Integrity on Android, App Attest on iOS, reCAPTCHA on web), with debug
-   providers registered for development builds.
+2. The app activates `firebase_app_check` after Firebase initialization and
+   before protected calls, with Play Integrity on Android, App Attest with
+   DeviceCheck fallback on iOS and a configured reCAPTCHA site key on web.
+   Debug providers are used only in debug builds; emulator mode skips
+   activation because the Functions emulator skips enforcement. Release
+   builds reject emulator mode.
 
 ## Consequences
 
 - Local development works on every target with no App Check setup.
-- The production gap is now explicit. Deploying the current app against a
-  real project would fail every callable with `UNAUTHENTICATED`; the MVP
-  acceptance criteria's "App Check enforcement" item is not met until the
-  client side lands.
+- App registration, release attestation, rejection tests and monitoring in
+  dev/staging/production must still be validated before the MVP acceptance
+  criterion is marked complete. A configured provider in code alone does
+  not prove that a real device receives a valid token.
 - `backend/smoke.sh` exercises the callables end to end against the
   emulator, so the auth and reward paths stay covered despite the exemption.

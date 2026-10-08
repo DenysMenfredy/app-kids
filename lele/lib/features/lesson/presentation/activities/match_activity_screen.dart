@@ -14,6 +14,7 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/motion.dart';
 import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_session_controller.dart';
 import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 
@@ -41,6 +42,10 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
   void _onLowercaseTap(MatchActivity activity, String letter) {
     final upper = letter.toUpperCase();
     if (_matched.contains(upper) || _selected == null) return;
+    ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+      'upper': _selected!,
+      'lower': letter,
+    });
     if (upper == _selected) {
       final all = _matched.length + 1 == activity.uppercase.length;
       ref.read(lessonStatsProvider.notifier).recordCorrect();

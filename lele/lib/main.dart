@@ -1,4 +1,6 @@
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +17,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   if (AppConfig.useFirebase) {
+    if (AppConfig.useEmulator && kReleaseMode) {
+      throw StateError('Emuladores Firebase não são permitidos em release.');
+    }
     await Firebase.initializeApp(
       // Emulator runs use throwaway demo credentials, so local development
       // needs no `flutterfire configure` and can't reach a real project.
@@ -22,7 +27,28 @@ Future<void> main() async {
           ? demoFirebaseOptions
           : DefaultFirebaseOptions.currentPlatform,
     );
-    if (AppConfig.useEmulator) await connectToEmulators();
+    if (AppConfig.useEmulator) {
+      await connectToEmulators();
+    } else {
+      if (kIsWeb && AppConfig.appCheckWebSiteKey.isEmpty) {
+        throw StateError(
+          'APP_CHECK_RECAPTCHA_SITE_KEY é obrigatória para Firebase web.',
+        );
+      }
+      // Callables require App Check outside the emulator. Activate before
+      // any provider can send a protected Firebase request.
+      await FirebaseAppCheck.instance.activate(
+        providerWeb: kIsWeb
+            ? ReCaptchaV3Provider(AppConfig.appCheckWebSiteKey)
+            : null,
+        providerAndroid: kDebugMode
+            ? const AndroidDebugProvider()
+            : const AndroidPlayIntegrityProvider(),
+        providerApple: kDebugMode
+            ? const AppleDebugProvider()
+            : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+      );
+    }
   }
   final prefs = await SharedPreferences.getInstance();
   // XP, coins and the streak belong to the backend once it is on. Drop any

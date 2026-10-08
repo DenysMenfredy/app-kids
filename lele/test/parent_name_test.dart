@@ -140,6 +140,15 @@ void main() {
     expect(greetingLines(tester), 1);
   });
 
+  testWidgets('the dashboard does not promise an unimplemented free trial', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, 'Ana');
+
+    expect(find.text('Ver Premium'), findsOneWidget);
+    expect(find.text('Teste grátis'), findsNothing);
+  });
+
   /// The header sits above a fixed stack of cards; a greeting that wraps
   /// pushes every one of them down the screen.
   group('the greeting never wraps', () {

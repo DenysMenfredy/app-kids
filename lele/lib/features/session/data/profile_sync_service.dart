@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,14 +8,17 @@ import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../domain/child_profile.dart';
 
-/// Mirrors locally-held profile state into the backend. Sync is
-/// best-effort and never blocks the UI: the local store remains the source
-/// of immediate truth, Firestore is the durable copy (spec §20: tolerate
-/// temporary offline conditions for non-sensitive interactions).
+/// Syncs parent metadata and persists child profiles. Parent metadata is
+/// best-effort; profile saves are awaited because learning requires a
+/// server-issued child ID before the app can proceed.
 abstract interface class ProfileSyncService {
   Future<void> syncParentName(String name);
 
-  Future<void> syncChildProfile(ChildProfile child);
+  Future<String> saveChildProfile({
+    required ChildProfile profile,
+    required String requestId,
+    required String? existingChildId,
+  });
 
   Future<void> syncOnboardingState(String state);
 }
@@ -26,17 +30,22 @@ class NoopProfileSyncService implements ProfileSyncService {
   Future<void> syncParentName(String name) async {}
 
   @override
-  Future<void> syncChildProfile(ChildProfile child) async {}
+  Future<String> saveChildProfile({
+    required ChildProfile profile,
+    required String requestId,
+    required String? existingChildId,
+  }) async => AppConfig.primaryChildId;
 
   @override
   Future<void> syncOnboardingState(String state) async {}
 }
 
 class FirestoreProfileSyncService implements ProfileSyncService {
-  FirestoreProfileSyncService(this._auth, this._firestore);
+  FirestoreProfileSyncService(this._auth, this._firestore, this._functions);
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   String? get _uid => _auth.currentUser?.uid;
 
@@ -51,19 +60,51 @@ class FirestoreProfileSyncService implements ProfileSyncService {
   }
 
   @override
-  Future<void> syncChildProfile(ChildProfile child) {
-    return _tolerant('syncChildProfile', (uid) async {
-      // Minimum child data only (spec §19): name, age, avatar.
-      await _firestore
-          .doc('users/$uid/children/${AppConfig.primaryChildId}')
-          .set({
-            'name': child.name,
-            'age': child.age,
-            'avatarId': child.avatar.name,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-    });
+  Future<String> saveChildProfile({
+    required ChildProfile profile,
+    required String requestId,
+    required String? existingChildId,
+  }) async {
+    final uid = _uid;
+    if (uid == null) throw StateError('A parent must be signed in.');
+
+    if (existingChildId != null) {
+      final existingRef = _firestore.doc(
+        'users/$uid/children/$existingChildId',
+      );
+      if ((await existingRef.get()).exists) {
+        await existingRef.set(
+          _editableFields(profile),
+          SetOptions(merge: true),
+        );
+        return existingChildId;
+      }
+    }
+
+    final result = await _functions
+        .httpsCallable('createChildProfile')
+        .call<dynamic>({
+          'requestId': requestId,
+          'profile': {
+            'name': profile.name,
+            'age': profile.age,
+            'avatarId': profile.avatar.name,
+          },
+        });
+    final data = result.data;
+    if (data is! Map || data['childId'] is! String) {
+      throw StateError('createChildProfile returned no child ID.');
+    }
+    return data['childId'] as String;
   }
+
+  Map<String, Object?> _editableFields(ChildProfile profile) => {
+    // Minimum child data only (spec §19): name, age, avatar.
+    'name': profile.name,
+    'age': profile.age,
+    'avatarId': profile.avatar.name,
+    'updatedAt': FieldValue.serverTimestamp(),
+  };
 
   @override
   Future<void> syncOnboardingState(String state) {
@@ -96,6 +137,7 @@ final profileSyncServiceProvider = Provider<ProfileSyncService>((ref) {
     return FirestoreProfileSyncService(
       ref.watch(firebaseAuthProvider),
       ref.watch(firestoreProvider),
+      ref.watch(functionsProvider),
     );
   }
   return const NoopProfileSyncService();

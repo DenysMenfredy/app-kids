@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
-import '../../../core/config/app_config.dart';
 import '../../../core/layout/adaptive_page.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
@@ -60,7 +59,7 @@ class _Questions extends ConsumerWidget {
     final answered = ref.read(assessmentProvider).answers.length;
     if (answered < assessment.questions.length) return;
 
-    await controller.submit(childId: AppConfig.primaryChildId);
+    await controller.submit(childId: ref.read(activeChildIdProvider));
     if (context.mounted) context.goNamed(AppRoutes.assessmentResult);
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -13,6 +14,8 @@ import '../../../core/widgets/lele_mascot.dart';
 import '../../../core/widgets/motion.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../learning/domain/learning_module.dart';
+import '../../learning/domain/module_access.dart';
+import '../../paywall/application/entitlement_provider.dart';
 import '../../session/application/progress_provider.dart';
 
 class ChildHomeScreen extends ConsumerWidget {
@@ -23,6 +26,14 @@ class ChildHomeScreen extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final journey = ref.watch(journeyProvider);
     final currentModule = ref.watch(currentModuleProvider);
+    final canStartLesson = canOpenModule(
+      moduleNumber: currentModule.number,
+      premium: ref.watch(isPremiumProvider),
+      firebaseEnabled: AppConfig.useFirebase,
+    );
+    void openCurrentLesson() => context.goNamed(
+      canStartLesson ? AppRoutes.lessonIntro : AppRoutes.paywall,
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -108,7 +119,8 @@ class ChildHomeScreen extends ConsumerWidget {
                   children: [
                     _TodayLessonCard(
                       theme: currentModule.lessonTheme,
-                      onTap: () => context.goNamed(AppRoutes.lessonIntro),
+                      locked: !canStartLesson,
+                      onTap: openCurrentLesson,
                     ),
                     const SizedBox(height: AppSpacing.xxl),
                     Text('Sua jornada', style: AppTextStyles.subheading),
@@ -117,8 +129,11 @@ class ChildHomeScreen extends ConsumerWidget {
                       _JourneyRow(
                         module: module,
                         indented: i.isOdd,
+                        lockedByPremium:
+                            module.status == ModuleStatus.current &&
+                            !canStartLesson,
                         onTap: module.status == ModuleStatus.current
-                            ? () => context.goNamed(AppRoutes.lessonIntro)
+                            ? openCurrentLesson
                             : null,
                       ),
                     const SizedBox(height: AppSpacing.lg),
@@ -166,10 +181,15 @@ class _StatPill extends StatelessWidget {
 }
 
 class _TodayLessonCard extends StatelessWidget {
-  const _TodayLessonCard({required this.theme, required this.onTap});
+  const _TodayLessonCard({
+    required this.theme,
+    required this.locked,
+    required this.onTap,
+  });
 
   /// Theme of the module the child is on, e.g. "Sons e rimas".
   final String theme;
+  final bool locked;
   final VoidCallback onTap;
 
   @override
@@ -180,12 +200,17 @@ class _TodayLessonCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.orangeBright, AppColors.orange],
+            gradient: LinearGradient(
+              colors: locked
+                  ? [AppColors.purple, AppColors.purpleDark]
+                  : [AppColors.orangeBright, AppColors.orange],
             ),
             borderRadius: BorderRadius.circular(AppRadius.panel),
-            boxShadow: const [
-              BoxShadow(color: AppColors.orangeDark, offset: Offset(0, 6)),
+            boxShadow: [
+              BoxShadow(
+                color: locked ? AppColors.purpleDark : AppColors.orangeDark,
+                offset: const Offset(0, 6),
+              ),
             ],
           ),
           child: Row(
@@ -197,13 +222,15 @@ class _TodayLessonCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Lição de hoje',
+                      locked ? 'Módulo Premium' : 'Lição de hoje',
                       style: AppTextStyles.subheading.copyWith(
                         color: Colors.white,
                       ),
                     ),
                     Text(
-                      '$theme · 15 min',
+                      locked
+                          ? 'Peça ao responsável para desbloquear'
+                          : '$theme · 15 min',
                       style: AppTextStyles.bodySmall.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.orangePale,
@@ -212,8 +239,8 @@ class _TodayLessonCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
+              Icon(
+                locked ? Icons.lock_rounded : Icons.chevron_right_rounded,
                 size: 32,
                 color: Colors.white,
               ),
@@ -226,43 +253,51 @@ class _TodayLessonCard extends StatelessWidget {
 }
 
 class _JourneyRow extends StatelessWidget {
-  const _JourneyRow({required this.module, required this.indented, this.onTap});
+  const _JourneyRow({
+    required this.module,
+    required this.indented,
+    this.lockedByPremium = false,
+    this.onTap,
+  });
 
   final LearningModule module;
   final bool indented;
+  final bool lockedByPremium;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final (
-      bg,
-      borderColor,
-      textColor,
-      subColor,
-      statusLabel,
-    ) = switch (module.status) {
-      ModuleStatus.done => (
-        AppColors.teal,
-        AppColors.tealDark,
-        AppColors.textDark,
-        AppColors.textFaint,
-        'Completo',
-      ),
-      ModuleStatus.current => (
-        AppColors.orange,
-        AppColors.orangeDark,
-        AppColors.textDark,
-        AppColors.orangeDark,
-        'Você está aqui!',
-      ),
-      ModuleStatus.locked => (
-        AppColors.panel,
-        AppColors.borderDark,
-        AppColors.textFaint,
-        AppColors.textFaint,
-        'Em breve',
-      ),
-    };
+    final (bg, borderColor, textColor, subColor, statusLabel) = lockedByPremium
+        ? (
+            AppColors.purplePale,
+            AppColors.purple,
+            AppColors.textDark,
+            AppColors.purple,
+            'Premium',
+          )
+        : switch (module.status) {
+            ModuleStatus.done => (
+              AppColors.teal,
+              AppColors.tealDark,
+              AppColors.textDark,
+              AppColors.textFaint,
+              'Completo',
+            ),
+            ModuleStatus.current => (
+              AppColors.orange,
+              AppColors.orangeDark,
+              AppColors.textDark,
+              AppColors.orangeDark,
+              'Você está aqui!',
+            ),
+            ModuleStatus.locked => (
+              AppColors.panel,
+              AppColors.borderDark,
+              AppColors.textFaint,
+              AppColors.textFaint,
+              'Em breve',
+            ),
+          };
 
     return Padding(
       padding: EdgeInsets.only(top: 9, bottom: 9, left: indented ? 44 : 0),
@@ -289,10 +324,10 @@ class _JourneyRow extends StatelessWidget {
                   size: 30,
                   color: Colors.white,
                 ),
-                ModuleStatus.current => const Icon(
-                  Icons.star_rounded,
+                ModuleStatus.current => Icon(
+                  lockedByPremium ? Icons.lock_rounded : Icons.star_rounded,
                   size: 30,
-                  color: Colors.white,
+                  color: lockedByPremium ? AppColors.purple : Colors.white,
                 ),
                 ModuleStatus.locked => const SizedBox.shrink(),
               },

@@ -16,6 +16,7 @@ import {
   initializeTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import {
+  Timestamp,
   collection,
   getDocs,
   orderBy,
@@ -55,14 +56,41 @@ describe("user profile", () => {
   it("owner can read and write own profile with allowed fields", async () => {
     await assertSucceeds(
       asParent().doc(`users/${PARENT}`).set({
-        email: "pai@example.com",
         displayName: "Camila",
         locale: "pt-BR",
         timezone: "America/Sao_Paulo",
         onboardingState: "created",
       }),
     );
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}`).set({
+        email: "pai@example.com", createdAt: new Date(),
+      }, { merge: true }),
+    );
+    await assertSucceeds(
+      asParent().doc(`users/${PARENT}`).set({ displayName: "Camila Silva" }, { merge: true }),
+    );
     await assertSucceeds(asParent().doc(`users/${PARENT}`).get());
+  });
+
+  it("client cannot create or change Auth email and creation timestamp", async () => {
+    await assertFails(asParent().doc(`users/${PARENT}`).set({ email: "fake@example.com" }));
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}`).set({
+        email: "real@example.com", createdAt: new Date(),
+      }),
+    );
+    await assertFails(asParent().doc(`users/${PARENT}`).update({ email: "fake@example.com" }));
+    await assertFails(asParent().doc(`users/${PARENT}`).update({ createdAt: new Date(0) }));
+  });
+
+  it("rejects malformed mutable profile fields and forged update times", async () => {
+    const ref = asParent().doc(`users/${PARENT}`);
+    await assertFails(ref.set({ displayName: "x".repeat(121) }));
+    await assertFails(ref.set({ timezone: 123 }));
+    await assertFails(ref.set({ displayName: "Camila", updatedAt: new Date(0) }));
+    await assertSucceeds(ref.set({ displayName: "Camila" }));
+    await assertFails(ref.update({ updatedAt: new Date(0) }));
   });
 
   it("client cannot write privileged fields such as role", async () => {
@@ -80,22 +108,82 @@ describe("user profile", () => {
 });
 
 describe("children (parent/child boundary, spec §19)", () => {
-  it("parent manages own children with the minimum-data schema", async () => {
-    await assertSucceeds(
-      asParent().doc(`users/${PARENT}/children/child1`).set({
+  it("parent cannot choose child IDs, but can edit a server-created profile", async () => {
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/generated-id`).set({
+        name: "Lucas",
+        age: 4,
+        avatarId: "orange",
+      }),
+    );
+    const child = asParent().doc(`users/${PARENT}/children/generated-id`);
+    await assertFails(
+      asParent().doc(`users/${PARENT}/children/client-chosen-id`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      }),
+    );
+    await assertSucceeds(child.update({ name: "Lucas A.", avatarId: "teal" }));
+  });
+
+  it("parent edits only the minimum-data schema on a server-created child", async () => {
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
         name: "Lucas",
         birthDate: "2022-04-15",
         age: 4,
-        avatarId: "lion_01",
-        learningLevel: "pre_literacy",
+        avatarId: "orange",
       }),
+    );
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        learningLevel: "pre_literacy", currentLessonId: "lesson_001",
+      }, { merge: true }),
+    );
+    await assertSucceeds(
+      asParent().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas A.", avatarId: "teal",
+      }, { merge: true }),
     );
   });
 
+  it("denies placement and journey mutations on create, merge, replace and delete", async () => {
+    const ref = asParent().doc(`users/${PARENT}/children/child1`);
+    await assertFails(ref.set({ name: "Lucas", currentLessonId: "lesson_037" }));
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "lion_01",
+        learningLevel: "pre_literacy", currentCourseId: "course_001",
+        currentLessonId: "lesson_001",
+      }),
+    );
+    await assertFails(ref.set({ currentLessonId: "lesson_037" }, { merge: true }));
+    await assertFails(ref.update({ learningLevel: "advanced" }));
+    await assertFails(ref.set({ name: "Lucas", age: 4, avatarId: "lion_01" }));
+    await assertFails(ref.delete());
+  });
+
+  it("rejects invalid child names, ages, avatars and timestamps", async () => {
+    const ref = asParent().doc(`users/${PARENT}/children/child1`);
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      }),
+    );
+    await assertFails(ref.update({ name: "" }));
+    await assertFails(ref.update({ age: 2 }));
+    await assertFails(ref.update({ avatarId: 99 }));
+    await assertFails(ref.update({ updatedAt: new Date(0) }));
+    await assertFails(ref.update({ age: 8 }));
+  });
+
   it("rejects child documents with forbidden PII fields", async () => {
+    await asAdmin((ctx) =>
+      ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      }),
+    );
     await assertFails(
-      asParent().doc(`users/${PARENT}/children/child1`).set({
-        name: "Lucas",
+      asParent().doc(`users/${PARENT}/children/child1`).update({
         school: "Escola X", // not allowed by the child-data constraint
       }),
     );
@@ -146,42 +234,26 @@ describe("subscriptions & entitlements (backend-only writes, spec §13)", () => 
 });
 
 describe("learning data", () => {
-  it("accepts valid progress updates", async () => {
-    await assertSucceeds(
-      asParent().doc(`users/${PARENT}/learningProgress/child1_lesson1`).set({
-        lessonId: "lesson1",
-        childId: "child1",
-        status: "in_progress",
-        score: 87,
-      }),
-    );
-  });
-
-  it("rejects invalid status or out-of-range score", async () => {
+  it("owner reads server-owned progress, attempts and sessions but cannot write them", async () => {
+    const paths = [
+      `users/${PARENT}/learningProgress/child1_lesson1`,
+      `users/${PARENT}/activityAttempts/a1`,
+      `users/${PARENT}/sessions/s1`,
+    ];
+    await asAdmin(async (ctx) => {
+      for (const path of paths) await ctx.firestore().doc(path).set({ childId: "child1" });
+    });
+    for (const path of paths) {
+      await assertSucceeds(asParent().doc(path).get());
+      await assertFails(asParent().doc(path).set({ childId: "child1", status: "completed" }, { merge: true }));
+      await assertFails(asParent().doc(path).delete());
+      await assertFails(asStranger().doc(path).get());
+    }
     await assertFails(
-      asParent()
-        .doc(`users/${PARENT}/learningProgress/p1`)
-        .set({ lessonId: "l", childId: "c", status: "hacked" }),
+      asParent().doc(`users/${PARENT}/learningProgress/invented`).set({ status: "completed" }),
     );
-    await assertFails(
-      asParent()
-        .doc(`users/${PARENT}/learningProgress/p2`)
-        .set({ lessonId: "l", childId: "c", status: "completed", score: 999 }),
-    );
-  });
-
-  it("activity attempts are immutable once created", async () => {
-    const ref = asParent().doc(`users/${PARENT}/activityAttempts/a1`);
-    await assertSucceeds(
-      ref.set({
-        activityId: "act1",
-        lessonId: "l1",
-        childId: "c1",
-        correct: true,
-        attemptNumber: 1,
-      }),
-    );
-    await assertFails(ref.update({ correct: false }));
+    await assertFails(asParent().doc(`users/${PARENT}/activityAttempts/invented`).set({ correct: true }));
+    await assertFails(asParent().doc(`users/${PARENT}/sessions/invented`).set({ childId: "child1" }));
   });
 });
 
@@ -261,6 +333,12 @@ describe("assessment content", () => {
     await asAdmin(async (ctx) => {
       const db = ctx.firestore();
       const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "modules/module_007"), {
+        number: 7, published: true,
+      });
+      await setDoc(doc(db, "lessons/lesson_032"), {
+        moduleId: "module_007", published: true,
+      });
       await setDoc(doc(db, "stories/story_001"), {
         lessonId: "lesson_032", title: "A Lua", published: true,
       });
@@ -268,9 +346,18 @@ describe("assessment content", () => {
         lessonId: "lesson_032", title: "Rascunho", published: false,
       });
     });
-    await assertSucceeds(asParent().doc("stories/story_001").get());
+    await assertFails(asParent().doc("stories/story_001").get());
     await assertFails(asParent().doc("stories/draft").get());
     await assertFails(asAnon().doc("stories/story_001").get());
+    await asAdmin((ctx) => ctx.firestore()
+      .doc(`users/${PARENT}/entitlements/premium`)
+      .set({
+        active: true,
+        features: ["full_curriculum"],
+        validFrom: Timestamp.fromDate(new Date(Date.now() - 60_000)),
+        validUntil: Timestamp.fromDate(new Date(Date.now() + 60_000)),
+      }));
+    await assertSucceeds(asParent().doc("stories/story_001").get());
   });
 
   it("clients cannot write stories", async () => {
@@ -321,14 +408,20 @@ describe("content queries (list, not just get)", () => {
     await asAdmin(async (ctx) => {
       const db = ctx.firestore();
       const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "modules/module_001"), {
+        number: 1, published: true,
+      });
+      await setDoc(doc(db, "lessons/lesson_001"), {
+        moduleId: "module_001", published: true,
+      });
       await setDoc(doc(db, "activities/a1"), {
-        lessonId: "lesson_014", type: "tap", order: 1, published: true,
+        lessonId: "lesson_001", type: "tap", order: 1, published: true,
       });
       await setDoc(doc(db, "activities/a2"), {
-        lessonId: "lesson_014", type: "match", order: 2, published: true,
+        lessonId: "lesson_001", type: "match", order: 2, published: true,
       });
       await setDoc(doc(db, "activities/draft"), {
-        lessonId: "lesson_014", type: "trace", order: 3, published: false,
+        lessonId: "lesson_001", type: "trace", order: 3, published: false,
       });
     });
   });
@@ -340,7 +433,7 @@ describe("content queries (list, not just get)", () => {
         getDocs(
           query(
             collection(db, "activities"),
-            where("lessonId", "==", "lesson_014"),
+            where("lessonId", "==", "lesson_001"),
             where("published", "==", true),
             orderBy("order"),
           ),
@@ -355,7 +448,7 @@ describe("content queries (list, not just get)", () => {
       getDocs(
         query(
           collection(db, "activities"),
-          where("lessonId", "==", "lesson_014"),
+          where("lessonId", "==", "lesson_001"),
           orderBy("order"),
         ),
       ),
@@ -371,6 +464,67 @@ describe("content queries (list, not just get)", () => {
         ),
       ),
     );
+  });
+
+  it("blocks Premium payloads until the owner has a current entitlement", async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "modules/module_002"), {
+        number: 2, published: true,
+      });
+      await setDoc(doc(db, "lessons/lesson_004"), {
+        moduleId: "module_002", published: true,
+      });
+      await setDoc(doc(db, "activities/premium_tap"), {
+        lessonId: "lesson_004", type: "tap", order: 1, published: true,
+      });
+    });
+    await assertFails(asParent().doc("activities/premium_tap").get());
+    await assertFails(getDocs(query(
+      collection(asParent(), "activities"),
+      where("lessonId", "==", "lesson_004"),
+      where("published", "==", true),
+    )));
+
+    await asAdmin((ctx) => ctx.firestore()
+      .doc(`users/${PARENT}/entitlements/premium`)
+      .set({
+        active: true,
+        features: ["full_curriculum"],
+        validFrom: Timestamp.fromDate(new Date(Date.now() - 60_000)),
+        validUntil: Timestamp.fromDate(new Date(Date.now() + 60_000)),
+      }));
+    await assertSucceeds(asParent().doc("activities/premium_tap").get());
+    const snapshot = await assertSucceeds(getDocs(query(
+      collection(asParent(), "activities"),
+      where("lessonId", "==", "lesson_004"),
+      where("published", "==", true),
+    )));
+    assert.equal(snapshot.size, 1);
+  });
+
+  it("denies expired and feature-incomplete entitlement documents", async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      const { doc, setDoc } = await import("firebase/firestore");
+      await setDoc(doc(db, "modules/module_002"), {
+        number: 2, published: true,
+      });
+      await setDoc(doc(db, "lessons/lesson_004"), {
+        moduleId: "module_002", published: true,
+      });
+      await setDoc(doc(db, "activities/premium_tap"), {
+        lessonId: "lesson_004", type: "tap", order: 1, published: true,
+      });
+      await setDoc(doc(db, `users/${PARENT}/entitlements/premium`), {
+        active: true,
+        features: ["premium_books"],
+        validFrom: Timestamp.fromDate(new Date(Date.now() - 120_000)),
+        validUntil: Timestamp.fromDate(new Date(Date.now() - 60_000)),
+      });
+    });
+    await assertFails(asParent().doc("activities/premium_tap").get());
   });
 });
 

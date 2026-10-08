@@ -11,8 +11,11 @@ dependencies:
   cloud_firestore: ^6.8.0
   cloud_functions: ^6.3.6
   equatable: ^2.1.0
+  # Keep these aligned with FlutterFire's compatible release set: App Check
+  # 0.4.8 allows Core 4.15, which mismatches Auth 6.5.7's Android API.
+  firebase_app_check: 0.4.6
   firebase_auth: ^6.5.7
-  firebase_core: ^4.13.0
+  firebase_core: 4.13.0
   flutter:
     sdk: flutter
   flutter_localizations:

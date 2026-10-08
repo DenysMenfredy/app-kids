@@ -45,6 +45,9 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
     if (_done) return;
     if (word == activity.answer) {
       ref.read(lessonStatsProvider.notifier).recordCorrect();
+      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+        'selectedLabel': word,
+      });
       // The last answer of the lesson: the bigger cue.
       ref.read(feedbackServiceProvider).play(FeedbackCue.celebrate);
       ref.read(ttsServiceProvider).speak('Parabéns!');
@@ -67,6 +70,9 @@ class _ListenActivityScreenState extends ConsumerState<ListenActivityScreen> {
       });
     } else {
       ref.read(lessonStatsProvider.notifier).recordWrong();
+      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+        'selectedLabel': word,
+      });
       // This activity said nothing at all on a wrong word before.
       ref.read(feedbackServiceProvider).play(FeedbackCue.wrong);
       setState(() {

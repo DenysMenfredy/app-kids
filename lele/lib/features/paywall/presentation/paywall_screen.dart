@@ -34,8 +34,6 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     if (_busy) return;
     final checkout = ref.read(checkoutControllerProvider);
     if (!checkout.paymentsEnabled) {
-      // Demo mode: no payments backend — keep the prototype behavior.
-      context.goNamed(AppRoutes.dashboard);
       return;
     }
     setState(() => _busy = true);
@@ -58,6 +56,9 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final paymentsEnabled = ref
+        .watch(checkoutControllerProvider)
+        .paymentsEnabled;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -133,13 +134,15 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ],
               const SizedBox(height: AppSpacing.xs),
               LeleButton(
-                label: _busy
+                label: !paymentsEnabled
+                    ? 'Assinaturas em breve'
+                    : _busy
                     ? 'Abrindo pagamento...'
                     : 'Começar teste grátis de 7 dias',
                 fontSize: 19,
                 color: AppColors.purple,
                 shadowColor: AppColors.purpleDark,
-                enabled: !_busy,
+                enabled: paymentsEnabled && !_busy,
                 onPressed: _startCheckout,
               ),
               const SizedBox(height: AppSpacing.md),

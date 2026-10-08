@@ -14,6 +14,7 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/lele_button.dart';
 import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_session_controller.dart';
 import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 import '../widgets/highlighted_instruction.dart';
@@ -28,10 +29,15 @@ class TraceActivityScreen extends ConsumerStatefulWidget {
 
 class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
   final List<List<Offset>> _strokes = [];
+  DateTime? _strokeStartedAt;
 
-  bool get _hasTraced => _strokes.isNotEmpty;
+  int get _pointCount =>
+      _strokes.fold(0, (total, stroke) => total + stroke.length);
+
+  bool get _hasTraced => _pointCount >= 2;
 
   void _startStroke(Offset point) {
+    _strokeStartedAt ??= DateTime.now();
     setState(() => _strokes.add([point]));
   }
 
@@ -40,11 +46,22 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
     setState(() => _strokes.last.add(point));
   }
 
-  void _clear() => setState(_strokes.clear);
+  void _clear() => setState(() {
+    _strokes.clear();
+    _strokeStartedAt = null;
+  });
 
   void _finish(LessonContent content) {
     if (!_hasTraced) return;
     ref.read(lessonStatsProvider.notifier).recordCorrect();
+    final elapsed = _strokeStartedAt == null
+        ? 100
+        : DateTime.now().difference(_strokeStartedAt!).inMilliseconds;
+    ref.read(lessonSessionProvider).recordAttempt(content.trace.id, {
+      'strokeCount': _strokes.length,
+      'pointCount': _pointCount,
+      'durationMillis': elapsed.clamp(100, 120000).toInt(),
+    });
     // Captured before navigating: this screen is disposed by the time the
     // timer below fires, and reading from `ref` after that throws, which
     // silently cost the child the hand-off cue.

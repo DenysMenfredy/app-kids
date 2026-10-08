@@ -50,7 +50,7 @@ void main() {
       // Anything but the default, so a pass can't be the default leaking.
       expect(ChildAvatar.purple, isNot(ChildProfile.defaultProfile.avatar));
 
-      container
+      await container
           .read(sessionProvider.notifier)
           .saveChildProfile(
             const ChildProfile(
@@ -72,7 +72,7 @@ void main() {
       final first = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-      first
+      await first
           .read(sessionProvider.notifier)
           .saveChildProfile(
             const ChildProfile(

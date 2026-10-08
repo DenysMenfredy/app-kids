@@ -24,8 +24,9 @@ backend/
 │       │                      # webhook (signature + idempotency)
 │       ├── subscriptions/     # syncEntitlement trigger (single writer)
 │       ├── notifications/     # registerDevice, sendDailyReminders, FCM fan-out
-│       ├── learning/          # updateProgress, completeLesson (rewards),
-│       │                      # submitAssessment (server-side placement)
+│       ├── profiles/          # server-issued child profile IDs
+│       ├── learning/          # sessions, scored attempts, completion,
+│       │                      # updateProgress, submitAssessment
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
 │       └── admin/             # setUserRole (custom claims), manageContent
 ├── dev.sh                     # run the whole backend on emulators
@@ -45,15 +46,18 @@ backend/
 
 The mobile client is untrusted. It may only:
 
-- read/write its own profile, children, preferences, sessions and learning
-  data (schema-validated by Security Rules);
+- read/write approved fields of its own profile and existing child profiles,
+  and its own notification preferences; read its own sessions and learning
+  data (the latter are written by trusted functions, ADR 0006);
 - read its own subscriptions/entitlements/notifications/devices;
-- read published educational content, products and feature flags.
+- read public catalog metadata; read first-module activity/story payloads or
+  Premium payloads only while their server entitlement is current.
 
 Everything privileged — checkout creation, webhook processing, entitlement
-activation, role assignment, content publishing, device registration,
-notification fan-out, assessment scoring and reward granting — happens in
-Cloud Functions guarded by auth + role checks and App Check.
+activation, role assignment, child-profile creation, content publishing,
+device registration, notification fan-out, assessment scoring and reward
+granting — happens in Cloud Functions guarded by auth, applicable role checks
+and App Check.
 
 ## Learning flow (§5, ADR 0003)
 
@@ -64,7 +68,12 @@ Flutter → reads assessments/{id}          (labels only; weights ignored)
         → writes child learningLevel/currentCourseId/currentLessonId
           + users/{uid}/assessmentResults/{childId}
 
-Flutter → completeLesson {lessonId, childId, stats}
+Flutter → startLessonSession {lessonId, childId}
+        → backend validates current journey + published activity manifest
+        → submitActivityAttempt {sessionId, activityId, response, requestId}
+        → backend scores against published content; session records evidence
+        → completeLesson {lessonId, childId, sessionId}
+        → backend requires all four activities and derives lesson statistics
         → transaction: already completed? → no reward
         → else applyLessonReward (XP, coins, local-calendar streak)
         → users/{uid}/gamification/{childId}   (client-read-only)
@@ -72,13 +81,26 @@ Flutter → completeLesson {lessonId, childId, stats}
           currentLessonId moves to the next one in the course
 ```
 
-XP, coins and streak are never written by the client; the app reads that
-document and displays what it is told.
+Child profile creation uses `createChildProfile {requestId, profile}`. The
+callable authenticates and validates the parent request, applies App Check,
+allocates the document ID on the server, and makes same-request retries
+idempotent. Clients can query their own child list and edit allowlisted fields
+on an existing profile; client document creation is denied by Rules (ADR 0008).
+
+XP, coins, score, answer counts and duration are never trusted from client
+payloads; the app reads the resulting server documents. Trace evidence is
+limited to gesture metadata and does not claim to verify handwriting accuracy.
 
 ## Content model (§5)
 
 The curriculum is data, not code. `seed/` holds it as the documents Firestore
 stores, and `npm run seed` imports them:
+
+Module metadata remains readable, but activity answer keys and story payloads
+are protected by Security Rules and by the session callables: module 1 is free;
+later modules require the current `full_curriculum` entitlement. A stale
+`active` flag without a valid period is insufficient. Book pages and protected
+media still need a real backend catalog/Storage contract before publication.
 
 ```
 seed/{courses,modules,lessons,activities,stories,assessments}/
@@ -169,22 +191,23 @@ integer cents (R$149,90 = 14990).
 are involved and nothing can reach a real project. See the root README for
 pointing the Flutter app at it.
 
-`smoke.sh` walks the slice the unit suites can't: sign-up → the profile
-bootstrap trigger → a rules-enforced child write → server-side assessment
-scoring → reward granting and its idempotency → a denied client XP write.
+`smoke.sh` walks the slice the unit suites can't: sign-up → profile bootstrap
+→ idempotent server-issued child creation → rules-enforced profile edit →
+server-side assessment scoring → reward granting/idempotency → denied client
+XP write.
 
 ## Commands
 
 ```bash
 cd functions
 npm install
-npm test                # tsc build + 61 unit tests (domain + seed integrity)
+npm test                # TypeScript build + domain and seed-integrity tests
 
 # Seed educational content (course, modules, lessons, activities, assessment)
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests — 24 tests against the Firestore emulator.
+# Security Rules tests — 34 tests against the Firestore emulator.
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
@@ -221,18 +244,19 @@ development (spec §21).
 
 ## Not yet wired (deliberate MVP cuts)
 
-- **Release blocker:** the app has no App Check integration, so every
-  callable would reject it against a real project. Enforcement is on
-  everywhere except the emulator (ADR 0004); the client must add
-  `firebase_app_check` before a deployment real devices talk to.
+- **Release blocker:** the App Check client integration is present, but its
+  Play Integrity/App Attest and web registrations plus physical-device tests
+  are still outstanding. Enforcement remains on outside the emulator
+  (ADR 0004).
 - Apple/Google native billing providers (interface ready in
   `payments/provider.ts`; see ADR 0002).
 - Only the module *ranges* are still mirrored in app code (`curriculum` in
   the Flutter app); lessons and activities themselves are fetched. The app
   keeps one bundled sample lesson for offline/demo play, checked against
   this seed by a test so the two can't drift.
-- Multi-child aggregation for the parent dashboard (gamification is stored
-  per child, the app uses a single fixed child id).
+- Multi-child summary/aggregation for the parent dashboard (the app can now
+  select a child; XP, coins, streak and journey remain scoped per child).
+- Profile deletion and migration of legacy `primary` children; see ADR 0008.
 - Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must
   land before public launch).
 - Achievement and weekly-report notification jobs (sender infra is in place).

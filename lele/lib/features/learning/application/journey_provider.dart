@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/storage/local_storage.dart';
+import '../../session/application/child_provider.dart';
 import '../domain/learning_module.dart';
 
 /// Streams `currentLessonId` from the child profile — the field
@@ -12,11 +13,12 @@ final remoteCurrentLessonIdProvider = StreamProvider<String?>((ref) {
   if (!AppConfig.useFirebase) return Stream.value(null);
   final auth = ref.watch(firebaseAuthProvider);
   final firestore = ref.watch(firestoreProvider);
+  final childId = ref.watch(activeChildIdProvider);
 
   return auth.authStateChanges().asyncExpand((user) {
     if (user == null) return Stream<String?>.value(null);
     return firestore
-        .doc('users/${user.uid}/children/${AppConfig.primaryChildId}')
+        .doc('users/${user.uid}/children/$childId')
         .snapshots()
         .map((snapshot) => snapshot.data()?['currentLessonId'] as String?);
   });

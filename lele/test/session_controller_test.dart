@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/session/application/session_controller.dart';
 import 'package:lele/features/session/domain/child_profile.dart';
+import 'package:lele/features/session/domain/child_record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<ProviderContainer> makeContainer() async {
@@ -45,7 +46,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
-      container
+      await container
           .read(sessionProvider.notifier)
           .saveChildProfile(
             const ChildProfile(
@@ -64,6 +65,64 @@ void main() {
       expect(child.name, 'Miguel');
       expect(child.age, 6);
       expect(child.avatar, ChildAvatar.teal);
+    });
+
+    test('keeps cached profiles isolated by parent account', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final first = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          sessionStorageScopeProvider.overrideWithValue('parent-a'),
+        ],
+      );
+      await first
+          .read(sessionProvider.notifier)
+          .saveChildProfile(
+            const ChildProfile(
+              name: 'Miguel',
+              age: 6,
+              avatar: ChildAvatar.teal,
+            ),
+          );
+      first
+          .read(sessionProvider.notifier)
+          .selectChild(
+            const ChildRecord(
+              id: 'child-a',
+              profile: ChildProfile(
+                name: 'Miguel',
+                age: 6,
+                avatar: ChildAvatar.teal,
+              ),
+            ),
+          );
+      first.dispose();
+
+      final second = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          sessionStorageScopeProvider.overrideWithValue('parent-b'),
+        ],
+      );
+      addTearDown(second.dispose);
+      expect(second.read(sessionProvider).child.name, 'Sofia');
+      expect(second.read(sessionProvider).child.avatar, ChildAvatar.orange);
+      expect(second.read(sessionProvider).childId, 'primary');
+
+      final returningParent = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          sessionStorageScopeProvider.overrideWithValue('parent-a'),
+        ],
+      );
+      addTearDown(returningParent.dispose);
+      expect(returningParent.read(sessionProvider).child.name, 'Miguel');
+      expect(
+        returningParent.read(sessionProvider).child.avatar,
+        ChildAvatar.teal,
+      );
+      expect(returningParent.read(sessionProvider).childId, 'child-a');
     });
 
     test('ignores blank parent name', () async {

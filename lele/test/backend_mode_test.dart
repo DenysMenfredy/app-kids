@@ -4,6 +4,7 @@ import 'package:lele/core/config/app_config.dart';
 import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/auth/data/auth_repository.dart';
 import 'package:lele/features/lesson/data/lesson_sync_service.dart';
+import 'package:lele/features/paywall/application/checkout_controller.dart';
 import 'package:lele/features/paywall/application/entitlement_provider.dart';
 import 'package:lele/features/paywall/data/subscription_service.dart';
 import 'package:lele/features/paywall/domain/checkout_failure.dart';
@@ -77,18 +78,36 @@ void main() {
     expect(lessonSync, isA<NoopLessonSyncService>());
 
     await expectLater(profileSync.syncParentName('Camila'), completes);
-    await expectLater(lessonSync.lessonStarted('lesson_008'), completes);
     await expectLater(
-      lessonSync.lessonCompleted('lesson_008', score: 100),
+      lessonSync.lessonStarted('lesson_008', 'child_1'),
+      completes,
+    );
+    await expectLater(
+      lessonSync.activityAttempt(
+        'lesson_008',
+        'child_1',
+        'activity_008_tap',
+        {'selectedLabel': 'D'},
+      ),
+      completes,
+    );
+    await expectLater(
+      lessonSync.lessonCompleted('lesson_008', 'child_1'),
       completes,
     );
   });
 
   test('checkout reports being unavailable instead of half-working', () async {
-    final service = makeContainer().read(subscriptionServiceProvider);
+    final container = makeContainer();
+    final service = container.read(subscriptionServiceProvider);
     expect(service, isA<UnavailableSubscriptionService>());
+    expect(container.read(checkoutControllerProvider).paymentsEnabled, isFalse);
     await expectLater(
       service.createCheckoutSession('founder_annual'),
+      throwsA(isA<CheckoutFailure>()),
+    );
+    await expectLater(
+      container.read(checkoutControllerProvider).start('founder_annual'),
       throwsA(isA<CheckoutFailure>()),
     );
   });

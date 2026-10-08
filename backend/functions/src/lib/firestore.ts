@@ -4,6 +4,8 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 export const paths = {
   user: (uid: string) => `users/${uid}`,
   children: (uid: string) => `users/${uid}/children`,
+  childCreationRequests: (uid: string) =>
+    `users/${uid}/childCreationRequests`,
   devices: (uid: string) => `users/${uid}/devices`,
   subscriptions: (uid: string) => `users/${uid}/subscriptions`,
   entitlements: (uid: string) => `users/${uid}/entitlements`,
@@ -23,6 +25,10 @@ export const paths = {
   assessments: "assessments",
   /** Global lesson content. */
   lessons: "lessons",
+  /** Global activity content used for server-side answer scoring. */
+  activities: "activities",
+  /** Global module metadata used by the free/Premium access policy. */
+  modules: "modules",
 } as const;
 
 /** Default entitlement document id — one active entitlement per user (MVP). */

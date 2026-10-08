@@ -8,8 +8,8 @@ rules_version = '2';
 //     touch privileged state (roles, subscriptions, entitlements, webhooks).
 //   - Subscription/entitlement/role writes happen exclusively in Cloud
 //     Functions through the Admin SDK (which bypasses these rules).
-//   - Published educational content is world-readable for authenticated
-//     users; content writes go through admin functions only.
+//   - Published catalog metadata is readable by authenticated users; activity
+//     and story payloads require the first-module-free/Premium policy.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -38,6 +38,46 @@ service cloud.firestore {
       ]);
     }
 
+    function userEditableKeys() {
+      return ['displayName', 'locale', 'timezone', 'onboardingState', 'updatedAt'];
+    }
+
+    function childEditableKeys() {
+      return ['name', 'birthDate', 'age', 'avatarId', 'updatedAt'];
+    }
+
+    function validEditableUserProfile() {
+      let data = request.resource.data;
+      return data.get('displayName', '') is string
+        && data.get('displayName', '').size() <= 120
+        && data.get('locale', 'pt-BR') is string
+        && data.get('locale', 'pt-BR').size() <= 16
+        && data.get('timezone', 'America/Sao_Paulo') is string
+        && data.get('timezone', 'America/Sao_Paulo').size() <= 64
+        && data.get('onboardingState', '') is string
+        && data.get('onboardingState', '').size() <= 64;
+    }
+
+    function validEditableChildProfile() {
+      let data = request.resource.data;
+      return data.get('name', '') is string
+        && data.get('name', '').size() > 0
+        && data.get('name', '').size() <= 80
+        && data.get('age', 0) is int
+        && data.get('age', 0) >= 3
+        && data.get('age', 0) <= 7
+        && data.get('avatarId', '') is string
+        && data.get('avatarId', '').size() > 0
+        && data.get('avatarId', '').size() <= 64
+        && data.get('birthDate', '') is string
+        && data.get('birthDate', '').size() <= 10;
+    }
+
+    function validChangedTimestamp() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['updatedAt']) || request.resource.data.updatedAt == request.time;
+    }
+
     // Child-data constraint (spec §4, §19): minimum required data only.
     // school / address / precise location / phone / photos are not allowed.
     function validChild() {
@@ -54,51 +94,70 @@ service cloud.firestore {
       ]);
     }
 
-    function validLearningProgress() {
-      return incomingKeysOnly([
-        'lessonId', 'childId', 'status', 'startedAt', 'completedAt',
-        'durationSeconds', 'score', 'attempts', 'correctAnswers',
-        'wrongAnswers', 'updatedAt'
-      ])
-        && request.resource.data.status in ['in_progress', 'completed', 'abandoned']
-        && (!('score' in request.resource.data)
-            || (request.resource.data.score is int
-                && request.resource.data.score >= 0
-                && request.resource.data.score <= 100));
-    }
-
-    function validActivityAttempt() {
-      return incomingKeysOnly([
-        'activityId', 'lessonId', 'childId', 'type', 'answer', 'correct',
-        'attemptNumber', 'responseTimeMs', 'createdAt'
-      ])
-        && request.resource.data.correct is bool
-        && request.resource.data.attemptNumber is int
-        && request.resource.data.attemptNumber >= 1;
-    }
-
-    function validSession() {
-      return incomingKeysOnly([
-        'childId', 'startedAt', 'endedAt', 'durationSeconds',
-        'appVersion', 'platform'
-      ]);
-    }
-
     function isPublished() {
       return resource.data.published == true;
+    }
+
+    function hasFullCurriculumEntitlement(uid) {
+      let entitlementPath = /databases/$(database)/documents/users/$(uid)/entitlements/premium;
+      return exists(entitlementPath)
+        && get(entitlementPath).data.active == true
+        && get(entitlementPath).data.features is list
+        && get(entitlementPath).data.features.hasAny(['full_curriculum'])
+        && get(entitlementPath).data.validFrom is timestamp
+        && get(entitlementPath).data.validFrom <= request.time
+        && get(entitlementPath).data.validUntil is timestamp
+        && get(entitlementPath).data.validUntil > request.time;
+    }
+
+    function canAccessModule(moduleId) {
+      let modulePath = /databases/$(database)/documents/modules/$(moduleId);
+      return exists(modulePath)
+        && get(modulePath).data.published == true
+        && (get(modulePath).data.number == 1
+          || hasFullCurriculumEntitlement(request.auth.uid));
+    }
+
+    function canReadLessonPayload(lessonId) {
+      let lessonPath = /databases/$(database)/documents/lessons/$(lessonId);
+      return exists(lessonPath)
+        && get(lessonPath).data.published == true
+        && canAccessModule(get(lessonPath).data.moduleId);
     }
 
     // ---------- user-centric private data ----------
 
     match /users/{uid} {
       allow read: if isOwner(uid);
-      allow create, update: if isOwner(uid) && validUserProfile();
+      // Auth email and createdAt are server-owned. A client may create the
+      // profile before the Auth trigger runs, but only with editable fields.
+      allow create: if isOwner(uid)
+        && incomingKeysOnly(userEditableKeys())
+        && validEditableUserProfile()
+        && (!('updatedAt' in request.resource.data)
+          || request.resource.data.updatedAt == request.time);
+      allow update: if isOwner(uid)
+        && validUserProfile()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(userEditableKeys())
+        && validEditableUserProfile()
+        && validChangedTimestamp();
       allow delete: if false; // account deletion runs through the backend
 
       match /children/{childId} {
         allow read: if isOwner(uid);
-        allow create, update: if isOwner(uid) && validChild();
-        allow delete: if isOwner(uid);
+        // Child IDs are allocated by createChildProfile on the server.
+        // Parents can edit only the bounded profile fields on existing docs.
+        allow create: if false;
+        allow update: if isOwner(uid)
+          && validChild()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(childEditableKeys())
+          && validEditableChildProfile()
+          && validChangedTimestamp();
+        // Deletion will be a backend lifecycle operation: client deletion
+        // would leave progress behind and permit recreate under the same ID.
+        allow delete: if false;
       }
 
       match /devices/{deviceId} {
@@ -131,21 +190,17 @@ service cloud.firestore {
 
       match /sessions/{sessionId} {
         allow read: if isOwner(uid);
-        allow create: if isOwner(uid) && validSession();
-        allow update: if isOwner(uid) && validSession();
-        allow delete: if false;
+        allow write: if false; // session evidence is backend-owned
       }
 
       match /learningProgress/{progressId} {
         allow read: if isOwner(uid);
-        allow create, update: if isOwner(uid) && validLearningProgress();
-        allow delete: if false;
+        allow write: if false; // completion and score are backend-owned
       }
 
       match /activityAttempts/{attemptId} {
         allow read: if isOwner(uid);
-        allow create: if isOwner(uid) && validActivityAttempt();
-        allow update, delete: if false; // attempts are immutable facts
+        allow write: if false; // answers and correctness are backend-owned
       }
 
       match /gamification/{childId} {
@@ -179,13 +234,17 @@ service cloud.firestore {
     }
 
     match /activities/{activityId} {
-      allow read: if signedIn() && isPublished();
+      // Activity documents contain answer keys; later modules require the
+      // server-written, unexpired full-curriculum entitlement.
+      allow read: if signedIn() && isPublished()
+        && canReadLessonPayload(resource.data.lessonId);
       allow write: if false;
     }
 
     match /stories/{storyId} {
       // Module 7's reading texts and their comprehension questions.
-      allow read: if signedIn() && isPublished();
+      allow read: if signedIn() && isPublished()
+        && canReadLessonPayload(resource.data.lessonId);
       allow write: if false;
     }
 

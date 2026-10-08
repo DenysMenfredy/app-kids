@@ -6,72 +6,119 @@ import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../domain/lesson_reward.dart';
 
-/// Reports lesson lifecycle to the backend through the validated callables
-/// (`updateProgress`, `completeLesson`). Calls are fire-safe: a lost call
-/// never blocks the child's flow, and the backend only grants a reward for a
-/// first-time completion, so retries can't mint XP (spec §20).
+/// Reports lesson sessions and activity responses through trusted callables.
+/// Scores and rewards are calculated from the server-owned session evidence.
 abstract interface class LessonSyncService {
-  Future<void> lessonStarted(String lessonId);
+  Future<void> lessonStarted(String lessonId, String childId);
+
+  Future<void> activityAttempt(
+    String lessonId,
+    String childId,
+    String activityId,
+    Map<String, Object?> response,
+  );
 
   /// Returns what the backend granted, or null when it couldn't be reached.
-  Future<LessonReward?> lessonCompleted(
-    String lessonId, {
-    int durationSeconds,
-    int score,
-    int attempts,
-    int correctAnswers,
-    int wrongAnswers,
-  });
+  Future<LessonReward?> lessonCompleted(String lessonId, String childId);
 }
 
 class NoopLessonSyncService implements LessonSyncService {
   const NoopLessonSyncService();
 
   @override
-  Future<void> lessonStarted(String lessonId) async {}
+  Future<void> lessonStarted(String lessonId, String childId) async {}
+
+  @override
+  Future<void> activityAttempt(
+    String lessonId,
+    String childId,
+    String activityId,
+    Map<String, Object?> response,
+  ) async {}
 
   @override
   Future<LessonReward?> lessonCompleted(
-    String lessonId, {
-    int durationSeconds = 0,
-    int score = 0,
-    int attempts = 0,
-    int correctAnswers = 0,
-    int wrongAnswers = 0,
-  }) async => LessonReward.demo;
+    String lessonId,
+    String childId,
+  ) async => LessonReward.demo;
 }
 
 class CallableLessonSyncService implements LessonSyncService {
   CallableLessonSyncService(this._functions);
 
   final FirebaseFunctions _functions;
+  final Map<String, Future<String?>> _sessions = {};
+  final Map<String, Future<void>> _pendingAttempts = {};
+  final Set<String> _failedAttemptLessons = {};
+  int _requestCounter = 0;
+
+  String _key(String lessonId, String childId) => '$childId:$lessonId';
 
   @override
-  Future<void> lessonStarted(String lessonId) async {
-    await _call('updateProgress', {
-      'lessonId': lessonId,
-      'childId': AppConfig.primaryChildId,
-      'status': 'in_progress',
-    });
+  Future<void> lessonStarted(String lessonId, String childId) {
+    final key = _key(lessonId, childId);
+    _pendingAttempts[key] = Future<void>.value();
+    _failedAttemptLessons.remove(key);
+    final session =
+        _call('startLessonSession', {
+          'lessonId': lessonId,
+          'childId': childId,
+        }).then((data) {
+          if (data is Map && data['sessionId'] is String) {
+            return data['sessionId'] as String;
+          }
+          return null;
+        });
+    _sessions[key] = session;
+    return session.then<void>((_) {});
   }
 
   @override
-  Future<LessonReward?> lessonCompleted(
-    String lessonId, {
-    int durationSeconds = 0,
-    int score = 0,
-    int attempts = 0,
-    int correctAnswers = 0,
-    int wrongAnswers = 0,
-  }) async {
+  Future<void> activityAttempt(
+    String lessonId,
+    String childId,
+    String activityId,
+    Map<String, Object?> response,
+  ) async {
+    final key = _key(lessonId, childId);
+    final previous = _pendingAttempts[key] ?? Future<void>.value();
+    final queued = previous.then((_) async {
+      try {
+        final sessionId = await _sessions[key];
+        if (sessionId == null) throw StateError('Lesson session did not start');
+        _requestCounter++;
+        final requestId =
+            '${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}_$_requestCounter';
+        final result = await _call('submitActivityAttempt', {
+          'childId': childId,
+          'sessionId': sessionId,
+          'activityId': activityId,
+          'requestId': requestId,
+          'response': response,
+        });
+        if (result is! Map || result['ok'] != true) {
+          throw StateError('Activity attempt was not accepted');
+        }
+      } catch (_) {
+        _failedAttemptLessons.add(key);
+      }
+    });
+    _pendingAttempts[key] = queued;
+    await queued;
+  }
+
+  @override
+  Future<LessonReward?> lessonCompleted(String lessonId, String childId) async {
+    final key = _key(lessonId, childId);
+    await (_pendingAttempts[key] ?? Future<void>.value());
+    final sessionId = await _sessions[key];
+    if (sessionId == null || _failedAttemptLessons.contains(key)) {
+      return null;
+    }
     final data = await _call('completeLesson', {
       'lessonId': lessonId,
-      'childId': AppConfig.primaryChildId,
-      'durationSeconds': durationSeconds,
-      'score': score,
-      'attempts': attempts,
-      'correctAnswers': correctAnswers,
-      'wrongAnswers': wrongAnswers,
+      'childId': childId,
+      'sessionId': sessionId,
     });
     if (data is! Map) return null;
     return LessonReward.fromMap(

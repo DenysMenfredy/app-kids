@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/app_router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -19,6 +20,7 @@ import '../../paywall/application/entitlement_provider.dart';
 import '../../session/application/child_provider.dart';
 import '../../session/application/parent_provider.dart';
 import '../../session/application/progress_provider.dart';
+import '../../session/application/session_controller.dart';
 import '../../session/domain/child_profile.dart';
 import '../../session/presentation/child_avatar_style.dart';
 
@@ -132,6 +134,10 @@ class DashboardScreen extends ConsumerWidget {
                       moduleTitle: currentModule.title,
                       progress: currentModule.progress,
                     ),
+                    if (AppConfig.useFirebase) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      const _ChildProfileSwitcher(),
+                    ],
                     const SizedBox(height: AppSpacing.lg),
                     const _WeekCard(),
                     const SizedBox(height: AppSpacing.lg),
@@ -163,6 +169,118 @@ class DashboardScreen extends ConsumerWidget {
                   onPressed: () => context.goNamed(AppRoutes.childHome),
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildProfileSwitcher extends ConsumerWidget {
+  const _ChildProfileSwitcher();
+
+  Future<void> _openProfiles(BuildContext context) =>
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (_) => const _ChildProfilesSheet(),
+      );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final children = ref.watch(remoteChildrenProvider).value ?? const [];
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton.icon(
+        onPressed: () => _openProfiles(context),
+        icon: const Icon(Icons.manage_accounts_outlined),
+        label: Text(
+          children.length > 1 ? 'Trocar perfil' : 'Perfis das crianças',
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildProfilesSheet extends ConsumerWidget {
+  const _ChildProfilesSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final childrenState = ref.watch(remoteChildrenProvider);
+    final children = childrenState.value ?? const [];
+    final activeId = ref.watch(activeChildIdProvider);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.lg,
+          AppSpacing.xl,
+          AppSpacing.xl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Quem vai aprender?', style: AppTextStyles.sectionTitle),
+            const SizedBox(height: AppSpacing.md),
+            if (childrenState.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (childrenState.hasError)
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text('Não foi possível carregar os perfis.'),
+                  ),
+                  IconButton(
+                    tooltip: 'Tentar novamente',
+                    onPressed: () => ref.invalidate(remoteChildrenProvider),
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              )
+            else if (children.isEmpty)
+              const Text('Nenhum perfil cadastrado ainda.'),
+            for (final child in children)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  child.id == activeId
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: AppColors.teal,
+                ),
+                title: Text(child.profile.name),
+                subtitle: Text('${child.profile.age} anos'),
+                trailing: IconButton(
+                  tooltip: 'Editar perfil de ${child.profile.name}',
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    ref.read(sessionProvider.notifier).selectChild(child);
+                    Navigator.of(context).pop();
+                    context.goNamed(
+                      AppRoutes.profileSetup,
+                      queryParameters: const {'edit': 'true'},
+                    );
+                  },
+                ),
+                onTap: () {
+                  ref.read(sessionProvider.notifier).selectChild(child);
+                  Navigator.of(context).pop();
+                },
+              ),
+            const SizedBox(height: AppSpacing.sm),
+            LeleButton(
+              label: 'Adicionar criança',
+              enabled: childrenState.hasValue,
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.goNamed(
+                  AppRoutes.profileSetup,
+                  queryParameters: const {'new': 'true'},
+                );
+              },
             ),
           ],
         ),
@@ -463,7 +581,7 @@ class _ModuleRow extends StatelessWidget {
   }
 }
 
-/// The premium / free-trial pill in the dashboard header.
+/// The premium-status pill in the dashboard header.
 class _StatusChip extends StatelessWidget {
   const _StatusChip({required this.premium, required this.onTap});
 
@@ -481,10 +599,9 @@ class _StatusChip extends StatelessWidget {
         color: premium ? AppColors.greenPale : AppColors.purplePale,
         borderRadius: BorderRadius.circular(AppRadius.control),
       ),
-      // Shortened to leave room for sign-out; the paywall spells the offer
-      // out in full.
+      // Do not promise a trial until its real billing flow is implemented.
       child: Text(
-        premium ? 'Premium ativo' : 'Teste grátis',
+        premium ? 'Premium ativo' : 'Ver Premium',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: AppTextStyles.micro.copyWith(

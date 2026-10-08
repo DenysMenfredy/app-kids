@@ -50,6 +50,24 @@ jobs:
       # A release is the wrong place to discover a red test.
       - run: flutter test
 
+      # A placeholder compiles but throws on the first launch. Do not upload
+      # a signed artifact unless its Firebase app belongs to production.
+      - name: Verify production Firebase configuration
+        run: |
+          if rg -q 'PLACEHOLDER' lib/firebase_options.dart; then
+            echo 'Firebase options are still a placeholder.' >&2
+            exit 1
+          fi
+          if ! rg -q "projectId: 'letrando-production'" lib/firebase_options.dart; then
+            echo 'FlutterFire options are not for letrando-production.' >&2
+            exit 1
+          fi
+          if [ ! -f android/app/google-services.json ] || \
+             ! rg -q '"project_id"[[:space:]]*:[[:space:]]*"letrando-production"' android/app/google-services.json; then
+            echo 'Production Android Firebase configuration is missing or mismatched.' >&2
+            exit 1
+          fi
+
       - name: Restore the upload keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
@@ -20,7 +21,24 @@ final premiumActiveProvider = StreamProvider<bool>((ref) {
     return firestore
         .doc('users/${user.uid}/entitlements/premium')
         .snapshots()
-        .map((snapshot) => snapshot.data()?['active'] == true);
+        .map((snapshot) {
+          final data = snapshot.data();
+          final validFromValue = data?['validFrom'];
+          final validUntilValue = data?['validUntil'];
+          final validFrom = validFromValue is Timestamp ? validFromValue : null;
+          final validUntil = validUntilValue is Timestamp
+              ? validUntilValue
+              : null;
+          final features = data?['features'];
+          final now = Timestamp.now();
+          return data?['active'] == true &&
+              features is List &&
+              features.contains('full_curriculum') &&
+              validFrom != null &&
+              validUntil != null &&
+              validFrom.compareTo(now) <= 0 &&
+              validUntil.compareTo(now) > 0;
+        });
   });
 });
 

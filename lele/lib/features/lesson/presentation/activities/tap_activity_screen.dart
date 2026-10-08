@@ -14,6 +14,7 @@ import '../../../../core/widgets/activity_scaffold.dart';
 import '../../../../core/widgets/motion.dart';
 import '../../application/lesson_content_provider.dart';
 import '../../application/lesson_controller.dart';
+import '../../application/lesson_session_controller.dart';
 import '../../application/lesson_stats_controller.dart';
 import '../../domain/lesson.dart';
 import '../widgets/highlighted_instruction.dart';
@@ -37,6 +38,9 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
     final stats = ref.read(lessonStatsProvider.notifier);
     if (letter == activity.target) {
       stats.recordCorrect();
+      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+        'selectedLabel': letter,
+      });
       feedback.play(FeedbackCue.correct);
       tts.speak('Muito bem!');
       setState(() {
@@ -52,6 +56,9 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
       });
     } else {
       stats.recordWrong();
+      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+        'selectedLabel': letter,
+      });
       // Sound first: it lands before the spoken prompt has finished its
       // first syllable, which is what makes a miss unmistakable.
       feedback.play(FeedbackCue.wrong);

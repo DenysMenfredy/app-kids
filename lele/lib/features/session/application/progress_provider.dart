@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../domain/progress.dart';
+import 'child_provider.dart';
 import 'demo_progress_controller.dart';
 
 /// Streams `users/{uid}/gamification/{childId}` — the document only
@@ -14,11 +15,12 @@ final remoteProgressProvider = StreamProvider<Progress>((ref) {
   }
   final auth = ref.watch(firebaseAuthProvider);
   final firestore = ref.watch(firestoreProvider);
+  final childId = ref.watch(activeChildIdProvider);
 
   return auth.authStateChanges().asyncExpand((user) {
     if (user == null) return Stream.value(Progress.zero);
     return firestore
-        .doc('users/${user.uid}/gamification/${AppConfig.primaryChildId}')
+        .doc('users/${user.uid}/gamification/$childId')
         .snapshots()
         .map((snapshot) {
           final data = snapshot.data();

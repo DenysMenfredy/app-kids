@@ -13,6 +13,12 @@ final firebaseAuthProvider = Provider<FirebaseAuth>(
   (ref) => FirebaseAuth.instance,
 );
 
+/// The signed-in Firebase user, exposed as a reactive dependency for local
+/// state that must be isolated between parent accounts.
+final firebaseAuthUserProvider = StreamProvider<User?>(
+  (ref) => ref.watch(firebaseAuthProvider).authStateChanges(),
+);
+
 final firestoreProvider = Provider<FirebaseFirestore>(
   (ref) => FirebaseFirestore.instance,
 );

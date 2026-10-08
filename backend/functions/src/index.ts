@@ -24,7 +24,12 @@ export { sendDailyReminders } from "./notifications/send_daily_reminders";
 // learning/
 export { completeLesson } from "./learning/complete_lesson";
 export { submitAssessment } from "./learning/submit_assessment";
+export { startLessonSession } from "./learning/start_lesson_session";
+export { submitActivityAttempt } from "./learning/submit_activity_attempt";
 export { updateProgress } from "./learning/update_progress";
+
+// profiles/
+export { createChildProfile } from "./profiles/create_child_profile";
 
 // admin/
 export { manageContent } from "./admin/manage_content";

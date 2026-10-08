@@ -97,7 +97,7 @@ void main() {
 
     test('demo lesson sync reports the standard reward', () async {
       const service = NoopLessonSyncService();
-      final reward = await service.lessonCompleted('lesson_008', score: 100);
+      final reward = await service.lessonCompleted('lesson_008', 'child_1');
       expect(reward, LessonReward.demo);
       expect(reward?.xpEarned, 50);
       expect(reward?.coinsEarned, 10);

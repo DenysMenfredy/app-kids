@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,14 +18,21 @@ class CheckoutController {
 
   final Ref _ref;
 
-  /// False in demo mode, where there is no payments backend to talk to.
-  bool get paymentsEnabled => AppConfig.useFirebase;
+  /// Mobile beta has no in-app purchase path (D03). Web checkout is also
+  /// opt-in until its real seven-day trial and App Check setup are ready.
+  bool get paymentsEnabled =>
+      AppConfig.useFirebase && kIsWeb && AppConfig.enableWebCheckout;
 
   /// Opens hosted checkout for [backendPlanId].
   ///
   /// Throws [CheckoutFailure] with a message safe to show the parent, both
   /// when the backend refuses and when the device cannot open the page.
   Future<void> start(String backendPlanId) async {
+    if (!paymentsEnabled) {
+      throw const CheckoutFailure(
+        'Assinaturas indisponíveis nesta versão beta.',
+      );
+    }
     final url = await _ref
         .read(subscriptionServiceProvider)
         .createCheckoutSession(backendPlanId);

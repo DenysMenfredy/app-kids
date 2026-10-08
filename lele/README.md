@@ -139,7 +139,7 @@ The app runs against either an offline stub or the real Letrando backend
 | Lesson progress | local only | + `updateProgress` / `completeLesson` callables |
 | XP / coins / streak | computed on device | streamed from `gamification/{childId}` |
 | Premium | always false | streams `entitlements/premium` |
-| Purchase | unavailable | `createCheckoutSession` → Stripe hosted page |
+| Purchase | unavailable | mobile beta disabled; web checkout opt-in after the real trial is ready |
 
 Local mode never touches a Firebase instance, so tests and pre-configuration
 development work with no project set up. Firebase mode keeps the local store
