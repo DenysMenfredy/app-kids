@@ -9,6 +9,7 @@ import '../domain/lesson_reward.dart';
 /// Reports lesson sessions and activity responses through trusted callables.
 /// Scores and rewards are calculated from the server-owned session evidence.
 abstract interface class LessonSyncService {
+  Future<void> sessionLifecycle(String lessonId, String childId, String action);
   Future<void> lessonStarted(String lessonId, String childId);
 
   Future<void> activityAttempt(
@@ -24,6 +25,13 @@ abstract interface class LessonSyncService {
 
 class NoopLessonSyncService implements LessonSyncService {
   const NoopLessonSyncService();
+
+  @override
+  Future<void> sessionLifecycle(
+    String lessonId,
+    String childId,
+    String action,
+  ) async {}
 
   @override
   Future<void> lessonStarted(String lessonId, String childId) async {}
@@ -51,6 +59,7 @@ class CallableLessonSyncService implements LessonSyncService {
   final Map<String, Future<void>> _pendingAttempts = {};
   final Set<String> _failedAttemptLessons = {};
   int _requestCounter = 0;
+  final Map<String, int> _lifecycleSequences = {};
 
   String _key(String lessonId, String childId) => '$childId:$lessonId';
 
@@ -59,6 +68,7 @@ class CallableLessonSyncService implements LessonSyncService {
     final key = _key(lessonId, childId);
     _pendingAttempts[key] = Future<void>.value();
     _failedAttemptLessons.remove(key);
+    _lifecycleSequences[key] = 0;
     final session =
         _call('startLessonSession', {
           'lessonId': lessonId,
@@ -82,9 +92,10 @@ class CallableLessonSyncService implements LessonSyncService {
   ) async {
     final key = _key(lessonId, childId);
     final previous = _pendingAttempts[key] ?? Future<void>.value();
+    final session = _sessions[key];
     final queued = previous.then((_) async {
       try {
-        final sessionId = await _sessions[key];
+        final sessionId = await session;
         if (sessionId == null) throw StateError('Lesson session did not start');
         _requestCounter++;
         final requestId =
@@ -95,12 +106,12 @@ class CallableLessonSyncService implements LessonSyncService {
           'activityId': activityId,
           'requestId': requestId,
           'response': response,
-        });
+        }, retry: true);
         if (result is! Map || result['ok'] != true) {
           throw StateError('Activity attempt was not accepted');
         }
       } catch (_) {
-        _failedAttemptLessons.add(key);
+        if (identical(_sessions[key], session)) _failedAttemptLessons.add(key);
       }
     });
     _pendingAttempts[key] = queued;
@@ -110,8 +121,9 @@ class CallableLessonSyncService implements LessonSyncService {
   @override
   Future<LessonReward?> lessonCompleted(String lessonId, String childId) async {
     final key = _key(lessonId, childId);
+    final session = _sessions[key];
     await (_pendingAttempts[key] ?? Future<void>.value());
-    final sessionId = await _sessions[key];
+    final sessionId = await session;
     if (sessionId == null || _failedAttemptLessons.contains(key)) {
       return null;
     }
@@ -119,23 +131,67 @@ class CallableLessonSyncService implements LessonSyncService {
       'lessonId': lessonId,
       'childId': childId,
       'sessionId': sessionId,
-    });
+    }, retry: true);
     if (data is! Map) return null;
     return LessonReward.fromMap(
       data.map((key, value) => MapEntry(key.toString(), value)),
     );
   }
 
-  Future<Object?> _call(String callable, Map<String, dynamic> data) async {
-    try {
-      final result = await _functions
-          .httpsCallable(callable)
-          .call<dynamic>(data);
-      return result.data;
-    } catch (error) {
-      debugPrint('lesson sync failed ($callable): $error');
-      return null;
+  @override
+  Future<void> sessionLifecycle(
+    String lessonId,
+    String childId,
+    String action,
+  ) {
+    final key = _key(lessonId, childId);
+    final session = _sessions[key];
+    final sequence = (_lifecycleSequences[key] ?? 0) + 1;
+    _lifecycleSequences[key] = sequence;
+    final previous = _pendingAttempts[key] ?? Future<void>.value();
+    final queued = previous.then((_) async {
+      final sessionId = await session;
+      if (sessionId == null) return;
+      await _call('updateLessonSession', {
+        'childId': childId,
+        'sessionId': sessionId,
+        'action': action,
+        'sequence': sequence,
+      }, retry: true);
+    });
+    _pendingAttempts[key] = queued;
+    return queued;
+  }
+
+  Future<Object?> _call(
+    String callable,
+    Map<String, dynamic> data, {
+    bool retry = false,
+  }) async {
+    for (var attempt = 0; attempt < (retry ? 3 : 1); attempt++) {
+      try {
+        final result = await _functions
+            .httpsCallable(callable)
+            .call<dynamic>(data);
+        return result.data;
+      } on FirebaseFunctionsException catch (error) {
+        if (!retry ||
+            ![
+              'unavailable',
+              'deadline-exceeded',
+              'internal',
+            ].contains(error.code) ||
+            attempt == 2) {
+          debugPrint('lesson sync failed ($callable): ${error.code}');
+          return null;
+        }
+        await Future<void>.delayed(Duration(milliseconds: 200 * (attempt + 1)));
+      } catch (_) {
+        debugPrint('lesson sync failed ($callable)');
+        return null;
+      }
     }
+    return null;
   }
 }
 

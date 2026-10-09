@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { mayCompleteLesson } from "../domain/lesson_completion";
+import { validTimezone } from "../domain/active_time";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
@@ -45,11 +46,12 @@ export const startLessonSession = onCall(
     const sessionRef = sessions.doc();
     await firestore.runTransaction(async (tx) => {
       const activityRefs = activityDocs.map((doc) => doc.ref);
-      const [childSnap, lessonSnap, progressSnap, ...currentActivities] =
+      const [childSnap, lessonSnap, progressSnap, parentSnap, ...currentActivities] =
         await Promise.all([
           tx.get(childRef),
           tx.get(lessonRef),
           tx.get(progressRef),
+          tx.get(firestore.doc(paths.user(uid))),
           ...activityRefs.map((ref) => tx.get(ref)),
         ]);
 
@@ -102,7 +104,14 @@ export const startLessonSession = onCall(
         lessonId,
         activityIds: activityDocs.map((doc) => doc.id),
         activityProgress: {},
+        sequenceVersion: 1,
+        nextActivityIndex: 0,
         status: "active",
+        timingVersion: 1,
+        timezone: validTimezone(parentSnap.get("timezone")),
+        activeMillisecondsByDate: {},
+        lastActiveAt: FieldValue.serverTimestamp(),
+        lastLifecycleSequence: 0,
         startedAt: FieldValue.serverTimestamp(),
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),

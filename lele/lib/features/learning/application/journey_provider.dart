@@ -20,6 +20,13 @@ final remoteCurrentLessonIdProvider = Provider<AsyncValue<String?>>((ref) {
   final user = authState.value;
   if (user == null) return const AsyncData(null);
 
+  final selected = ref.watch(selectedChildStateProvider);
+  if (selected.isLoading) return const AsyncLoading();
+  if (selected.hasError) {
+    return AsyncError(selected.error!, selected.stackTrace!);
+  }
+  if (selected.value == null) return const AsyncData(null);
+
   final childId = ref.watch(activeChildIdProvider);
   return ref.watch(
     _currentLessonForChildProvider((uid: user.uid, childId: childId)),

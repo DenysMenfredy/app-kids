@@ -87,8 +87,7 @@ export function isActivityComplete(
 export function summarizeLessonSession(
   activities: ActivityDocument[],
   progressByActivity: Record<string, Partial<ActivityProgress>>,
-  startedAt: Date,
-  completedAt: Date,
+  activeSeconds: number,
 ): LessonStats {
   const complete = activities.length === 4 &&
     activities.every((activity) =>
@@ -108,7 +107,7 @@ export function summarizeLessonSession(
   );
   const durationSeconds = Math.max(
     0,
-    Math.min(24 * 60 * 60, Math.floor((completedAt.getTime() - startedAt.getTime()) / 1000)),
+    Math.min(30 * 60, Math.floor(activeSeconds)),
   );
   return {
     ...totals,

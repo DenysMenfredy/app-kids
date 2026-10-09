@@ -12,6 +12,7 @@ import {
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
+import { sessionClockPatch } from "./session_clock";
 
 const MAX_ATTEMPTS_PER_ACTIVITY = 100;
 
@@ -139,6 +140,10 @@ export const submitActivityAttempt = onCall(
           string,
           ActivityProgress
         >;
+        const activityIndex = session.activityIds.indexOf(activityId);
+        if (session.sequenceVersion === 1 && activityIndex > (session.nextActivityIndex ?? 0)) {
+          throw new HttpsError("failed-precondition", "Conclua a atividade anterior.");
+        }
         const previous = allProgress[activityId] ?? {
           attempts: 0,
           correctAnswers: 0,
@@ -179,6 +184,11 @@ export const submitActivityAttempt = onCall(
 
         const activityCompleted = isActivityComplete(activity, next);
         tx.set(sessionRef, {
+          ...sessionClockPatch(session, new Date()),
+          ...(session.sequenceVersion === 1 ? {
+            nextActivityIndex: Math.max(session.nextActivityIndex ?? 0,
+              activityIndex + (activityCompleted ? 1 : 0)),
+          } : {}),
           activityProgress: allProgress,
           updatedAt: FieldValue.serverTimestamp(),
         }, { merge: true });

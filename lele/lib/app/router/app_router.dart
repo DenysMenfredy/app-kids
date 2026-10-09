@@ -27,6 +27,7 @@ import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/paywall/presentation/paywall_screen.dart';
 import '../../features/reward/presentation/reward_screen.dart';
+import '../../features/session/presentation/child_profile_gate.dart';
 
 /// Route names — use these with `context.goNamed` so paths can change freely.
 abstract final class AppRoutes {
@@ -155,25 +156,32 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile-setup',
         name: AppRoutes.profileSetup,
-        builder: (context, state) => ProfileSetupScreen(
-          createNew: state.uri.queryParameters['new'] == 'true',
-          editExisting: state.uri.queryParameters['edit'] == 'true',
-        ),
+        builder: (context, state) {
+          final edit = state.uri.queryParameters['edit'] == 'true';
+          final screen = ProfileSetupScreen(
+            createNew: state.uri.queryParameters['new'] == 'true',
+            editExisting: edit,
+          );
+          return edit ? ChildProfileGate(child: screen) : screen;
+        },
       ),
       GoRoute(
         path: '/assessment',
         name: AppRoutes.assessmentIntro,
-        builder: (context, state) => const AssessmentIntroScreen(),
+        builder: (context, state) =>
+            const ChildProfileGate(child: AssessmentIntroScreen()),
         routes: [
           GoRoute(
             path: 'questions',
             name: AppRoutes.assessmentQuestions,
-            builder: (context, state) => const AssessmentQuestionScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: AssessmentQuestionScreen()),
           ),
           GoRoute(
             path: 'result',
             name: AppRoutes.assessmentResult,
-            builder: (context, state) => const AssessmentResultScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: AssessmentResultScreen()),
           ),
         ],
       ),
@@ -190,39 +198,46 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/child',
         name: AppRoutes.childHome,
-        builder: (context, state) => const ChildHomeScreen(),
+        builder: (context, state) =>
+            const ChildProfileGate(child: ChildHomeScreen()),
       ),
       GoRoute(
         path: '/lesson',
         name: AppRoutes.lessonIntro,
-        builder: (context, state) => const LessonIntroScreen(),
+        builder: (context, state) =>
+            const ChildProfileGate(child: LessonIntroScreen()),
         routes: [
           GoRoute(
             path: 'tap',
             name: AppRoutes.activityTap,
-            builder: (context, state) => const TapActivityScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: TapActivityScreen()),
           ),
           GoRoute(
             path: 'match',
             name: AppRoutes.activityMatch,
-            builder: (context, state) => const MatchActivityScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: MatchActivityScreen()),
           ),
           GoRoute(
             path: 'trace',
             name: AppRoutes.activityTrace,
-            builder: (context, state) => const TraceActivityScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: TraceActivityScreen()),
           ),
           GoRoute(
             path: 'listen',
             name: AppRoutes.activityListen,
-            builder: (context, state) => const ListenActivityScreen(),
+            builder: (context, state) =>
+                const ChildProfileGate(child: ListenActivityScreen()),
           ),
         ],
       ),
       GoRoute(
         path: '/reward',
         name: AppRoutes.reward,
-        builder: (context, state) => const RewardScreen(),
+        builder: (context, state) =>
+            const ChildProfileGate(child: RewardScreen()),
       ),
       GoRoute(
         path: '/books',
@@ -232,8 +247,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: ':bookId',
             name: AppRoutes.bookReader,
-            builder: (context, state) =>
-                BookReaderScreen(bookId: state.pathParameters['bookId']!),
+            builder: (context, state) => ChildProfileGate(
+              child: BookReaderScreen(bookId: state.pathParameters['bookId']!),
+            ),
           ),
         ],
       ),

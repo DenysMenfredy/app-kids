@@ -32,6 +32,13 @@ class ChildProfile extends Equatable {
     avatar: ChildAvatar.orange,
   );
 
+  /// An unfilled form/selection, never a registered child.
+  static const empty = ChildProfile(
+    name: '',
+    age: 5,
+    avatar: ChildAvatar.orange,
+  );
+
   ChildProfile copyWith({String? name, int? age, ChildAvatar? avatar}) {
     return ChildProfile(
       name: name ?? this.name,

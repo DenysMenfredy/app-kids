@@ -20,6 +20,13 @@ final remoteProgressProvider = Provider<AsyncValue<Progress>>((ref) {
   final user = authState.value;
   if (user == null) return const AsyncData(Progress.zero);
 
+  final selected = ref.watch(selectedChildStateProvider);
+  if (selected.isLoading) return const AsyncLoading();
+  if (selected.hasError) {
+    return AsyncError(selected.error!, selected.stackTrace!);
+  }
+  if (selected.value == null) return const AsyncData(Progress.zero);
+
   final childId = ref.watch(activeChildIdProvider);
   return ref.watch(
     _progressForChildProvider((uid: user.uid, childId: childId)),

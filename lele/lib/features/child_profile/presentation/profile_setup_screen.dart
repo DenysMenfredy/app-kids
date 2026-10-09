@@ -40,7 +40,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   void initState() {
     super.initState();
     final child = widget.createNew
-        ? ChildProfile.defaultProfile
+        ? ChildProfile.empty
         : ref.read(childProvider);
     _nameController = TextEditingController(text: child.name);
     _age = child.age;
@@ -60,20 +60,23 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     if (_saving) return;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe o nome da criança.')),
+      );
+      return;
+    }
     setState(() => _saving = true);
     try {
       await ref
           .read(sessionProvider.notifier)
           .saveChildProfile(
-            ChildProfile(
-              name: name.isEmpty ? ChildProfile.defaultProfile.name : name,
-              age: _age,
-              avatar: _avatar,
-            ),
+            ChildProfile(name: name, age: _age, avatar: _avatar),
             createNew: widget.createNew,
             requestId: _createRequestId,
           );
       if (mounted) {
+        ref.invalidate(childrenForParentProvider);
         context.goNamed(
           widget.editExisting ? AppRoutes.dashboard : AppRoutes.assessmentIntro,
         );

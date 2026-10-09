@@ -60,7 +60,13 @@ class SessionController extends Notifier<SessionState> {
   SessionState build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     final scope = ref.watch(sessionStorageScopeProvider);
-    const initial = SessionState.initial;
+    const initial = AppConfig.useFirebase
+        ? SessionState(
+            parentName: '',
+            child: ChildProfile.empty,
+            childId: AppConfig.primaryChildId,
+          )
+        : SessionState.initial;
     final avatarIndex =
         prefs.getInt(_key(scope, _keyChildAvatar)) ??
         initial.child.avatar.index;
@@ -122,7 +128,9 @@ class SessionController extends Notifier<SessionState> {
   /// server-issued child; creating a profile still goes through the backend.
   void resetChildSelection() {
     state = state.copyWith(
-      child: ChildProfile.defaultProfile,
+      child: AppConfig.useFirebase
+          ? ChildProfile.empty
+          : ChildProfile.defaultProfile,
       childId: AppConfig.primaryChildId,
     );
     _persist();

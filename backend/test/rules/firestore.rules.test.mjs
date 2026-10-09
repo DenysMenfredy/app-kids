@@ -57,6 +57,24 @@ const asStranger = () => env.authenticatedContext(STRANGER).firestore();
 const asAnon = () => env.unauthenticatedContext().firestore();
 const asAdmin = (fn) => env.withSecurityRulesDisabled(fn);
 
+describe("server-owned per-child daily summaries", () => {
+  it("allows only the current parent and prevents forged totals and orphan reads", async () => {
+    const path = `users/${PARENT}/children/child1/dailySummaries/2026-10-09`;
+    await asAdmin(async (ctx) => {
+      await ctx.firestore().doc(`users/${PARENT}/children/child1`).set({ name: "Leitor", age: 5 });
+      await ctx.firestore().doc(path).set({ lessonsCompleted: 1, activeMilliseconds: 60_000 });
+    });
+    await assertSucceeds(asParent().doc(path).get());
+    await assertFails(asStranger().doc(path).get());
+    await assertFails(asAnon().doc(path).get());
+    await assertFails(asParent().doc(path).update({ lessonsCompleted: 99 }));
+    await assertFails(asParent().doc(path).delete());
+    await assertFails(asParent().doc(path.replace("2026-10-09", "2026-10-10")).set({ lessonsCompleted: 99 }));
+    await asAdmin((ctx) => ctx.firestore().doc(`users/${PARENT}/children/child1`).delete());
+    await assertFails(asParent().doc(path).get());
+  });
+});
+
 describe("book catalog, protected pages and child bookmarks", () => {
   beforeEach(async () => {
     await asAdmin(async (ctx) => {

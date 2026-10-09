@@ -23,25 +23,10 @@ import '../../session/application/parent_provider.dart';
 import '../../session/application/progress_provider.dart';
 import '../../session/application/session_controller.dart';
 import '../../session/domain/child_profile.dart';
+import '../../session/domain/child_record.dart';
 import '../../session/presentation/child_avatar_style.dart';
-
-class _DayActivity {
-  const _DayActivity(this.label, this.minutes);
-
-  final String label;
-  final int minutes; // 0 = no practice that day
-}
-
-/// Weekly practice snapshot; replaced by real analytics later.
-const _week = [
-  _DayActivity('S', 11),
-  _DayActivity('T', 16),
-  _DayActivity('Q', 0),
-  _DayActivity('Q', 13),
-  _DayActivity('S', 20),
-  _DayActivity('S', 8),
-  _DayActivity('D', 0),
-];
+import '../../session/presentation/child_profile_gate.dart';
+import 'weekly_learning_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -49,12 +34,13 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(remoteChildrenProvider, (_, next) {
+      if (!AppConfig.useFirebase) return;
       if (next.isLoading || next.hasError || !next.hasValue) return;
       final children = next.requireValue;
       final session = ref.read(sessionProvider);
       if (children.isEmpty) {
         if (session.childId != AppConfig.primaryChildId ||
-            session.child != ChildProfile.defaultProfile) {
+            session.child != ChildProfile.empty) {
           ref.read(sessionProvider.notifier).resetChildSelection();
         }
         return;
@@ -68,12 +54,14 @@ class DashboardScreen extends ConsumerWidget {
       ref.read(sessionProvider.notifier).selectChild(fallback);
     });
 
-    final child = ref.watch(childProvider);
-    final progress = ref.watch(progressProvider);
+    final childState = ref.watch(selectedChildStateProvider);
+    final hasChild =
+        !childState.isLoading &&
+        !childState.hasError &&
+        childState.value != null;
     // Whoever actually registered, per the backend — not the sample name.
     final parentName = ref.watch(parentFirstNameProvider);
-    final journey = ref.watch(journeyProvider);
-    final currentModule = ref.watch(currentModuleProvider);
+    final currentModule = hasChild ? ref.watch(currentModuleProvider) : null;
 
     return Scaffold(
       body: SafeArea(
@@ -149,28 +137,33 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    _ChildCard(
-                      child: child,
-                      streak: progress.streak,
-                      moduleTitle: currentModule.title,
-                      progress: currentModule.progress,
-                    ),
+                    if (hasChild)
+                      _ChildCard(
+                        child: childState.requireValue!.profile,
+                        streak: ref.watch(progressProvider).streak,
+                        moduleTitle: currentModule!.title,
+                        progress: currentModule.progress,
+                      )
+                    else
+                      ChildProfileStatusCard(state: childState),
                     if (AppConfig.useFirebase) ...[
                       const SizedBox(height: AppSpacing.xs),
                       const _ChildProfileSwitcher(),
                       const AppleAccountLinkButton(),
                     ],
-                    const SizedBox(height: AppSpacing.lg),
-                    const _WeekCard(),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Jornada de aprendizado',
-                      style: AppTextStyles.sectionTitle,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    for (final module in journey) ...[
-                      _ModuleRow(module: module),
+                    if (hasChild) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      const WeeklyLearningCard(),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Jornada de aprendizado',
+                        style: AppTextStyles.sectionTitle,
+                      ),
                       const SizedBox(height: AppSpacing.md),
+                      for (final module in ref.watch(journeyProvider)) ...[
+                        _ModuleRow(module: module),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
                     ],
                   ],
                 ),
@@ -186,9 +179,27 @@ class DashboardScreen extends ConsumerWidget {
               child: SizedBox(
                 width: double.infinity,
                 child: LeleButton(
-                  label: 'Entrar no modo criança',
+                  label: hasChild
+                      ? 'Entrar no modo criança'
+                      : childState.isLoading
+                      ? 'Carregando perfis...'
+                      : childState.hasError
+                      ? 'Tentar novamente'
+                      : 'Adicionar criança',
                   fontSize: 19,
-                  onPressed: () => context.goNamed(AppRoutes.childHome),
+                  enabled: !childState.isLoading,
+                  onPressed: () {
+                    if (childState.hasError) {
+                      ref.invalidate(childrenForParentProvider);
+                    } else if (hasChild) {
+                      context.goNamed(AppRoutes.childHome);
+                    } else {
+                      context.goNamed(
+                        AppRoutes.profileSetup,
+                        queryParameters: const {'new': 'true'},
+                      );
+                    }
+                  },
                 ),
               ),
             ),
@@ -231,7 +242,9 @@ class _ChildProfilesSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final childrenState = ref.watch(remoteChildrenProvider);
-    final children = childrenState.value ?? const [];
+    final children = childrenState.isLoading || childrenState.hasError
+        ? const <ChildRecord>[]
+        : childrenState.value ?? const [];
     final activeId = ref.watch(activeChildIdProvider);
     return SafeArea(
       child: Padding(
@@ -257,7 +270,7 @@ class _ChildProfilesSheet extends ConsumerWidget {
                   ),
                   IconButton(
                     tooltip: 'Tentar novamente',
-                    onPressed: () => ref.invalidate(remoteChildrenProvider),
+                    onPressed: () => ref.invalidate(childrenForParentProvider),
                     icon: const Icon(Icons.refresh),
                   ),
                 ],
@@ -295,7 +308,7 @@ class _ChildProfilesSheet extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             LeleButton(
               label: 'Adicionar criança',
-              enabled: childrenState.hasValue,
+              enabled: !childrenState.isLoading && !childrenState.hasError,
               onPressed: () {
                 Navigator.of(context).pop();
                 context.goNamed(
@@ -437,92 +450,6 @@ class _ChildCard extends StatelessWidget {
                 valueColor: const AlwaysStoppedAnimation(AppColors.teal),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WeekCard extends StatelessWidget {
-  const _WeekCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final lessons = _week.where((d) => d.minutes > 0).length;
-    final minutes = _week.fold<int>(0, (total, day) => total + day.minutes);
-    final maxMinutes = _week
-        .map((d) => d.minutes)
-        .reduce((a, b) => a > b ? a : b)
-        .toDouble();
-    const today = 4; // highlighted bar in the design (sexta-feira)
-
-    return LeleCard(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      borderRadius: AppRadius.panel,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Esta semana', style: AppTextStyles.sectionTitle),
-          const SizedBox(height: AppSpacing.lg),
-          // The bars keep a fixed plot area; the row's height then follows
-          // the day labels, which grow with the text scale. A fixed 90px box
-          // overflowed by 2px the moment they did.
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            spacing: AppSpacing.md,
-            children: [
-              for (var i = 0; i < _week.length; i++)
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      SizedBox(
-                        height: 66,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              height: _week[i].minutes == 0
-                                  ? 6
-                                  : 60 * _week[i].minutes / maxMinutes + 6,
-                              decoration: BoxDecoration(
-                                color: _week[i].minutes == 0
-                                    ? AppColors.panel
-                                    : i == today
-                                    ? AppColors.orange
-                                    : AppColors.teal,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(8),
-                                  bottom: Radius.circular(4),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        _week[i].label,
-                        maxLines: 1,
-                        style: AppTextStyles.nunito(
-                          11,
-                          weight: FontWeight.w700,
-                          color: _week[i].minutes == 0
-                              ? AppColors.textDisabled
-                              : AppColors.textDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            '$lessons lições completas · $minutes min de prática',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted),
           ),
         ],
       ),

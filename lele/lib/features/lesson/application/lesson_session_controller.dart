@@ -24,33 +24,73 @@ class LessonSessionController {
   final Ref _ref;
   String? _activeChildId;
   String? _activeOwnerScope;
+  String? _activeLessonId;
+  Timer? _presenceTimer;
+  bool _foreground = true;
+  Future<LessonReward?>? _completion;
 
   /// How long to wait for the backend before the child moves on regardless.
   static const _rewardTimeout = Duration(seconds: 3);
 
   /// Begins a run: clears the stats and reports the start.
   void start() {
+    leave();
+    _completion = null;
     final childId = _ref.read(activeChildIdProvider);
     _activeChildId = childId;
     _activeOwnerScope = _ref.read(sessionStorageScopeProvider);
+    _activeLessonId = _ref.read(currentLessonIdProvider);
     _ref.read(lessonStatsProvider.notifier).start();
     unawaited(
       _ref
           .read(lessonSyncServiceProvider)
-          .lessonStarted(_ref.read(currentLessonIdProvider), childId),
+          .lessonStarted(_activeLessonId!, childId),
+    );
+    _presenceTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (_foreground) _lifecycle('heartbeat');
+    });
+  }
+
+  void _lifecycle(String action) {
+    if (_activeLessonId == null ||
+        _activeChildId == null ||
+        _activeOwnerScope != _ref.read(sessionStorageScopeProvider)) {
+      return;
+    }
+    unawaited(
+      _ref
+          .read(lessonSyncServiceProvider)
+          .sessionLifecycle(_activeLessonId!, _activeChildId!, action),
     );
   }
+
+  void setForeground(bool foreground) {
+    if (_foreground == foreground) return;
+    _foreground = foreground;
+    _lifecycle(foreground ? 'resume' : 'pause');
+  }
+
+  void leave() {
+    _presenceTimer?.cancel();
+    _lifecycle('abandon');
+    _activeLessonId = null;
+    _activeChildId = null;
+    _activeOwnerScope = null;
+  }
+
+  void dispose() => _presenceTimer?.cancel();
 
   /// Queues an answer with the backend; the server determines correctness.
   void recordAttempt(String activityId, Map<String, Object?> response) {
     if (_activeOwnerScope != _ref.read(sessionStorageScopeProvider)) return;
-    final childId = _activeChildId ?? _ref.read(activeChildIdProvider);
-    if (childId == null) return;
+    final childId = _activeChildId;
+    final lessonId = _activeLessonId;
+    if (childId == null || lessonId == null) return;
     unawaited(
       _ref
           .read(lessonSyncServiceProvider)
           .activityAttempt(
-            _ref.read(currentLessonIdProvider),
+            lessonId,
             childId,
             activityId,
             response,
@@ -69,13 +109,18 @@ class LessonSessionController {
     if (_activeOwnerScope != _ref.read(sessionStorageScopeProvider)) {
       return Future.value(null);
     }
-    final finishedLessonId = _ref.read(currentLessonIdProvider);
+    if (_completion != null) return _completion!;
+    _presenceTimer?.cancel();
+    final finishedLessonId = _activeLessonId;
     final childId = _activeChildId ?? _ref.read(activeChildIdProvider);
-    if (childId == null) return Future.value(null);
+    if (childId == null || finishedLessonId == null) return Future.value(null);
     final reward = _ref
         .read(lessonSyncServiceProvider)
         .lessonCompleted(finishedLessonId, childId)
         .timeout(_rewardTimeout, onTimeout: () => null);
+    _completion = reward;
+    _activeLessonId = null;
+    _activeChildId = null;
 
     // Demo mode only — the backend owns both of these once it is on.
     _ref.read(demoProgressProvider.notifier).completeLesson();
@@ -89,6 +134,8 @@ class LessonSessionController {
       _ref.read(lastLessonRewardProvider.notifier).set(reward);
 }
 
-final lessonSessionProvider = Provider<LessonSessionController>(
-  LessonSessionController.new,
-);
+final lessonSessionProvider = Provider<LessonSessionController>((ref) {
+  final controller = LessonSessionController(ref);
+  ref.onDispose(controller.dispose);
+  return controller;
+});

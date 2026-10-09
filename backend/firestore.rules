@@ -193,6 +193,11 @@ service cloud.firestore {
             && exists(/databases/$(database)/documents/users/$(uid)/children/$(childId));
           allow write: if false; // validated by saveBookBookmark, no rewards
         }
+        match /dailySummaries/{localDate} {
+          allow read: if isOwner(uid)
+            && exists(/databases/$(database)/documents/users/$(uid)/children/$(childId));
+          allow write: if false;
+        }
       }
 
       match /devices/{deviceId} {

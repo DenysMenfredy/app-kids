@@ -14,6 +14,8 @@ import {
   summarizeLessonSession,
 } from "../domain/lesson_sessions";
 import { localDateIso } from "../domain/time";
+import { validTimezone } from "../domain/active_time";
+import { sessionClockPatch } from "./session_clock";
 import { db, paths } from "../lib/firestore";
 import { findNextLessonId } from "./next_lesson";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
@@ -58,12 +60,6 @@ export const completeLesson = onCall(
 
     const timezone =
       (user.get("timezone") as string | undefined) ?? "America/Sao_Paulo";
-    let today: string;
-    try {
-      today = localDateIso(new Date(), timezone);
-    } catch {
-      today = localDateIso(new Date(), "America/Sao_Paulo");
-    }
 
     // The next-lesson query must run before the transaction. Re-read the
     // current lesson in the transaction so an unpublish cannot race a grant.
@@ -92,7 +88,8 @@ export const completeLesson = onCall(
         session.lessonId !== lessonId ||
         !Array.isArray(activityIds) ||
         activityIds.length !== 4 ||
-        (session.status !== "active" && session.status !== "completed")
+        (session.sequenceVersion === 1 && session.nextActivityIndex !== 4) ||
+        !["active", "paused", "completed"].includes(session.status)
       ) {
         throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
       }
@@ -171,12 +168,17 @@ export const completeLesson = onCall(
         throw new HttpsError("failed-precondition", "Sessão sem início válido.");
       }
       let stats;
+      const now = new Date();
+      const clock = session.status === "completed"
+        ? { activeMillisecondsByDate: session.activeMillisecondsByDate ?? {} }
+        : sessionClockPatch(session, now);
+      const activeMilliseconds = Object.values(clock.activeMillisecondsByDate)
+        .reduce<number>((sum, value) => sum + Number(value), 0);
       try {
         stats = summarizeLessonSession(
           activities,
           activityProgress,
-          startedAt,
-          new Date(),
+          activeMilliseconds / 1000,
         );
       } catch {
         throw new HttpsError(
@@ -198,6 +200,31 @@ export const completeLesson = onCall(
       // Only a first-time completion earns rewards; re-submitting the same
       // lesson refreshes the stats but leaves the wallet untouched.
       const alreadyCompleted = progressSnap.get("status") === "completed";
+      const firstForSession = session.status !== "completed";
+      const sessionTimezone = validTimezone(session.timezone ?? timezone);
+      const completedDate = localDateIso(now, sessionTimezone);
+      const summaryDates = firstForSession
+        ? [...new Set([...Object.keys(clock.activeMillisecondsByDate), completedDate])]
+        : [];
+      const summaryRefs = summaryDates.map((date) =>
+        db().collection(paths.dailySummaries(uid, childId)).doc(date));
+      const summaries = summaryRefs.length ? await tx.getAll(...summaryRefs) : [];
+      for (let index = 0; index < summaryDates.length; index++) {
+        const date = summaryDates[index];
+        const previous = summaries[index].data() ?? {};
+        const isCompletionDay = date === completedDate;
+        tx.set(summaryRefs[index], {
+          schemaVersion: 1, localDate: date, timezone: sessionTimezone,
+          activeMilliseconds: (previous.activeMilliseconds ?? 0) +
+            (clock.activeMillisecondsByDate[date] ?? 0),
+          lessonsCompleted: (previous.lessonsCompleted ?? 0) +
+            (isCompletionDay && !alreadyCompleted ? 1 : 0),
+          sessionsCompleted: (previous.sessionsCompleted ?? 0) + (isCompletionDay ? 1 : 0),
+          attempts: (previous.attempts ?? 0) + (isCompletionDay ? stats.attempts : 0),
+          correctAnswers: (previous.correctAnswers ?? 0) + (isCompletionDay ? stats.correctAnswers : 0),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      }
 
       // Move the child on, but only when they finished the lesson they were
       // actually on. Replaying an earlier lesson must not drag them
@@ -215,13 +242,14 @@ export const completeLesson = onCall(
         );
       }
 
-      tx.set(
+      if (firstForSession) tx.set(
         progressRef,
         {
           lessonId,
           childId,
           status: "completed",
-          completedAt: FieldValue.serverTimestamp(),
+          completedAt: alreadyCompleted ? progressSnap.get("completedAt") : FieldValue.serverTimestamp(),
+          lastPracticedAt: FieldValue.serverTimestamp(),
           durationSeconds: stats.durationSeconds,
           score: stats.score,
           attempts: stats.attempts,
@@ -231,7 +259,8 @@ export const completeLesson = onCall(
         },
         { merge: true },
       );
-      tx.set(sessionRef, {
+      if (firstForSession) tx.set(sessionRef, {
+        ...clock,
         status: "completed",
         completedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
@@ -249,7 +278,7 @@ export const completeLesson = onCall(
         };
       }
 
-      const next = applyLessonReward(current, today);
+      const next = applyLessonReward(current, completedDate);
       tx.set(
         gamificationRef,
         {

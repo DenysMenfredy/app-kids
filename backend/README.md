@@ -192,9 +192,27 @@ are involved and nothing can reach a real project. See the root README for
 pointing the Flutter app at it.
 
 `smoke.sh` walks the slice the unit suites can't: sign-up → profile bootstrap
-→ idempotent server-issued child creation → rules-enforced profile edit →
-server-side assessment scoring → reward granting/idempotency → denied client
-XP write.
+→ rejects an unverified email → verifies the emulator-only test account →
+idempotent server-issued child creation → rules-enforced profile edit →
+server-side assessment scoring → scored activity attempts → concurrent and
+replayed lesson completion → denied client XP write. It uses a random password
+and removes the temporary smoke-test parent and Firestore subcollections when
+it exits.
+
+The parent dashboard's weekly totals come from server-owned daily summaries.
+The additional lifecycle/summary integration check uses only the running demo
+emulators and removes its temporary users:
+
+```bash
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+npm --prefix functions run test:learning:smoke
+```
+
+It covers bounded presence, pause/resume, delayed commands, child ownership,
+concurrent completion, replay, and exact summary contributions. ADR 0013
+documents the active-time and calendar policy; historical session time is not
+backfilled from wall-clock durations.
 
 If signup succeeds but saving a child's profile fails, check the Functions
 terminal for `Loaded functions definitions from source` and a

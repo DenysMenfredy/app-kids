@@ -103,7 +103,7 @@ describe("server-scored lesson activities", () => {
   it("derives stats only after every activity has server-scored completion", () => {
     const activities = [tap, match, trace, listen];
     assert.throws(
-      () => summarizeLessonSession(activities, {}, new Date(0), new Date(5000)),
+      () => summarizeLessonSession(activities, {}, 5),
       /incomplete/,
     );
     const stats = summarizeLessonSession(
@@ -120,8 +120,7 @@ describe("server-scored lesson activities", () => {
         trace: { attempts: 1, correctAnswers: 1, wrongAnswers: 0, completed: true },
         listen: { attempts: 1, correctAnswers: 1, wrongAnswers: 0, completed: true },
       },
-      new Date(0),
-      new Date(65_000),
+      65,
     );
     assert.deepEqual(stats, {
       durationSeconds: 65,

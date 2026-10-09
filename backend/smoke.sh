@@ -10,6 +10,28 @@
 # together, which the unit suites can't.
 set -uo pipefail
 
+BACKEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMP_DIR="$(mktemp -d)"
+REWARD_A="$TEMP_DIR/reward-a.json"
+REWARD_B="$TEMP_DIR/reward-b.json"
+UID_=""
+
+cleanup_smoke_account() {
+  local status=$?
+  if [ -n "$UID_" ]; then
+    if ! FIRESTORE_EMULATOR_HOST=localhost:8080 \
+      FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 \
+      node "$BACKEND_DIR/functions/scripts/cleanup_smoke_account.mjs" "$UID_"; then
+      echo "Could not remove smoke-test account $UID_ from the demo emulator." >&2
+      status=1
+    fi
+  fi
+  rm -f -- "$REWARD_A" "$REWARD_B"
+  rmdir -- "$TEMP_DIR" 2>/dev/null || true
+  exit "$status"
+}
+trap cleanup_smoke_account EXIT
+
 PROJECT="demo-letrando"
 AUTH="http://localhost:9099/identitytoolkit.googleapis.com/v1"
 FS="http://localhost:8080/v1/projects/${PROJECT}/databases/(default)/documents"
@@ -32,9 +54,10 @@ fi
 
 echo "Signing up a parent"
 EMAIL="smoke+${RANDOM}${RANDOM}@example.com"
+PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
 RESP=$(curl -s -X POST "${AUTH}/accounts:signUp?key=demo-api-key" \
   -H 'Content-Type: application/json' \
-  -d "{\"email\":\"${EMAIL}\",\"password\":\"segredo123\",\"returnSecureToken\":true}")
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"returnSecureToken\":true}")
 TOKEN=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('idToken',''))" <<<"$RESP")
 UID_=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('localId',''))" <<<"$RESP")
 if [ -z "$TOKEN" ]; then
@@ -61,6 +84,23 @@ check "the parent's name survived the bootstrap trigger" "$r"
 ENT=$(curl -s "${FS}/users/${UID_}/entitlements/premium" -H "Authorization: Bearer $TOKEN")
 grep -q '"booleanValue": false' <<<"$ENT" && r=ok || r=no
 check "premium starts inactive" "$r"
+
+UNVERIFIED_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"requestId\":\"unverified_${UID_}\",\"profile\":{\"name\":\"Sofia\",\"age\":5,\"avatarId\":\"orange\"}}}")
+grep -q 'FAILED_PRECONDITION' <<<"$UNVERIFIED_CHILD" && r=ok || r=no
+check "unverified email cannot create a child profile" "$r"
+
+FIRESTORE_EMULATOR_HOST=localhost:8080 \
+  FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 \
+  node "$BACKEND_DIR/functions/scripts/verify_smoke_account.mjs" "$UID_"
+VERIFIED_LOGIN=$(curl -s -X POST "${AUTH}/accounts:signInWithPassword?key=demo-api-key" \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"returnSecureToken\":true}")
+TOKEN=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('idToken',''))" <<<"$VERIFIED_LOGIN")
+[ -n "$TOKEN" ] && r=ok || r=no
+check "verified test account can refresh its Auth token" "$r"
+[ -n "$TOKEN" ] || exit 1
 
 CREATE_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
@@ -214,18 +254,54 @@ reward() {
     -H 'Content-Type: application/json' \
     -d "{\"data\":{\"childId\":\"$CHILD_ID\",\"lessonId\":\"$LESSON\",\"sessionId\":\"$SESSION\",\"score\":0,\"attempts\":0,\"correctAnswers\":999,\"durationSeconds\":0}}"
 }
-FIRST=$(reward)
-python3 -c "
-import sys,json
-r=json.load(sys.stdin).get('result',{})
-sys.exit(0 if r.get('awarded') and r.get('xpEarned')==50 and r.get('streak')==1 else 1)" <<<"$FIRST" && r=ok || r=no
-check "completeLesson granted the reward" "$r" "$(python3 -c "import sys,json;r=json.load(sys.stdin).get('result',{});print('xp=%s streak=%s'%(r.get('xp'),r.get('streak')))" <<<"$FIRST")"
+reward >"$REWARD_A" &
+REWARD_PID_A=$!
+reward >"$REWARD_B" &
+REWARD_PID_B=$!
+wait "$REWARD_PID_A"
+REWARD_STATUS_A=$?
+wait "$REWARD_PID_B"
+REWARD_STATUS_B=$?
+FIRST=$(python3 - "$REWARD_A" "$REWARD_B" <<'PY'
+import json
+import sys
+
+try:
+    results = [
+        json.load(open(path, encoding="utf-8")).get("result", {})
+        for path in sys.argv[1:]
+    ]
+    winners = [result for result in results if result.get("awarded") is True]
+    losers = [result for result in results if result.get("awarded") is False]
+    valid = (
+        len(winners) == 1
+        and len(losers) == 1
+        and winners[0].get("xpEarned") == 50
+        and losers[0].get("xpEarned") == 0
+        and all(result.get("xp") == 50 for result in results)
+        and all(result.get("streak") == 1 for result in results)
+    )
+    if valid:
+        print(json.dumps(winners[0]))
+    sys.exit(0 if valid else 1)
+except (OSError, json.JSONDecodeError, TypeError):
+    sys.exit(1)
+PY
+)
+DETAIL=""
+if [ -n "$FIRST" ] && [ "$REWARD_STATUS_A" -eq 0 ] && [ "$REWARD_STATUS_B" -eq 0 ]; then
+  r=ok
+  DETAIL="one award; xp=$(python3 -c "import sys,json;print(json.load(sys.stdin)['xp'])" <<<"$FIRST"), streak=$(python3 -c "import sys,json;print(json.load(sys.stdin)['streak'])" <<<"$FIRST")"
+else
+  r=no
+fi
+check "concurrent completeLesson requests grant one consistent reward" "$r" "$DETAIL"
 
 STATS=$(curl -s "${FS}/users/${UID_}/learningProgress/${CHILD_ID}_${LESSON}" -H "Authorization: Bearer $TOKEN")
 python3 -c 'import sys,json; f=json.load(sys.stdin)["fields"]; ok=(f["score"]["integerValue"]=="86" and f["attempts"]["integerValue"]=="7" and f["correctAnswers"]["integerValue"]=="6" and f["wrongAnswers"]["integerValue"]=="1"); sys.exit(0 if ok else 1)' <<<"$STATS" && r=ok || r=no
 check "persisted stats come from scored answers, not client values" "$r"
 
-NEXT=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('nextLessonId') or '')" <<<"$FIRST")
+NEXT=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('nextLessonId') or '')" <<<"$FIRST")
 AFTER=$(curl -s "${FS}/users/${UID_}/children/${CHILD_ID}" -H "Authorization: Bearer $TOKEN" \
   | python3 -c "import sys,json;print(json.load(sys.stdin)['fields'].get('currentLessonId',{}).get('stringValue',''))")
 [ -n "$NEXT" ] && [ "$AFTER" = "$NEXT" ] && [ "$AFTER" != "$LESSON" ] && r=ok || r=no
@@ -236,7 +312,7 @@ python3 -c "
 import sys,json
 r=json.load(sys.stdin).get('result',{})
 sys.exit(0 if r.get('awarded') is False and r.get('xpEarned')==0 and r.get('xp')==50 else 1)" <<<"$SECOND" && r=ok || r=no
-check "replaying the lesson grants nothing extra" "$r"
+check "replaying after concurrent completion grants nothing extra" "$r"
 
 # The child has already moved on, so replaying an old lesson must not drag
 # them backwards or push them forward again.

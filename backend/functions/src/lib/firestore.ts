@@ -4,6 +4,8 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 export const paths = {
   user: (uid: string) => `users/${uid}`,
   children: (uid: string) => `users/${uid}/children`,
+  dailySummaries: (uid: string, childId: string) =>
+    `users/${uid}/children/${childId}/dailySummaries`,
   childCreationRequests: (uid: string) =>
     `users/${uid}/childCreationRequests`,
   devices: (uid: string) => `users/${uid}/devices`,

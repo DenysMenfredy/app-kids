@@ -22,10 +22,10 @@ final remoteChildrenProvider = Provider<AsyncValue<List<ChildRecord>>>((ref) {
 
   final user = authState.value;
   if (user == null) return const AsyncData([]);
-  return ref.watch(_childrenForParentProvider(user.uid));
+  return ref.watch(childrenForParentProvider(user.uid));
 });
 
-final _childrenForParentProvider = StreamProvider.autoDispose
+final childrenForParentProvider = StreamProvider.autoDispose
     .family<List<ChildRecord>, String>((ref, uid) {
       final firestore = ref.watch(firestoreProvider);
       return firestore
@@ -34,57 +34,70 @@ final _childrenForParentProvider = StreamProvider.autoDispose
           .map(
             (snapshot) => [
               for (final document in snapshot.docs)
-                if (_profileFrom(document.data()) case final profile?)
-                  ChildRecord(id: document.id, profile: profile),
+                ChildRecord(
+                  id: document.id,
+                  profile:
+                      _profileFrom(document.data()) ??
+                      (throw const FormatException('Invalid child profile')),
+                ),
             ],
           );
     });
 
+/// The actual selection, with absence distinct from loading or a failed read.
+/// Firebase mode never substitutes a demo child or a cached profile here.
+final selectedChildStateProvider = Provider<AsyncValue<ChildRecord?>>((ref) {
+  final session = ref.watch(sessionProvider);
+  if (!AppConfig.useFirebase) {
+    return AsyncData(ChildRecord(id: session.childId, profile: session.child));
+  }
+  return resolveSelectedChild(
+    ref.watch(remoteChildrenProvider),
+    session.childId,
+  );
+});
+
+AsyncValue<ChildRecord?> resolveSelectedChild(
+  AsyncValue<List<ChildRecord>> state,
+  String preferredId,
+) {
+  if (state.isLoading) return const AsyncLoading();
+  if (state.hasError) return AsyncError(state.error!, state.stackTrace!);
+  final children = state.requireValue;
+  if (children.isEmpty) return const AsyncData(null);
+  return AsyncData(
+    children.firstWhere(
+      (child) => child.id == preferredId,
+      orElse: () => children.firstWhere(
+        (child) => child.id == AppConfig.primaryChildId,
+        orElse: () => children.first,
+      ),
+    ),
+  );
+}
+
 /// The selected child ID, with a stable fallback after a reinstall or when
 /// a previously selected profile has been removed from the parent's list.
 final activeChildIdProvider = Provider<String>((ref) {
-  final savedId = ref.watch(sessionProvider.select((state) => state.childId));
-  if (!AppConfig.useFirebase) return savedId;
-  final children = ref.watch(remoteChildrenProvider).value;
-  if (children == null) return savedId;
-  if (children.isEmpty) return AppConfig.primaryChildId;
-  for (final child in children) {
-    if (child.id == savedId) return savedId;
-  }
-  for (final child in children) {
-    if (child.id == AppConfig.primaryChildId) return child.id;
-  }
-  return children.first.id;
+  return ref.watch(selectedChildStateProvider).value?.id ??
+      AppConfig.primaryChildId;
 });
 
 /// The selected profile held by Firestore, if one has arrived.
 final remoteChildProvider = Provider<ChildProfile?>((ref) {
-  final childId = ref.watch(activeChildIdProvider);
-  final children = ref.watch(remoteChildrenProvider).value;
-  if (children == null) return null;
-  for (final child in children) {
-    if (child.id == childId) return child.profile;
-  }
-  return null;
+  if (!AppConfig.useFirebase) return null;
+  return ref.watch(selectedChildStateProvider).value?.profile;
 });
 
 /// The child the app should show — name, age and chosen avatar.
 ///
 /// With the backend on this is the stored profile, so the choice survives a
 /// reinstall and follows the family to another device. The on-device session
-/// covers demo mode and the moment between saving and the write landing.
+/// covers demo mode. Firebase views gate their content on the selected state.
 final childProvider = Provider<ChildProfile>((ref) {
   if (!AppConfig.useFirebase) return ref.watch(sessionProvider).child;
-  final children = ref.watch(remoteChildrenProvider);
-  if (children.isLoading) return ref.watch(sessionProvider).child;
-  if (children.hasError) return ChildProfile.defaultProfile;
-  final activeId = ref.watch(activeChildIdProvider);
-  for (final record in children.requireValue) {
-    if (record.id == activeId) return record.profile;
-  }
-  // Don't keep showing a deleted profile from local cache after Firestore
-  // confirms that it is no longer available to this parent.
-  return ChildProfile.defaultProfile;
+  return ref.watch(selectedChildStateProvider).value?.profile ??
+      ChildProfile.empty;
 });
 
 ChildProfile? _profileFrom(Map<String, dynamic> data) {
