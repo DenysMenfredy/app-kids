@@ -54,6 +54,13 @@ class LessonStatsController extends Notifier<LessonStats> {
 
   void start() => state = LessonStats(startedAt: DateTime.now());
 
+  void restore({required int correct, required int wrong}) =>
+      state = LessonStats(
+        startedAt: DateTime.now(),
+        correctAnswers: correct,
+        wrongAnswers: wrong,
+      );
+
   void recordCorrect() =>
       state = state.copyWith(correctAnswers: state.correctAnswers + 1);
 

@@ -3,7 +3,6 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { mayCompleteLesson } from "../domain/lesson_completion";
 import {
-  ActivityDocument,
   ActivityProgress,
   InvalidActivityResponseError,
   isActivityComplete,
@@ -13,6 +12,8 @@ import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
 import { sessionClockPatch } from "./session_clock";
+import { readLessonBundle, requireSessionBundle } from "./lesson_bundle";
+import { scoredActivities } from "../domain/lesson_content";
 
 const MAX_ATTEMPTS_PER_ACTIVITY = 100;
 
@@ -39,7 +40,6 @@ export const submitActivityAttempt = onCall(
 
     const firestore = db();
     const sessionRef = firestore.collection(paths.sessions(uid)).doc(sessionId);
-    const activityRef = firestore.collection(paths.activities).doc(activityId);
     const activityAttemptId = `${sessionId}_${requestId}`;
     const attemptRef = firestore
       .collection(paths.activityAttempts(uid))
@@ -49,14 +49,19 @@ export const submitActivityAttempt = onCall(
     let result: { correct: boolean; activityCompleted: boolean };
     try {
       result = await firestore.runTransaction(async (tx) => {
-        const [sessionSnap, activitySnap, childSnap, attemptSnap] =
+        const [sessionSnap, childSnap, attemptSnap] =
           await Promise.all([
             tx.get(sessionRef),
-            tx.get(activityRef),
             tx.get(childRef),
             tx.get(attemptRef),
           ]);
+        if (!childSnap.exists || !sessionSnap.exists || sessionSnap.get("childId") !== childId) {
+          throw new HttpsError("not-found", "Sessão indisponível.");
+        }
         if (attemptSnap.exists) {
+          if (attemptSnap.get("activityId") !== activityId || attemptSnap.get("childId") !== childId) {
+            throw new HttpsError("invalid-argument", "Request ID já utilizado.");
+          }
           return {
             correct: attemptSnap.get("correct") === true,
             activityCompleted: attemptSnap.get("activityCompleted") === true,
@@ -73,35 +78,13 @@ export const submitActivityAttempt = onCall(
         ) {
           throw new HttpsError("permission-denied", "Atividade fora da sessão.");
         }
-        if (
-          !activitySnap.exists ||
-          activitySnap.get("published") !== true ||
-          activitySnap.get("lessonId") !== session.lessonId
-        ) {
-          throw new HttpsError("failed-precondition", "Atividade indisponível.");
-        }
-        if (!childSnap.exists) {
-          throw new HttpsError("not-found", "Perfil da criança não encontrado.");
-        }
-
-        const lessonSnap = await tx.get(
-          firestore.collection(paths.lessons).doc(session.lessonId),
-        );
+        const bundle = await readLessonBundle(tx, session.lessonId);
+        requireSessionBundle(session, bundle);
         const progressRef = firestore
           .collection(paths.learningProgress(uid))
           .doc(`${childId}_${session.lessonId}`);
         const progressSnap = await tx.get(progressRef);
-        const lesson = lessonSnap.data();
-        if (
-          !lesson ||
-          !Array.isArray(lesson.activityIds) ||
-          lesson.activityIds.length !== session.activityIds.length ||
-          lesson.activityIds.some((id: unknown, index: number) =>
-            id !== session.activityIds[index],
-          )
-        ) {
-          throw new HttpsError("failed-precondition", "Manifesto da sessão alterado.");
-        }
+        const lesson = bundle.lesson;
         if (!await hasLessonAccess(tx, uid, lesson)) {
           throw new HttpsError("permission-denied", "Esta lição exige Premium.");
         }
@@ -122,10 +105,7 @@ export const submitActivityAttempt = onCall(
           throw new HttpsError("failed-precondition", "Lição fora do percurso.");
         }
 
-        const activity = {
-          ...activitySnap.data(),
-          id: activitySnap.id,
-        } as ActivityDocument;
+        const activity = scoredActivities(bundle).find((item) => item.id === activityId)!;
         let score: { correct: boolean; completionKey: string | null };
         try {
           score = scoreActivityResponse(activity, request.data?.response);
@@ -193,6 +173,8 @@ export const submitActivityAttempt = onCall(
           updatedAt: FieldValue.serverTimestamp(),
         }, { merge: true });
         tx.create(attemptRef, {
+          schemaVersion: 1,
+          contentVersion: bundle.lesson.contentVersion,
           childId,
           sessionId,
           lessonId: session.lessonId,
@@ -218,6 +200,9 @@ export const submitActivityAttempt = onCall(
 function sanitizeResponse(raw: unknown): Record<string, unknown> {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
   const response = raw as Record<string, unknown>;
+  if (typeof response.questionId === "string" && typeof response.selectedLabel === "string") {
+    return { questionId:response.questionId.slice(0,64), selectedLabel:response.selectedLabel.slice(0,80) };
+  }
   if (typeof response.selectedLabel === "string") {
     return { selectedLabel: response.selectedLabel.slice(0, 80) };
   }

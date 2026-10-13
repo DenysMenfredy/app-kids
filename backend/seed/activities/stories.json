@@ -1,0 +1,68 @@
+[
+  {
+    "id": "activity_032_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_032",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_001",
+    "published": true
+  },
+  {
+    "id": "activity_033_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_033",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_002",
+    "published": true
+  },
+  {
+    "id": "activity_034_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_034",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_003",
+    "published": true
+  },
+  {
+    "id": "activity_035_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_035",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_004",
+    "published": true
+  },
+  {
+    "id": "activity_036_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_036",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_005",
+    "published": true
+  },
+  {
+    "id": "activity_037_story",
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "lessonId": "lesson_037",
+    "type": "story",
+    "order": 5,
+    "instruction": "Leia a história e responda",
+    "storyId": "story_006",
+    "published": true
+  }
+]

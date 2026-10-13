@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../domain/lesson.dart';
+import '../domain/story.dart';
 
 /// Source of a lesson's exercises.
 abstract interface class LessonRepository {
@@ -62,7 +63,9 @@ class FirestoreLessonRepository implements LessonRepository {
   @override
   Future<LessonContent> loadLesson(String lessonId) async {
     final results = await Future.wait([
-      _firestore.doc('lessons/$lessonId').get(),
+      _firestore
+          .doc('lessons/$lessonId')
+          .get(const GetOptions(source: Source.server)),
       // `published` has to be part of the query, not just the rule: Firestore
       // evaluates a list against the query itself, so without this filter the
       // read is denied even though every document is published.
@@ -71,7 +74,7 @@ class FirestoreLessonRepository implements LessonRepository {
           .where('lessonId', isEqualTo: lessonId)
           .where('published', isEqualTo: true)
           .orderBy('order')
-          .get(),
+          .get(const GetOptions(source: Source.server)),
     ]);
     final lesson = (results[0] as DocumentSnapshot<Map<String, dynamic>>)
         .data();
@@ -81,7 +84,21 @@ class FirestoreLessonRepository implements LessonRepository {
     final activities = (results[1] as QuerySnapshot<Map<String, dynamic>>).docs
         .map((doc) => {...doc.data(), 'id': doc.id})
         .toList();
-    return lessonContentFromMaps(lessonId, lesson, activities);
+    final storyActivities = activities.where(
+      (activity) => activity['type'] == 'story',
+    );
+    Map<String, dynamic>? story;
+    if (storyActivities.isNotEmpty) {
+      final storyId = storyActivities.single['storyId'];
+      if (storyId is! String) throw const FormatException('Missing story ID');
+      story =
+          (await _firestore
+                  .doc('stories/$storyId')
+                  .get(const GetOptions(source: Source.server)))
+              .data();
+      if (story == null) throw const FormatException('Story unavailable');
+    }
+    return lessonContentFromMaps(lessonId, lesson, activities, story: story);
   }
 }
 
@@ -92,11 +109,37 @@ class FirestoreLessonRepository implements LessonRepository {
 LessonContent lessonContentFromMaps(
   String lessonId,
   Map<String, dynamic> lesson,
-  List<Map<String, dynamic>> activities,
-) {
+  List<Map<String, dynamic>> activities, {
+  Map<String, dynamic>? story,
+}) {
+  final manifest = lesson['activityIds'];
+  if (manifest != null) {
+    if (manifest is! List ||
+        ![4, 5].contains(manifest.length) ||
+        manifest.length != activities.length ||
+        manifest.toSet().length != manifest.length ||
+        lesson['schemaVersion'] != 1 ||
+        lesson['contentVersion'] is! int ||
+        (lesson['contentVersion'] as int) < 1) {
+      throw const FormatException('Invalid lesson manifest');
+    }
+    for (final (index, id) in manifest.indexed) {
+      final matches = activities
+          .where((activity) => activity['id'] == id)
+          .toList();
+      if (matches.length != 1 ||
+          matches.single['order'] != index + 1 ||
+          matches.single['lessonId'] != lessonId ||
+          matches.single['schemaVersion'] != 1 ||
+          matches.single['contentVersion'] is! int ||
+          (matches.single['contentVersion'] as int) < 1) {
+        throw const FormatException('Incomplete or mismatched lesson content');
+      }
+    }
+  }
   Map<String, dynamic> activityOf(String type) {
     final match = activities.where((a) => a['type'] == type);
-    if (match.isEmpty) {
+    if (match.length != 1) {
       throw StateError('Lesson $lessonId has no "$type" activity');
     }
     return match.first;
@@ -116,6 +159,16 @@ LessonContent lessonContentFromMaps(
   final match = activityOf('match');
   final trace = activityOf('trace');
   final listen = activityOf('listen');
+  final storyActivities = activities
+      .where((activity) => activity['type'] == 'story')
+      .toList();
+  if (storyActivities.length > 1 ||
+      activities.any(
+        (activity) =>
+            !ActivityType.values.any((type) => type.name == activity['type']),
+      )) {
+    throw const FormatException('Unsupported lesson activity');
+  }
 
   final pairs = (match['pairs'] as List? ?? const []).whereType<Map>().toList();
   final uppercase = pairs
@@ -159,6 +212,109 @@ LessonContent lessonContentFromMaps(
       answer: text(listen, 'answer'),
       options: labels(listen),
     ),
+    contentVersion: lesson['contentVersion'] as int? ?? 1,
+    story: storyActivities.isEmpty
+        ? null
+        : storyActivityFromMap(lessonId, storyActivities.single, story),
+  );
+}
+
+StoryActivity storyActivityFromMap(
+  String lessonId,
+  Map<String, dynamic> activity,
+  Map<String, dynamic>? raw,
+) {
+  if (raw == null ||
+      raw['schemaVersion'] != 1 ||
+      raw['id'] != activity['storyId'] ||
+      raw['lessonId'] != lessonId ||
+      raw['contentVersion'] is! int ||
+      (raw['contentVersion'] as int) < 1 ||
+      raw['pages'] is! List ||
+      raw['questions'] is! List) {
+    throw const FormatException('Invalid story contract');
+  }
+  String text(Map<String, dynamic> value, String key, int max) {
+    final text = value[key];
+    if (text is! String || text.trim().isEmpty || text.length > max) {
+      throw const FormatException('Invalid story text');
+    }
+    return text;
+  }
+
+  const scenes = {
+    'frog',
+    'moon',
+    'sun',
+    'pond',
+    'vowels',
+    'party',
+    'letters',
+    'cat',
+    'dog',
+    'train',
+    'flowers',
+    'forest',
+    'butterfly',
+    'book',
+    'family',
+  };
+  final pages = (raw['pages'] as List).map((value) {
+    if (value is! Map<String, dynamic>) {
+      throw const FormatException('Invalid story page');
+    }
+    final scene = text(value, 'illustration', 32);
+    if (!scenes.contains(scene) ||
+        value.containsKey('audioUrl') ||
+        value.containsKey('imageUrl')) {
+      throw const FormatException('Unsupported story media');
+    }
+    return StoryPage(
+      id: text(value, 'id', 64),
+      text: text(value, 'text', 1200),
+      illustration: scene,
+    );
+  }).toList();
+  final questions = (raw['questions'] as List).map((value) {
+    if (value is! Map<String, dynamic> || value['options'] is! List) {
+      throw const FormatException('Invalid story question');
+    }
+    final options = (value['options'] as List).map((option) {
+      if (option is! String || option.trim().isEmpty || option.length > 80) {
+        throw const FormatException('Invalid option');
+      }
+      return option;
+    }).toList();
+    final answer = text(value, 'answer', 80);
+    if (options.length < 2 ||
+        options.length > 4 ||
+        options.toSet().length != options.length ||
+        !options.contains(answer)) {
+      throw const FormatException('Invalid story answer');
+    }
+    return StoryQuestion(
+      id: text(value, 'id', 64),
+      prompt: text(value, 'question', 300),
+      options: options,
+      answer: answer,
+    );
+  }).toList();
+  if (pages.isEmpty ||
+      pages.length > 12 ||
+      questions.isEmpty ||
+      questions.length > 8 ||
+      pages.map((page) => page.id).toSet().length != pages.length ||
+      questions.map((question) => question.id).toSet().length !=
+          questions.length) {
+    throw const FormatException('Incomplete story');
+  }
+  return StoryActivity(
+    id: text(activity, 'id', 64),
+    storyId: text(raw, 'id', 64),
+    title: text(raw, 'title', 100),
+    contentVersion: raw['contentVersion'] as int,
+    pages: List.unmodifiable(pages),
+    questions: List.unmodifiable(questions),
   );
 }
 

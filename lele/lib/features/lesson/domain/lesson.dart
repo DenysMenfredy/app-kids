@@ -1,7 +1,9 @@
 import 'package:equatable/equatable.dart';
 
-/// The four activity types of the daily lesson, in play order.
-enum ActivityType { tap, match, trace, listen }
+import 'story.dart';
+
+/// Daily lesson exercises, with optional story comprehension at the end.
+enum ActivityType { tap, match, trace, listen, story }
 
 /// Find the letter among several.
 class TapActivity extends Equatable {
@@ -92,9 +94,8 @@ class ListenActivity extends Equatable {
 
 /// A lesson and the exercises it plays, in order.
 ///
-/// A lesson is exactly these four activities — the invariant the backend's
-/// seed integrity tests enforce and `LessonFlow` assumes — so they are named
-/// fields rather than a list that could arrive short.
+/// Four named exercises are always present; story lessons append one bounded
+/// page/question activity. The backend validates this versioned manifest.
 class LessonContent extends Equatable {
   const LessonContent({
     required this.id,
@@ -105,6 +106,8 @@ class LessonContent extends Equatable {
     required this.match,
     required this.trace,
     required this.listen,
+    this.story,
+    this.contentVersion = 1,
   });
 
   final String id;
@@ -115,6 +118,15 @@ class LessonContent extends Equatable {
   final MatchActivity match;
   final TraceActivity trace;
   final ListenActivity listen;
+  final StoryActivity? story;
+  final int contentVersion;
+  List<ActivityType> get activityTypes => [
+    ActivityType.tap,
+    ActivityType.match,
+    ActivityType.trace,
+    ActivityType.listen,
+    if (story != null) ActivityType.story,
+  ];
 
   @override
   List<Object?> get props => [
@@ -126,6 +138,8 @@ class LessonContent extends Equatable {
     match,
     trace,
     listen,
+    story,
+    contentVersion,
   ];
 }
 

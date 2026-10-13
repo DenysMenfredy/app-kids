@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import { cert, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { bookPublicationProblem } from "../lib/domain/books.js";
+import { lessonPublicationProblem } from "../lib/domain/lesson_content.js";
 
 const seedRoot = join(dirname(fileURLToPath(import.meta.url)), "../../seed");
 
@@ -85,6 +86,25 @@ for (const [id, book] of books) {
 }
 if (books.length !== bookContents.size) throw new Error("Orphaned book content.");
 
+function allDocuments(collection) {
+  return readdirSync(join(seedRoot, collection)).filter((file) => file.endsWith(".json"))
+    .flatMap((file) => documentsIn(collection, file).map(([, document]) => document));
+}
+if (collections.some((name) => ["lessons", "activities", "stories"].includes(name))) {
+  if (!["lessons", "activities", "stories"].every((name) => collections.includes(name))) {
+    throw new Error("Seed lessons, activities and stories together.");
+  }
+  const activityMap = new Map(allDocuments("activities").map((activity) => [activity.id, activity]));
+  const storyMap = new Map(allDocuments("stories").map((story) => [story.id, story]));
+  for (const lesson of allDocuments("lessons")) {
+    const activities = lesson.activityIds.map((id) => activityMap.get(id));
+    if (activities.some((activity) => !activity)) throw new Error(`${lesson.id}: missing activity`);
+    const story = storyMap.get(activities[4]?.storyId) ?? null;
+    const problem = lessonPublicationProblem(lesson.id, { lesson, activities, story });
+    if (problem) throw new Error(`${lesson.id}: ${problem}`);
+  }
+}
+
 let written = 0;
 for (const collection of collections) {
   if (collection === "books" || collection === "bookContents") continue;
@@ -99,8 +119,8 @@ for (const collection of collections) {
       for (const [id, document] of chunk) {
         batch.set(
           db.collection(collection).doc(id),
-          { ...document, updatedAt: new Date() },
-          { merge: true },
+          { ...document, updatedAt: FieldValue.serverTimestamp() },
+          { merge: !["lessons", "activities", "stories"].includes(collection) },
         );
       }
       await batch.commit();

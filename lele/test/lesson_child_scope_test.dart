@@ -12,6 +12,7 @@ import 'package:lele/features/session/domain/child_record.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _RecordingLessonSyncService implements LessonSyncService {
+  bool failStart = false;
   String? startedLessonId;
   String? attemptedLessonId;
   String? completedLessonId;
@@ -31,7 +32,12 @@ class _RecordingLessonSyncService implements LessonSyncService {
   String? completedChildId;
 
   @override
-  Future<void> lessonStarted(String lessonId, String childId) async {
+  Future<void> lessonStarted(
+    String lessonId,
+    String childId, {
+    int? contentVersion,
+  }) async {
+    if (failStart) throw StateError('offline');
     startedChildId = childId;
     startedLessonId = lessonId;
   }
@@ -58,6 +64,27 @@ class _RecordingLessonSyncService implements LessonSyncService {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'a rejected online start cannot record attempts or complete a lesson',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final sync = _RecordingLessonSyncService()..failStart = true;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          lessonSyncServiceProvider.overrideWithValue(sync),
+        ],
+      );
+      addTearDown(container.dispose);
+      final session = container.read(lessonSessionProvider);
+      expect(await session.start(contentVersion: 1), isFalse);
+      await session.recordAttempt('activity_1', {'selectedLabel': 'A'});
+      expect(await session.complete(), isNull);
+      expect(sync.attemptedChildId, isNull);
+      expect(sync.completions, 0);
+    },
+  );
 
   test(
     'a lesson run remains scoped to its starting child after a switch',
@@ -85,7 +112,7 @@ void main() {
         ),
       );
       final lesson = container.read(lessonSessionProvider);
-      lesson.start();
+      expect(await lesson.start(), isTrue);
       final startingLesson = sync.startedLessonId!;
       container.read(demoLessonProvider.notifier).completed(startingLesson);
       lesson.setForeground(false);
@@ -97,7 +124,7 @@ void main() {
           profile: ChildProfile(name: 'Caio', age: 6, avatar: ChildAvatar.teal),
         ),
       );
-      lesson.recordAttempt('activity_1', const {'selectedLabel': 'A'});
+      await lesson.recordAttempt('activity_1', const {'selectedLabel': 'A'});
       final completion = lesson.complete();
       expect(identical(lesson.complete(), completion), isTrue);
       await completion;

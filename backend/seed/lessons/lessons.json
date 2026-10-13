@@ -1,6 +1,8 @@
 [
   {
     "id": "lesson_001",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_001",
     "number": 1,
@@ -18,6 +20,8 @@
   },
   {
     "id": "lesson_002",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_001",
     "number": 2,
@@ -35,6 +39,8 @@
   },
   {
     "id": "lesson_003",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_001",
     "number": 3,
@@ -52,6 +58,8 @@
   },
   {
     "id": "lesson_004",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_002",
     "number": 4,
@@ -69,6 +77,8 @@
   },
   {
     "id": "lesson_005",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_002",
     "number": 5,
@@ -86,6 +96,8 @@
   },
   {
     "id": "lesson_006",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_002",
     "number": 6,
@@ -103,6 +115,8 @@
   },
   {
     "id": "lesson_007",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_002",
     "number": 7,
@@ -120,6 +134,8 @@
   },
   {
     "id": "lesson_008",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 8,
@@ -137,6 +153,8 @@
   },
   {
     "id": "lesson_009",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 9,
@@ -154,6 +172,8 @@
   },
   {
     "id": "lesson_010",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 10,
@@ -171,6 +191,8 @@
   },
   {
     "id": "lesson_011",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 11,
@@ -188,6 +210,8 @@
   },
   {
     "id": "lesson_012",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 12,
@@ -205,6 +229,8 @@
   },
   {
     "id": "lesson_013",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_003",
     "number": 13,
@@ -222,6 +248,8 @@
   },
   {
     "id": "lesson_014",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 14,
@@ -239,6 +267,8 @@
   },
   {
     "id": "lesson_015",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 15,
@@ -256,6 +286,8 @@
   },
   {
     "id": "lesson_016",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 16,
@@ -273,6 +305,8 @@
   },
   {
     "id": "lesson_017",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 17,
@@ -290,6 +324,8 @@
   },
   {
     "id": "lesson_018",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 18,
@@ -307,6 +343,8 @@
   },
   {
     "id": "lesson_019",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_004",
     "number": 19,
@@ -324,6 +362,8 @@
   },
   {
     "id": "lesson_020",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 20,
@@ -341,6 +381,8 @@
   },
   {
     "id": "lesson_021",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 21,
@@ -358,6 +400,8 @@
   },
   {
     "id": "lesson_022",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 22,
@@ -375,6 +419,8 @@
   },
   {
     "id": "lesson_023",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 23,
@@ -392,6 +438,8 @@
   },
   {
     "id": "lesson_024",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 24,
@@ -409,6 +457,8 @@
   },
   {
     "id": "lesson_025",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_005",
     "number": 25,
@@ -426,6 +476,8 @@
   },
   {
     "id": "lesson_026",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 26,
@@ -443,6 +495,8 @@
   },
   {
     "id": "lesson_027",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 27,
@@ -460,6 +514,8 @@
   },
   {
     "id": "lesson_028",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 28,
@@ -477,6 +533,8 @@
   },
   {
     "id": "lesson_029",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 29,
@@ -494,6 +552,8 @@
   },
   {
     "id": "lesson_030",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 30,
@@ -511,6 +571,8 @@
   },
   {
     "id": "lesson_031",
+    "schemaVersion": 1,
+    "contentVersion": 1,
     "courseId": "course_001",
     "moduleId": "module_006",
     "number": 31,
@@ -528,6 +590,8 @@
   },
   {
     "id": "lesson_032",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 32,
@@ -539,12 +603,15 @@
       "activity_032_tap",
       "activity_032_match",
       "activity_032_trace",
-      "activity_032_listen"
+      "activity_032_listen",
+      "activity_032_story"
     ],
     "published": true
   },
   {
     "id": "lesson_033",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 33,
@@ -556,12 +623,15 @@
       "activity_033_tap",
       "activity_033_match",
       "activity_033_trace",
-      "activity_033_listen"
+      "activity_033_listen",
+      "activity_033_story"
     ],
     "published": true
   },
   {
     "id": "lesson_034",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 34,
@@ -573,12 +643,15 @@
       "activity_034_tap",
       "activity_034_match",
       "activity_034_trace",
-      "activity_034_listen"
+      "activity_034_listen",
+      "activity_034_story"
     ],
     "published": true
   },
   {
     "id": "lesson_035",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 35,
@@ -590,12 +663,15 @@
       "activity_035_tap",
       "activity_035_match",
       "activity_035_trace",
-      "activity_035_listen"
+      "activity_035_listen",
+      "activity_035_story"
     ],
     "published": true
   },
   {
     "id": "lesson_036",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 36,
@@ -607,12 +683,15 @@
       "activity_036_tap",
       "activity_036_match",
       "activity_036_trace",
-      "activity_036_listen"
+      "activity_036_listen",
+      "activity_036_story"
     ],
     "published": true
   },
   {
     "id": "lesson_037",
+    "schemaVersion": 1,
+    "contentVersion": 2,
     "courseId": "course_001",
     "moduleId": "module_007",
     "number": 37,
@@ -624,7 +703,8 @@
       "activity_037_tap",
       "activity_037_match",
       "activity_037_trace",
-      "activity_037_listen"
+      "activity_037_listen",
+      "activity_037_story"
     ],
     "published": true
   }

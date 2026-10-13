@@ -11,6 +11,7 @@ import 'package:lele/core/theme/app_spacing.dart';
 import 'package:lele/core/theme/app_theme.dart';
 import 'package:lele/core/widgets/lele_button.dart';
 import 'package:lele/core/widgets/lele_icon_button.dart';
+import 'package:lele/features/lesson/application/lesson_session_controller.dart';
 import 'package:lele/features/lesson/application/lesson_stats_controller.dart';
 import 'package:lele/features/lesson/presentation/activities/listen_activity_screen.dart';
 import 'package:lele/features/lesson/presentation/activities/match_activity_screen.dart';
@@ -129,6 +130,7 @@ Future<Harness> pumpActivity(WidgetTester tester, String location) async {
     ],
   );
   addTearDown(container.dispose);
+  expect(await container.read(lessonSessionProvider).start(), isTrue);
 
   await tester.pumpWidget(
     UncontrolledProviderScope(

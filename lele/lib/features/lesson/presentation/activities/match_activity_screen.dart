@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,27 +34,49 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
   String? _wrong;
   int _wrongAttempts = 0;
   bool _done = false;
+  bool _saving = false;
+  bool _restored = false;
 
   void _onUppercaseTap(String letter) {
-    if (_matched.contains(letter)) return;
+    if (_saving || _done || _matched.contains(letter)) return;
     ref.read(ttsServiceProvider).speak(letter);
     setState(() => _selected = letter);
   }
 
-  void _onLowercaseTap(MatchActivity activity, String letter) {
+  Future<void> _onLowercaseTap(MatchActivity activity, String letter) async {
     final upper = letter.toUpperCase();
-    if (_matched.contains(upper) || _selected == null) return;
-    ref.read(lessonSessionProvider).recordAttempt(activity.id, {
-      'upper': _selected!,
-      'lower': letter,
-    });
-    if (upper == _selected) {
+    if (_saving || _done || _matched.contains(upper) || _selected == null) {
+      return;
+    }
+    final selected = _selected!;
+    setState(() => _saving = true);
+    final saved = await ref.read(lessonSessionProvider).recordAttempt(
+      activity.id,
+      {'upper': selected, 'lower': letter},
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível guardar sua resposta. Tente novamente.',
+          ),
+        ),
+      );
+      return;
+    }
+    if (upper == selected) {
       final all = _matched.length + 1 == activity.uppercase.length;
       ref.read(lessonStatsProvider.notifier).recordCorrect();
-      ref
-          .read(feedbackServiceProvider)
-          .play(all ? FeedbackCue.celebrate : FeedbackCue.correct);
-      ref.read(ttsServiceProvider).speak(all ? 'Incrível!' : 'Isso!');
+      unawaited(
+        ref
+            .read(feedbackServiceProvider)
+            .play(all ? FeedbackCue.celebrate : FeedbackCue.correct),
+      );
+      unawaited(
+        ref.read(ttsServiceProvider).speak(all ? 'Incrível!' : 'Isso!'),
+      );
       setState(() {
         _matched.add(upper);
         _selected = null;
@@ -70,7 +94,7 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
     } else {
       ref.read(lessonStatsProvider.notifier).recordWrong();
       // This activity said nothing at all on a wrong pair before.
-      ref.read(feedbackServiceProvider).play(FeedbackCue.wrong);
+      unawaited(ref.read(feedbackServiceProvider).play(FeedbackCue.wrong));
       setState(() {
         _wrong = letter;
         _wrongAttempts++;
@@ -86,6 +110,13 @@ class _MatchActivityScreenState extends ConsumerState<MatchActivityScreen> {
     final content = ref.watch(currentLessonContentProvider).value;
     if (content == null) return const ActivityLoading();
     final activity = content.match;
+    if (!_restored) {
+      _matched.addAll(
+        ref.read(lessonRunProvider)?.completedItems[activity.id] ??
+            const <String>{},
+      );
+      _restored = true;
+    }
     final flow = ref.watch(lessonFlowProvider);
     return ActivityScaffold(
       progress: flow.progressOf(ActivityType.match),

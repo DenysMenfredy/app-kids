@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +32,7 @@ class TraceActivityScreen extends ConsumerStatefulWidget {
 class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
   final List<List<Offset>> _strokes = [];
   DateTime? _strokeStartedAt;
+  bool _finishing = false;
 
   int get _pointCount =>
       _strokes.fold(0, (total, stroke) => total + stroke.length);
@@ -51,23 +54,38 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
     _strokeStartedAt = null;
   });
 
-  void _finish(LessonContent content) {
-    if (!_hasTraced) return;
-    ref.read(lessonStatsProvider.notifier).recordCorrect();
+  Future<void> _finish(LessonContent content) async {
+    if (!_hasTraced || _finishing) return;
+    setState(() => _finishing = true);
     final elapsed = _strokeStartedAt == null
         ? 100
         : DateTime.now().difference(_strokeStartedAt!).inMilliseconds;
-    ref.read(lessonSessionProvider).recordAttempt(content.trace.id, {
-      'strokeCount': _strokes.length,
-      'pointCount': _pointCount,
-      'durationMillis': elapsed.clamp(100, 120000).toInt(),
-    });
+    final saved = await ref
+        .read(lessonSessionProvider)
+        .recordAttempt(content.trace.id, {
+          'strokeCount': _strokes.length.clamp(1, 20),
+          'pointCount': _pointCount.clamp(2, 1000),
+          'durationMillis': elapsed.clamp(100, 120000).toInt(),
+        });
+    if (!mounted) return;
+    if (!saved) {
+      setState(() => _finishing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Não foi possível guardar seu desenho. Tente novamente.',
+          ),
+        ),
+      );
+      return;
+    }
+    ref.read(lessonStatsProvider.notifier).recordCorrect();
     // Captured before navigating: this screen is disposed by the time the
     // timer below fires, and reading from `ref` after that throws, which
     // silently cost the child the hand-off cue.
     final tts = ref.read(ttsServiceProvider);
-    ref.read(feedbackServiceProvider).play(FeedbackCue.correct);
-    tts.speak('Que capricho!');
+    unawaited(ref.read(feedbackServiceProvider).play(FeedbackCue.correct));
+    unawaited(tts.speak('Que capricho!'));
     context.goNamed(ref.read(lessonFlowProvider).nextRoute(ActivityType.trace));
     // Hand off to the next activity by speaking its word.
     Future.delayed(const Duration(milliseconds: 700), () {
@@ -178,7 +196,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
               Expanded(
                 flex: 2,
                 child: LeleButton(
-                  label: 'Pronto!',
+                  label: _finishing ? 'Guardando...' : 'Pronto!',
                   height: 56,
                   fontSize: 19,
                   borderRadius: 20,
@@ -186,7 +204,7 @@ class _TraceActivityScreenState extends ConsumerState<TraceActivityScreen> {
                   shadowColor: _hasTraced
                       ? AppColors.tealDark
                       : AppColors.textDisabled,
-                  enabled: _hasTraced,
+                  enabled: _hasTraced && !_finishing,
                   onPressed: () => _finish(content),
                 ),
               ),

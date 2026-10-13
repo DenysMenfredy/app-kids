@@ -46,7 +46,7 @@ interface Option {
 }
 interface Activity extends SeedDoc {
   lessonId: string;
-  type: "tap" | "match" | "trace" | "listen";
+  type: "tap" | "match" | "trace" | "listen" | "story";
   order: number;
   instruction: string;
   target?: string;
@@ -68,7 +68,8 @@ interface Assessment extends SeedDoc {
 const course = read<Course>("courses/course_001.json");
 const modules = read<Module[]>("modules/modules.json");
 const lessons = read<Lesson[]>("lessons/lessons.json");
-const activities = read<Activity[]>("activities/activities.json");
+const activities = [...read<Activity[]>("activities/activities.json"),
+  ...read<Activity[]>("activities/stories.json")];
 const assessment = read<Assessment>(
   "assessments/assessment_pre_literacy_v1.json",
 );
@@ -148,19 +149,19 @@ describe("seed content — references", () => {
     }
   });
 
-  it("each lesson has the four activities in play order", () => {
+  it("each lesson has four activities and an optional final story", () => {
     for (const lesson of lessons) {
       const own = activities
         .filter((activity) => activity.lessonId === lesson.id)
         .sort((a, b) => a.order - b.order);
       assert.deepEqual(
         own.map((activity) => activity.type),
-        [...PLAY_ORDER],
+        own.length === 5 ? [...PLAY_ORDER, "story"] : [...PLAY_ORDER],
         `${lesson.id} activity types`,
       );
       assert.deepEqual(
         own.map((activity) => activity.order),
-        [1, 2, 3, 4],
+        own.map((_, index) => index + 1),
         `${lesson.id} activity order`,
       );
       assert.deepEqual(own.map((activity) => activity.id), lesson.activityIds);

@@ -5,6 +5,7 @@ import { db } from "../lib/firestore";
 import { enforceAppCheck, requireRole, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 import { bookPublicationProblem } from "../domain/books";
+import { readLessonBundle } from "../learning/lesson_bundle";
 
 /**
  * Content management (spec §5, §13). Content is configuration-driven:
@@ -19,6 +20,7 @@ const CONTENT_COLLECTIONS = new Set([
   "assessments",
   "books",
   "bookContents",
+  "stories",
 ]);
 
 type Action = "upsert" | "publish" | "unpublish";
@@ -66,6 +68,26 @@ export const manageContent = onCall(
       }
       case "publish":
       case "unpublish": {
+        if (["activities", "stories"].includes(collection) && action === "publish") {
+          throw new HttpsError("failed-precondition", "Publique a lição para validar seu conteúdo completo.");
+        }
+        if (collection === "lessons") {
+          if (action === "unpublish") {
+            await ref.update({published:false,updatedAt:FieldValue.serverTimestamp(),updatedBy:editorUid});
+            break;
+          }
+          await db().runTransaction(async (tx) => {
+            const bundle = await readLessonBundle(tx, docId, false);
+            const update = { published: action === "publish",
+              updatedAt: FieldValue.serverTimestamp(), updatedBy: editorUid };
+            tx.set(ref, {...update,contentVersion:Number(bundle.lesson.contentVersion)+1}, { merge: true });
+            for (const activity of bundle.activities) {
+              tx.set(db().collection("activities").doc(activity.id), update, { merge: true });
+            }
+            if (bundle.story) tx.set(db().collection("stories").doc(String(bundle.story.id)), update, { merge: true });
+          });
+          break;
+        }
         if (collection === "bookContents" && action === "publish") {
           throw new HttpsError("failed-precondition", "Publique o livro em books para validar suas páginas.");
         }

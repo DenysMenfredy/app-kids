@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,12 +20,26 @@ import '../application/lesson_session_controller.dart';
 import '../domain/lesson.dart';
 import 'activity_presentation.dart';
 
-class LessonIntroScreen extends ConsumerWidget {
+class LessonIntroScreen extends ConsumerStatefulWidget {
   const LessonIntroScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final content = ref.watch(currentLessonContentProvider);
+  ConsumerState<LessonIntroScreen> createState() => _LessonIntroScreenState();
+}
+
+class _LessonIntroScreenState extends ConsumerState<LessonIntroScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // A new run must reauthorize content online, not reuse a previous run's
+    // protected payload after access expired or the publisher edited it.
+    ref.invalidate(pendingLessonProvider);
+    ref.invalidate(lessonIntroContentProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final content = ref.watch(lessonIntroContentProvider);
     return Scaffold(
       body: SafeArea(
         child: AdaptiveWidth(
@@ -52,13 +68,35 @@ class LessonIntroScreen extends ConsumerWidget {
                       child: CircularProgressIndicator(color: AppColors.teal),
                     ),
                     error: (error, _) => _LoadFailed(
-                      onRetry: () => ref.invalidate(
-                        lessonContentProvider(
-                          ref.read(currentLessonIdProvider),
-                        ),
-                      ),
+                      onRetry: () => ref.invalidate(lessonIntroContentProvider),
+                      onDiscard: ref.watch(pendingLessonProvider).value == null
+                          ? null
+                          : () async {
+                              final discarded = await ref
+                                  .read(lessonSessionProvider)
+                                  .discardPending();
+                              if (mounted) {
+                                if (discarded) {
+                                  ref.invalidate(pendingLessonProvider);
+                                  ref.invalidate(lessonIntroContentProvider);
+                                } else {
+                                  ScaffoldMessenger.of(
+                                    this.context,
+                                  ).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Não foi possível reiniciar. Tente novamente.',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
                     ),
-                    data: (lesson) => _Lesson(lesson: lesson),
+                    data: (data) => _Lesson(
+                      lesson: data.lesson,
+                      hasPending: data.pending != null,
+                    ),
                   ),
                 ),
               ],
@@ -70,14 +108,84 @@ class LessonIntroScreen extends ConsumerWidget {
   }
 }
 
-class _Lesson extends ConsumerWidget {
-  const _Lesson({required this.lesson});
+class _Lesson extends ConsumerStatefulWidget {
+  const _Lesson({required this.lesson, required this.hasPending});
 
   final LessonContent lesson;
+  final bool hasPending;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final lessonNumber = ref.watch(currentLessonNumberProvider);
+  ConsumerState<_Lesson> createState() => _LessonState();
+}
+
+class _LessonState extends ConsumerState<_Lesson> {
+  bool _starting = false;
+
+  Future<void> _start({bool restart = false}) async {
+    if (_starting) return;
+    setState(() => _starting = true);
+    final session = ref.read(lessonSessionProvider);
+    var index = 0;
+    var started = false;
+    if (widget.hasPending && !restart) {
+      final recovered = await session.resume();
+      started = recovered != null;
+      index = recovered?.nextActivityIndex ?? 0;
+    } else {
+      if (restart && !await session.discardPending()) {
+        if (mounted) _failed();
+        return;
+      }
+      started = await session.start(
+        lessonId: widget.lesson.id,
+        contentVersion: widget.lesson.contentVersion,
+      );
+    }
+    if (!mounted) return;
+    if (started) {
+      if (index >= widget.lesson.activityTypes.length) {
+        final reward = await session.complete();
+        if (!mounted) return;
+        if (reward != null) {
+          session.publishReward(reward);
+          context.goNamed(AppRoutes.reward);
+          return;
+        }
+        _failed();
+        return;
+      }
+      if (index == 0) {
+        unawaited(ref.read(ttsServiceProvider).speak(widget.lesson.tap.speech));
+      }
+      context.goNamed(
+        ref
+            .read(lessonFlowProvider)
+            .routeOf(widget.lesson.activityTypes[index]),
+      );
+    } else {
+      _failed();
+    }
+  }
+
+  void _failed() {
+    setState(() => _starting = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Não foi possível salvar ou continuar. Verifique a conexão e tente novamente. '
+          'Se a lição mudou, comece novamente.',
+        ),
+      ),
+    );
+    ref.invalidate(pendingLessonProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lesson = widget.lesson;
+    final lessonNumber =
+        int.tryParse(lesson.id.replaceFirst('lesson_', '')) ??
+        ref.watch(currentLessonNumberProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,7 +213,7 @@ class _Lesson extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  '${ActivityType.values.length} atividades · cerca de '
+                  '${lesson.activityTypes.length} atividades · cerca de '
                   '${lesson.estimatedMinutes} minutos',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
@@ -113,7 +221,7 @@ class _Lesson extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                for (final type in ActivityType.values) ...[
+                for (final type in lesson.activityTypes) ...[
                   _ActivityRow(presentation: activityPresentation[type]!),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -122,15 +230,27 @@ class _Lesson extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
+        if (widget.hasPending) ...[
+          Text(
+            'Há uma lição para continuar.',
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodySmall,
+          ),
+          TextButton(
+            onPressed: _starting ? null : () => _start(restart: true),
+            child: const Text('Começar novamente'),
+          ),
+        ],
         LeleButton(
-          label: 'Começar!',
+          label: _starting
+              ? 'Aguarde...'
+              : widget.hasPending
+              ? 'Continuar lição'
+              : 'Começar!',
+          enabled: !_starting,
           height: 60,
           fontSize: 21,
-          onPressed: () {
-            ref.read(lessonSessionProvider).start();
-            ref.read(ttsServiceProvider).speak(lesson.tap.speech);
-            context.goNamed(ref.read(lessonFlowProvider).firstRoute);
-          },
+          onPressed: () => _start(),
         ),
       ],
     );
@@ -138,9 +258,10 @@ class _Lesson extends ConsumerWidget {
 }
 
 class _LoadFailed extends StatelessWidget {
-  const _LoadFailed({required this.onRetry});
+  const _LoadFailed({required this.onRetry, this.onDiscard});
 
   final VoidCallback onRetry;
+  final VoidCallback? onDiscard;
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +289,11 @@ class _LoadFailed extends StatelessWidget {
             ),
           ),
         ),
+        if (onDiscard != null)
+          TextButton(
+            onPressed: onDiscard,
+            child: const Text('Descartar lição e voltar ao percurso'),
+          ),
       ],
     );
   }

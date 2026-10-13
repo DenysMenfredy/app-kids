@@ -27,6 +27,7 @@ export { submitAssessment } from "./learning/submit_assessment";
 export { startLessonSession } from "./learning/start_lesson_session";
 export { submitActivityAttempt } from "./learning/submit_activity_attempt";
 export { updateLessonSession } from "./learning/update_lesson_session";
+export { recoverLessonSession } from "./learning/recover_lesson_session";
 export { getWeeklyLearningSummary } from "./learning/get_weekly_learning_summary";
 export { updateProgress } from "./learning/update_progress";
 

@@ -34,9 +34,9 @@ backend/
 ├── content/bncc_alignment.json # BNCC crosswalk (reference, not seeded)
 ├── seed/                      # curriculum content, imported into Firestore
 │   ├── courses/ modules/      # 1 course, 7 modules
-│   ├── lessons/               # 37 lessons (4 activities each)
-│   ├── activities/            # 148 tap/match/trace/listen exercises
-│   ├── stories/               # 6 module-7 texts + comprehension questions
+│   ├── lessons/               # 31 four-step lessons + 6 five-step story lessons
+│   ├── activities/            # 148 original exercises + 6 comprehension steps
+│   ├── stories/               # 6 versioned module-7 page/question bundles
 │   └── assessments/           # onboarding placement questionnaire
 ├── test/rules/                # Security Rules tests (Firestore emulator)
 └── docs/adr/                  # architecture decision records
@@ -68,12 +68,12 @@ Flutter → reads assessments/{id}          (labels only; weights ignored)
         → writes child learningLevel/currentCourseId/currentLessonId
           + users/{uid}/assessmentResults/{childId}
 
-Flutter → startLessonSession {lessonId, childId}
+Flutter → startLessonSession {lessonId, childId, contentVersion}
         → backend validates current journey + published activity manifest
         → submitActivityAttempt {sessionId, activityId, response, requestId}
         → backend scores against published content; session records evidence
         → completeLesson {lessonId, childId, sessionId}
-        → backend requires all four activities and derives lesson statistics
+        → backend requires every exercise/question and derives lesson statistics
         → transaction: already completed? → no reward
         → else applyLessonReward (XP, coins, local-calendar streak)
         → users/{uid}/gamification/{childId}   (client-read-only)
@@ -111,7 +111,8 @@ Firestore
 
 The current content is the BNCC-aligned bundle
 (`jornada_alfabetizacao_bncc_seed.zip`): 1 course, 7 modules, 37 lessons,
-148 activities and 6 stories, progressing vowels and tracing → visual
+148 original activities plus six executable comprehension steps and six stories,
+progressing vowels and tracing → visual
 recognition → phonological awareness → grapheme-phoneme and blending →
 words and digraphs → short phrases → stories and comprehension. Distractors
 teach rather than pad: module 4's listening exercises are near-minimal pairs
@@ -137,11 +138,12 @@ modules/{moduleId}          → courseId, number, title, lessonTheme,
 lessons/{lessonId}          → moduleId, number, order, title, theme,
                               estimatedMinutes, activityIds
 activities/{activityId}     → lessonId, type, order, difficulty, instruction
-stories/{storyId}           → lessonId, title, text, questions
+stories/{storyId}           → lessonId, schemaVersion, contentVersion,
+                              title, pages[], questions[]
 ```
 
-One lesson is four activities in play order — `tap`, `match`, `trace`,
-`listen` — each carrying only what its exercise needs:
+Lessons play `tap`, `match`, `trace`, `listen`, with a final `story` step in
+lessons 032–037. Each carries only what its exercise needs:
 
 | type | payload |
 | --- | --- |
@@ -149,6 +151,7 @@ One lesson is four activities in play order — `tap`, `match`, `trace`,
 | `match` | `pairs[]` of upper/lower, `lowercaseOrder` for the right column |
 | `trace` | `letter` |
 | `listen` | `answer`, `options[]` (one `correct`), `speech` |
+| `story` | `storyId` → versioned pages, illustrations and comprehension questions |
 
 `speech` is the pt-BR text the app reads aloud, including how each letter is
 *said* ("bê", "éle-agá"); recorded audio replaces it once assets exist. Two
@@ -159,11 +162,24 @@ fonts, so the child couldn't tell them apart.
 Module lesson ranges match the assessment's placement bands and the app's
 `curriculum`, asserted by tests on both sides.
 
-**Engine gap:** `stories/` carries the six module-7 texts and their
-comprehension questions, but the four activity types only express letters
-and words, so nothing reads them yet. Those lessons currently do
-phrase-level listening — real practice, but not reading a story. A story
-activity type is the missing piece.
+The story reader supports navigation, pt-BR narration and question feedback.
+Every question is scored server-side and required before rewards. New sessions
+pin content fingerprints; edited payloads cannot change an in-flight score.
+Protected payload loading and progress require a connection, while a run may
+display the pages it already loaded. Publication validates the whole lesson
+bundle and advances its revision. See ADR 0014 for D04–D06 and rollout gates.
+
+## Lesson recovery
+
+Lesson starts use a persisted request key so a lost response reuses the same
+server session. On app reopen, the lesson intro offers continuation or restart.
+`recoverLessonSession` rechecks current ownership/content/access and returns
+the confirmed exercise cursor and matching/story items. It excludes time spent
+away from the app. Unacknowledged answers remain in a bounded UID/child-local
+retry queue; completion waits for their acknowledgement and exposes a save
+retry instead of an unconfirmed reward. Logout clears that owner's queue.
+The recovery window is 24 hours; unfinished drawing/page UI is replayed from
+the current exercise. See ADR 0015 and `test:learning:smoke`/`test:stories:smoke`.
 
 ## Payments flow (§8)
 
@@ -213,6 +229,20 @@ It covers bounded presence, pause/resume, delayed commands, child ownership,
 concurrent completion, replay, and exact summary contributions. ADR 0013
 documents the active-time and calendar policy; historical session time is not
 backfilled from wall-clock durations.
+
+All six comprehension lessons have a separate demo-only integration check:
+
+```bash
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+npm --prefix functions run test:stories:smoke
+```
+
+It covers required questions, trusted wrong-answer scoring, retries, parallel
+completion, Premium expiry, parent ownership and edited-content rejection.
+Only disposable accounts and namespaced test content are removed on exit.
+Existing emulator exports refresh committed lessons/activities/stories/books
+on startup; parent, child and earned-progress documents are not reset.
 
 If signup succeeds but saving a child's profile fails, check the Functions
 terminal for `Loaded functions definitions from source` and a

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,22 +33,35 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
   bool _done = false;
   int _wrongAttempts = 0;
 
-  void _onTap(TapActivity activity, String letter) {
+  Future<void> _onTap(TapActivity activity, String letter) async {
     if (_done) return;
     final tts = ref.read(ttsServiceProvider);
     final feedback = ref.read(feedbackServiceProvider);
     final stats = ref.read(lessonStatsProvider.notifier);
     if (letter == activity.target) {
-      stats.recordCorrect();
-      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
-        'selectedLabel': letter,
-      });
-      feedback.play(FeedbackCue.correct);
-      tts.speak('Muito bem!');
+      unawaited(feedback.play(FeedbackCue.correct));
+      unawaited(tts.speak('Muito bem!'));
       setState(() {
         _picked = letter;
         _done = true;
       });
+      final saved = await ref.read(lessonSessionProvider).recordAttempt(
+        activity.id,
+        {'selectedLabel': letter},
+      );
+      if (!mounted) return;
+      if (!saved) {
+        setState(() => _done = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Não foi possível guardar sua resposta. Tente novamente.',
+            ),
+          ),
+        );
+        return;
+      }
+      stats.recordCorrect();
       Future.delayed(const Duration(milliseconds: 1100), () {
         if (mounted) {
           context.goNamed(
@@ -56,13 +71,15 @@ class _TapActivityScreenState extends ConsumerState<TapActivityScreen> {
       });
     } else {
       stats.recordWrong();
-      ref.read(lessonSessionProvider).recordAttempt(activity.id, {
-        'selectedLabel': letter,
-      });
+      unawaited(
+        ref.read(lessonSessionProvider).recordAttempt(activity.id, {
+          'selectedLabel': letter,
+        }),
+      );
       // Sound first: it lands before the spoken prompt has finished its
       // first syllable, which is what makes a miss unmistakable.
-      feedback.play(FeedbackCue.wrong);
-      tts.speak('Tente de novo');
+      unawaited(feedback.play(FeedbackCue.wrong));
+      unawaited(tts.speak('Tente de novo'));
       setState(() {
         _picked = letter;
         _wrongAttempts++;

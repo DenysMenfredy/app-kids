@@ -4,6 +4,7 @@ import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
 import { sessionClockPatch } from "./session_clock";
+import { readLessonBundle, requireSessionBundle } from "./lesson_bundle";
 
 /** Ordered lifecycle commands make a retried pause/resume/heartbeat harmless. */
 export const updateLessonSession = onCall({ enforceAppCheck }, async (request) => {
@@ -34,9 +35,9 @@ export const updateLessonSession = onCall({ enforceAppCheck }, async (request) =
       if (Date.now() - (session.startedAt?.toMillis?.() ?? 0) > 24 * 3600_000) {
         throw new HttpsError("failed-precondition", "Comece uma nova sessão.");
       }
-      const lesson = await tx.get(db().collection(paths.lessons).doc(session.lessonId));
-      if (!lesson.exists || lesson.get("published") !== true ||
-          !await hasLessonAccess(tx, uid, lesson.data()!)) {
+      const bundle = await readLessonBundle(tx, session.lessonId);
+      requireSessionBundle(session, bundle);
+      if (!await hasLessonAccess(tx, uid, bundle.lesson)) {
         throw new HttpsError("permission-denied", "Lição indisponível.");
       }
     }

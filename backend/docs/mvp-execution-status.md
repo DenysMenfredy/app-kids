@@ -1,15 +1,19 @@
-# MVP execution status — 2026-10-09
+# MVP execution status — 2026-10-13
 
 Source: `../../Lele_Plano_Execucao_MVP.md`. This is a code-and-local-test
 inventory, not evidence of Firebase console configuration or a deploy.
-The 2026-10-09 Flutter changes passed whole-project Dart analysis, local Android
+The latest Flutter changes passed whole-project Dart analysis, local Android
 installation, emulator hot restart and runtime-error inspection. This continuation
-passed all 16 Functions test groups, all 39 Security Rules tests, all 309 Flutter
+passed all 17 Functions test-file groups, 39 Security Rules regressions, all 328 Flutter
 tests, eight additional Firebase-mode profile-state regression tests, and the
 demo-emulator smoke flows, including active-time lifecycle,
-atomic daily summaries, concurrent completion and email-verification
+atomic daily summaries, all six comprehension stories, content-edit rejection,
+idempotent session starts, partial exercise recovery and no offline-time credit,
+concurrent completion and email-verification
 enforcement. This remains local evidence, not staging, console or physical-device
-validation.
+validation. ADR 0015 adds bounded owner/child-local retry data, confirmed save
+retries, resume/restart UI and logout cleanup. Its process-reconstruction and
+late-response regressions pass; physical-device process-kill checks remain open.
 
 ## F0 inventory
 
@@ -31,8 +35,10 @@ available via `/home/denys7/.nvm/versions/node/v22.19.0/bin` on this host.
   in ADR 0007: a real seven-day trial, entire first module free, and a
   purchase-free Android/iOS beta. Checkout stays disabled until the trial
   and web-only channel have been fully verified.
-- D04–D07 remain open: offline boundary, minimal child profile/consent,
-  launch content manifest, and legally reviewed retention/deletion matrix.
+- D04–D06 were approved on 2026-10-09 and recorded in ADR 0014: online
+  authorization/progress, minimal child fields without exact birth date, and
+  the existing seven modules/37 lessons/six stories/six books as launch scope.
+- D07 remains open: reviewed retention/deletion matrix and consent wording.
 
 ## Task ledger
 
@@ -49,9 +55,10 @@ available via `/home/denys7/.nvm/versions/node/v22.19.0/bin` on this host.
 | T07 | Partial | New email/password accounts must verify before child setup; resend/check flows refresh Firebase user and ID-token state. Firestore Rules and the child-profile and checkout callables enforce the boundary; Google/Apple are exempt. ADR 0011 records the decision. The demo smoke flow confirms an unverified token is rejected and a verified token can proceed; real email delivery, physical iOS validation, and support for independently existing Apple accounts remain open. |
 | T14 | Implemented locally; release gates open | Six original stories (two free, four Premium) now have published backend metadata/pages, symbolic cover/page illustrations, a reader with narration and navigation, loading/error/empty/locked states, and parent/child-scoped server-validated bookmarks. Existing demo exports receive books on startup. Whole-project Flutter analysis has zero issues; all 297 Flutter tests, 38 Rules tests, Functions tests and book publication/bookmark emulator smoke pass. Staging publication, editorial review and physical iOS/Android narration checks remain open. ADR 0012 records access and bookmark boundaries. |
 | T16 | Implemented locally; release gates open | The dashboard now reads server-owned per-child weekly totals instead of fixed example bars. Daily summaries are materialized once per completed session in the reward transaction, split active time at local midnight, preserve first completion dates and count replays as practice without another new lesson/reward. The parent-timezone week, weighted answer accuracy, initial one-new-lesson daily goal, empty/loading/error states and midnight refresh are implemented. Local domain, widget, Rules and emulator lifecycle/concurrency/replay checks pass. Older sessions have no guessed active-time backfill; staging and physical-device validation remain open. ADR 0013 defines the formulas. |
-| T08, T13, T17–T18, T20 | Open | Implement in the order and with the gates in the execution plan. |
+| T13 | Implemented locally; release gates open | All six existing module-7 stories now have a versioned page/question contract, symbolic illustrations, pt-BR narration, page navigation, comprehension feedback and a required final step in their lessons. Backend scoring requires every question and feeds the same reward/summary transaction; malformed publication, stale revisions and changed in-flight content are rejected. Flutter and all-six-story emulator checks pass, including missing questions, wrong answers, expiry, ownership and parallel completion. Editorial review, staging/old-client rollout and physical-device narration remain open under ADR 0014. |
+| T08, T17–T18, T20 | Open | Implement in the order and with the gates in the execution plan. T08 still needs reviewed D07 policy; no retention period or consent text was silently approved. |
 | T19 | Partial | Backend structured logs and server analytics now recursively omit child profile identifiers; client event coverage, collection eligibility/consent, crash reporting and export/retention controls remain open. |
-| T15 | Partial | Server-owned scored attempts cover all four activity types. New sessions enforce the activity order and require every match pair before advancing. Ordered lifecycle commands, foreground heartbeats, pause/resume/abandonment and bounded server-measured active time now feed daily summaries. The client captures both the child and lesson at start; transient attempt/completion retries preserve IDs and repeated completion reuses one result. Emulator checks cover paused time, late commands, out-of-order answers and duplicate totals. Versioned content contracts, durable cold-process exercise resumption, actionable failed-session recovery, physical lifecycle validation and privacy-reviewed trace criteria remain open. |
+| T15 | Partial; local recovery implemented | Server-scored attempts cover the four original exercises and optional comprehension, with ordered cursors, revisions/fingerprints and every pair/question required. Starts have persisted idempotency keys; a bounded UID/child-local queue retains unacknowledged attempts after retries and process reconstruction. Online recovery revalidates ownership/content/access/journey, restores confirmed pairs/questions and excludes the inactive gap. Both final exercise types offer save retry and open rewards only after confirmation. Restart explicitly abandons the old run; logout removes the owner's retry data and late responses cannot recreate it. All 328 Flutter tests, eight Firebase-mode profile checks, 17 Functions groups, 39 Rules tests and extended demo-emulator start/recovery/concurrency/expiry/edit checks pass. Android debug installation and hot restart pass with no Dart runtime errors. Staging/older-client rollout, physical process-kill/lifecycle validation and reviewed trace criteria remain open. ADRs 0013–0015 document the contracts. |
 
 The previous `primary` data model remains supported until its records are
 counted and migrated; direct published-content reads, incomplete Premium

@@ -20,6 +20,7 @@ import '../../features/child_profile/presentation/profile_setup_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/lesson/presentation/activities/listen_activity_screen.dart';
 import '../../features/lesson/presentation/activities/match_activity_screen.dart';
+import '../../features/lesson/presentation/activities/story_activity_screen.dart';
 import '../../features/lesson/presentation/activities/tap_activity_screen.dart';
 import '../../features/lesson/presentation/activities/trace_activity_screen.dart';
 import '../../features/lesson/presentation/lesson_intro_screen.dart';
@@ -48,6 +49,7 @@ abstract final class AppRoutes {
   static const activityMatch = 'activityMatch';
   static const activityTrace = 'activityTrace';
   static const activityListen = 'activityListen';
+  static const activityStory = 'activityStory';
   static const reward = 'reward';
   static const books = 'books';
   static const bookReader = 'bookReader';
@@ -230,6 +232,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: AppRoutes.activityListen,
             builder: (context, state) =>
                 const ChildProfileGate(child: ListenActivityScreen()),
+          ),
+          GoRoute(
+            path: 'story',
+            name: AppRoutes.activityStory,
+            builder: (context, state) =>
+                const ChildProfileGate(child: StoryActivityScreen()),
           ),
         ],
       ),

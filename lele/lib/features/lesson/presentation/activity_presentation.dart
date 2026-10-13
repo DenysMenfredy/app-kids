@@ -56,4 +56,11 @@ const activityPresentation = {
     icon: Icons.music_note_rounded,
     chipColor: AppColors.yellow,
   ),
+  ActivityType.story: ActivityPresentation(
+    title: 'Leia uma história',
+    subtitle: 'Ouça, leia e responda',
+    duration: '~3 min',
+    icon: Icons.auto_stories_rounded,
+    chipColor: AppColors.teal,
+  ),
 };

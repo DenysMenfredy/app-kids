@@ -9,7 +9,6 @@ import {
 } from "../domain/gamification";
 import { mayCompleteLesson } from "../domain/lesson_completion";
 import {
-  ActivityDocument,
   ActivityProgress,
   summarizeLessonSession,
 } from "../domain/lesson_sessions";
@@ -21,6 +20,8 @@ import { findNextLessonId } from "./next_lesson";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
 import { hasLessonAccess } from "./lesson_access";
+import { readLessonBundle, requireSessionBundle } from "./lesson_bundle";
+import { scoredActivities } from "../domain/lesson_content";
 
 /**
  * Marks a lesson completed and grants its rewards (spec §15, §16).
@@ -87,43 +88,24 @@ export const completeLesson = onCall(
         session.childId !== childId ||
         session.lessonId !== lessonId ||
         !Array.isArray(activityIds) ||
-        activityIds.length !== 4 ||
-        (session.sequenceVersion === 1 && session.nextActivityIndex !== 4) ||
+        ![4, 5].includes(activityIds.length) ||
+        (session.sequenceVersion === 1 && session.nextActivityIndex !== activityIds.length) ||
         !["active", "paused", "completed"].includes(session.status)
       ) {
         throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
       }
-      const activityRefs = activityIds.map((activityId: unknown) => {
-        if (typeof activityId !== "string" || activityId.length > 64) {
-          throw new HttpsError("failed-precondition", "Sessão de lição inválida.");
-        }
-        return db().collection(paths.activities).doc(activityId);
-      });
-      const [progressSnap, gamificationSnap, childSnap, currentLesson,
-        ...activitySnaps] = await Promise.all([
+      const [progressSnap, gamificationSnap, childSnap] = await Promise.all([
         tx.get(progressRef),
         tx.get(gamificationRef),
         tx.get(childRef),
-        tx.get(lessonRef),
-        ...activityRefs.map((ref) => tx.get(ref)),
       ]);
 
       if (!childSnap.exists) {
         throw new HttpsError("not-found", "Perfil da criança não encontrado.");
       }
-      const currentLessonData = currentLesson.data();
-      if (!currentLessonData || currentLessonData.published !== true) {
-        throw new HttpsError("not-found", "Lição indisponível.");
-      }
-      if (
-        !Array.isArray(currentLessonData.activityIds) ||
-        currentLessonData.activityIds.length !== activityIds.length ||
-        currentLessonData.activityIds.some((id: unknown, index: number) =>
-          id !== activityIds[index],
-        )
-      ) {
-        throw new HttpsError("failed-precondition", "Manifesto da sessão alterado.");
-      }
+      const bundle = await readLessonBundle(tx, lessonId);
+      requireSessionBundle(session, bundle);
+      const currentLessonData = bundle.lesson;
       if (currentLessonData.courseId !== courseId ||
           currentLessonData.number !== lessonNumber) {
         throw new HttpsError("aborted", "Lição alterada; tente novamente.");
@@ -132,8 +114,8 @@ export const completeLesson = onCall(
         throw new HttpsError("permission-denied", "Esta lição exige Premium.");
       }
       if (!mayCompleteLesson(
-        { id: lessonId, courseId: currentLessonData.courseId,
-          published: currentLessonData.published },
+        { id: lessonId, courseId: String(currentLessonData.courseId),
+          published: currentLessonData.published === true },
         { currentCourseId: childSnap.get("currentCourseId"),
           currentLessonId: childSnap.get("currentLessonId") },
         progressSnap.get("status") === "completed",
@@ -143,22 +125,7 @@ export const completeLesson = onCall(
         );
       }
 
-      if (activitySnaps.some((activity) =>
-        !activity.exists || activity.get("published") !== true ||
-        activity.get("lessonId") !== lessonId,
-      )) {
-        throw new HttpsError("failed-precondition", "Conteúdo da sessão indisponível.");
-      }
-      const activities = activitySnaps.map((activity) => ({
-        ...activity.data(),
-        id: activity.id,
-      })) as ActivityDocument[];
-      if (
-        activities.map((activity) => activity.type).join(",") !==
-        "tap,match,trace,listen"
-      ) {
-        throw new HttpsError("failed-precondition", "Tipos de atividade alterados.");
-      }
+      const activities = scoredActivities(bundle);
       const activityProgress = (session.activityProgress ?? {}) as Record<
         string,
         ActivityProgress

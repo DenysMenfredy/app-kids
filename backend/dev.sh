@@ -52,11 +52,11 @@ fi
 echo "==> Building Cloud Functions"
 npm --prefix functions run build
 
-# Existing emulator exports predate the book catalog. Refresh only committed
-# books on startup; a new database still gets the full curriculum seed.
+# Refresh committed content versions, including executable story lessons,
+# without touching parent, child or progress records in existing exports.
 SEED_ARGS=()
 if [ -f "$DATA_DIR/firebase-export-metadata.json" ]; then
-  SEED_ARGS=(--only books,bookContents)
+  SEED_ARGS=(--only books,bookContents,lessons,activities,stories)
 fi
 (
   for _ in $(seq 1 60); do

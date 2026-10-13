@@ -34,6 +34,7 @@ export const paths = {
   lessons: "lessons",
   /** Global activity content used for server-side answer scoring. */
   activities: "activities",
+  stories: "stories",
   /** Global module metadata used by the free/Premium access policy. */
   modules: "modules",
   /** Catalog metadata and independently authorized book pages. */

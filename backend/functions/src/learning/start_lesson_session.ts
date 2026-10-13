@@ -6,8 +6,9 @@ import { validTimezone } from "../domain/active_time";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
-
-const EXPECTED_ACTIVITY_TYPES = ["tap", "match", "trace", "listen"];
+import { readLessonBundle, requireSessionBundle } from "./lesson_bundle";
+import { lessonFingerprint } from "../domain/lesson_content";
+import { createHash } from "node:crypto";
 
 /** Creates the server-owned evidence record for one lesson run. */
 export const startLessonSession = onCall(
@@ -23,63 +24,41 @@ export const startLessonSession = onCall(
 
     const firestore = db();
     const childRef = firestore.collection(paths.children(uid)).doc(childId);
-    const lessonRef = firestore.collection(paths.lessons).doc(lessonId);
     const progressRef = firestore
       .collection(paths.learningProgress(uid))
       .doc(`${childId}_${lessonId}`);
-    const activities = await firestore
-      .collection(paths.activities)
-      .where("lessonId", "==", lessonId)
-      .get();
-    const activityDocs = activities.docs
-      .filter((doc) => doc.get("published") === true)
-      .sort((a, b) => Number(a.get("order")) - Number(b.get("order")));
-
-    if (
-      activityDocs.length !== EXPECTED_ACTIVITY_TYPES.length ||
-      activityDocs.some((doc, index) => doc.get("type") !== EXPECTED_ACTIVITY_TYPES[index])
-    ) {
-      throw new HttpsError("failed-precondition", "Conteúdo da lição incompleto.");
-    }
-
     const sessions = firestore.collection(paths.sessions(uid));
-    const sessionRef = sessions.doc();
+    // A lost response must not create a second run on retry. Legacy callers
+    // can still omit the key; current clients persist it before this call.
+    const requestId = request.data?.requestId;
+    if (requestId !== undefined && (typeof requestId !== "string" ||
+        !/^[A-Za-z0-9_-]{1,64}$/.test(requestId))) {
+      throw new HttpsError("invalid-argument", "Request ID inválido.");
+    }
+    const sessionRef = requestId === undefined ? sessions.doc() : sessions.doc(
+      createHash("sha256").update(requestId).digest("hex"),
+    );
     await firestore.runTransaction(async (tx) => {
-      const activityRefs = activityDocs.map((doc) => doc.ref);
-      const [childSnap, lessonSnap, progressSnap, parentSnap, ...currentActivities] =
+      const [childSnap, progressSnap, parentSnap, existingSession] =
         await Promise.all([
           tx.get(childRef),
-          tx.get(lessonRef),
           tx.get(progressRef),
           tx.get(firestore.doc(paths.user(uid))),
-          ...activityRefs.map((ref) => tx.get(ref)),
+          tx.get(sessionRef),
         ]);
 
       if (!childSnap.exists) {
         throw new HttpsError("not-found", "Perfil da criança não encontrado.");
       }
-      const lesson = lessonSnap.data();
-      if (!lesson || lesson.published !== true) {
-        throw new HttpsError("not-found", "Lição indisponível.");
-      }
-      const listedActivityIds = lesson.activityIds;
-      if (
-        !Array.isArray(listedActivityIds) ||
-        listedActivityIds.length !== activityDocs.length ||
-        listedActivityIds.some((id: unknown, index: number) =>
-          id !== activityDocs[index].id,
-        )
-      ) {
-        throw new HttpsError("failed-precondition", "Manifesto da lição inválido.");
+      const bundle = await readLessonBundle(tx, lessonId);
+      const lesson = bundle.lesson;
+      const expectedVersion = request.data?.contentVersion;
+      if (expectedVersion !== undefined && (!Number.isSafeInteger(expectedVersion) ||
+          expectedVersion !== lesson.contentVersion)) {
+        throw new HttpsError("failed-precondition", "Lição atualizada; abra a lição novamente.");
       }
       if (!await hasLessonAccess(tx, uid, lesson)) {
         throw new HttpsError("permission-denied", "Esta lição exige Premium.");
-      }
-      if (currentActivities.some((activity) =>
-        !activity.exists || activity.get("published") !== true ||
-        activity.get("lessonId") !== lessonId,
-      )) {
-        throw new HttpsError("aborted", "Conteúdo alterado; tente novamente.");
       }
       if (!mayCompleteLesson(
         {
@@ -99,10 +78,27 @@ export const startLessonSession = onCall(
         );
       }
 
+      if (existingSession.exists) {
+        if (existingSession.get("childId") !== childId ||
+            existingSession.get("lessonId") !== lessonId ||
+            (request.data?.contentVersion !== undefined &&
+              existingSession.get("contentVersion") !== request.data.contentVersion)) {
+          throw new HttpsError("invalid-argument", "Request ID já utilizado.");
+        }
+        requireSessionBundle(existingSession.data()!, bundle);
+        if (!["active", "paused", "completed"].includes(existingSession.get("status")) ||
+            Date.now() - (existingSession.get("startedAt")?.toMillis?.() ?? 0) > 24 * 3600_000) {
+          throw new HttpsError("failed-precondition", "Comece uma nova sessão.");
+        }
+        return;
+      }
       tx.create(sessionRef, {
+        schemaVersion: 1,
         childId,
         lessonId,
-        activityIds: activityDocs.map((doc) => doc.id),
+        activityIds: bundle.activities.map((activity) => activity.id),
+        contentVersion: lesson.contentVersion,
+        contentFingerprint: lessonFingerprint(bundle),
         activityProgress: {},
         sequenceVersion: 1,
         nextActivityIndex: 0,

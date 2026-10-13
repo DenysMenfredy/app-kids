@@ -62,6 +62,15 @@ export function scoreActivityResponse(
       const correct = strokeCount > 0 && pointCount >= 2 && durationMillis >= 100;
       return { correct, completionKey: correct ? "complete" : null };
     }
+    case "story": {
+      const questionId = boundedString(response.questionId, 64);
+      const label = boundedString(response.selectedLabel, 80);
+      const questions = asArray(activity.questions).map(asRecord);
+      const question = questions.find((item) => item.id === questionId);
+      if (!question || !asArray(question.options).includes(label)) throw new InvalidActivityResponseError();
+      const correct = question.answer === label;
+      return { correct, completionKey: correct ? questionId : null };
+    }
     default:
       throw new InvalidActivityResponseError();
   }
@@ -73,6 +82,12 @@ export function isActivityComplete(
   progress: Partial<ActivityProgress> | undefined,
 ): boolean {
   if (!progress) return false;
+  if (activity.type === "story") {
+    const questions = asArray(activity.questions).map(asRecord);
+    const completed = new Set(progress.completedItems ?? []);
+    return questions.length > 0 && questions.every((question) =>
+      typeof question.id === "string" && completed.has(question.id));
+  }
   if (activity.type !== "match") return progress.completed === true;
 
   const pairs = asArray(activity.pairs).map(asRecord);
@@ -89,7 +104,8 @@ export function summarizeLessonSession(
   progressByActivity: Record<string, Partial<ActivityProgress>>,
   activeSeconds: number,
 ): LessonStats {
-  const complete = activities.length === 4 &&
+  const types = activities.map((activity) => activity.type).join(",");
+  const complete = ["tap,match,trace,listen", "tap,match,trace,listen,story"].includes(types) &&
     activities.every((activity) =>
       isActivityComplete(activity, progressByActivity[activity.id]),
     );
