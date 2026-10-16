@@ -7,6 +7,7 @@ import '../core/layout/adaptive_page.dart';
 import '../core/theme/app_theme.dart';
 import '../features/dashboard/application/weekly_learning_provider.dart';
 import '../features/lesson/application/lesson_session_controller.dart';
+import '../features/notifications/application/notification_controller.dart';
 import 'router/app_router.dart';
 
 class LeleApp extends ConsumerStatefulWidget {
@@ -23,6 +24,12 @@ class _LeleAppState extends ConsumerState<LeleApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _router = ref.read(appRouterProvider);
     _router.routeInformationProvider.addListener(_routeChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final notifications = ref.read(notificationControllerProvider);
+      notifications.onOpen = () => _router.goNamed(AppRoutes.dashboard);
+      notifications.refresh();
+    });
   }
 
   void _routeChanged() {
@@ -40,6 +47,7 @@ class _LeleAppState extends ConsumerState<LeleApp> with WidgetsBindingObserver {
         .setForeground(state == AppLifecycleState.resumed);
     if (state == AppLifecycleState.resumed) {
       ref.invalidate(weeklyLearningQueryProvider);
+      ref.read(notificationControllerProvider).refresh();
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../lesson/application/lesson_session_controller.dart';
+import '../../notifications/application/notification_controller.dart';
 import '../../session/application/session_controller.dart';
 import '../data/auth_repository.dart';
 import '../domain/apple_account_link_outcome.dart';
@@ -66,7 +67,11 @@ class AuthController {
   Future<void> signOut() async {
     final repository = _repository;
     try {
-      await _ref.read(lessonSessionProvider).clearRecoveryForSignOut();
+      try {
+        await _ref.read(notificationControllerProvider).detachForSignOut();
+      } finally {
+        await _ref.read(lessonSessionProvider).clearRecoveryForSignOut();
+      }
     } finally {
       await repository.signOut();
     }

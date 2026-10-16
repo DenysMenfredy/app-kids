@@ -18,7 +18,7 @@ export { stripeWebhook } from "./payments/stripe_webhook";
 export { syncEntitlement } from "./subscriptions/sync_entitlement";
 
 // notifications/
-export { registerDevice } from "./notifications/register_device";
+export { registerDevice, unregisterDevice } from "./notifications/register_device";
 export { sendDailyReminders } from "./notifications/send_daily_reminders";
 
 // learning/

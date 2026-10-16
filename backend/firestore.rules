@@ -94,10 +94,20 @@ service cloud.firestore {
     }
 
     function validNotificationPreferences() {
+      let data = request.resource.data;
       return incomingKeysOnly([
         'dailyReminder', 'achievement', 'weeklyReport', 'subscription',
-        'marketing', 'preferredTime', 'updatedAt'
-      ]);
+        'marketing', 'preferredTime', 'timezone', 'updatedAt'
+      ])
+        && data.dailyReminder is bool && data.achievement is bool
+        && data.weeklyReport is bool && data.subscription is bool
+        && data.marketing is bool
+        && data.preferredTime is string
+        && data.preferredTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+        && (!('timezone' in data) || (data.timezone is string
+          && data.timezone in ['America/Belem', 'America/Sao_Paulo',
+            'America/Manaus', 'America/Rio_Branco']))
+        && data.updatedAt == request.time;
     }
 
     function isPublished() {

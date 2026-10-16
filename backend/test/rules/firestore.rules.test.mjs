@@ -21,6 +21,7 @@ import {
   getDocs,
   orderBy,
   query,
+  serverTimestamp,
   where,
 } from "firebase/firestore";
 
@@ -681,6 +682,8 @@ describe("devices & notifications", () => {
         subscription: true,
         marketing: false,
         preferredTime: "18:00",
+        timezone: "America/Belem",
+        updatedAt: serverTimestamp(),
       }),
     );
   });
@@ -691,6 +694,27 @@ describe("devices & notifications", () => {
         .doc(`users/${PARENT}/notifications/n1`)
         .set({ title: "fake" }),
     );
+  });
+
+  it("rejects malformed preferences, forged timestamps and other parents", async () => {
+    const path = `users/${PARENT}/notificationPreferences/default`;
+    const valid = { dailyReminder: true, achievement: true, weeklyReport: true,
+      subscription: true, marketing: false, preferredTime: "18:00",
+      timezone: "America/Belem", updatedAt: serverTimestamp() };
+    for (const change of [{ dailyReminder: "yes" }, { preferredTime: "99:99" },
+      { timezone: "Unknown/Zone" }, { updatedAt: Timestamp.fromMillis(0) }, { role: "admin" }]) {
+      await assertFails(asParent().doc(path).set({ ...valid, ...change }));
+    }
+    await assertFails(asStranger().doc(path).set(valid));
+  });
+
+  it("keeps installation ownership and token registries server-only", async () => {
+    for (const path of ["notificationInstallations/test", "notificationTokens/test"]) {
+      await asAdmin((ctx) => ctx.firestore().doc(path).set({ uid: PARENT }));
+      await assertFails(asParent().doc(path).get());
+      await assertFails(asParent().doc(path).set({ uid: PARENT }));
+      await assertFails(asParent().doc(path).delete());
+    }
   });
 });
 

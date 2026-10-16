@@ -24,6 +24,7 @@ import '../../features/lesson/presentation/activities/story_activity_screen.dart
 import '../../features/lesson/presentation/activities/tap_activity_screen.dart';
 import '../../features/lesson/presentation/activities/trace_activity_screen.dart';
 import '../../features/lesson/presentation/lesson_intro_screen.dart';
+import '../../features/notifications/presentation/notification_settings_screen.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/paywall/presentation/paywall_screen.dart';
@@ -42,6 +43,7 @@ abstract final class AppRoutes {
   static const assessmentQuestions = 'assessmentQuestions';
   static const assessmentResult = 'assessmentResult';
   static const dashboard = 'dashboard';
+  static const notifications = 'notifications';
   static const paywall = 'paywall';
   static const childHome = 'childHome';
   static const lessonIntro = 'lessonIntro';
@@ -191,6 +193,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/dashboard',
         name: AppRoutes.dashboard,
         builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        name: AppRoutes.notifications,
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
       GoRoute(
         path: '/paywall',

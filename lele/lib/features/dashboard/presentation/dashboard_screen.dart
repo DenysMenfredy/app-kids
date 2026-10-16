@@ -137,6 +137,15 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            context.goNamed(AppRoutes.notifications),
+                        icon: const Icon(Icons.notifications_outlined),
+                        label: const Text('Avisos e lembretes'),
+                      ),
+                    ),
                     if (hasChild)
                       _ChildCard(
                         child: childState.requireValue!.profile,

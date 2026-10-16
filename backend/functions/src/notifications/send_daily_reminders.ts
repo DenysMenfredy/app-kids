@@ -9,7 +9,7 @@ import { sendNotificationToUser } from "./send_notification";
 /**
  * Hourly sweep implementing the daily-reminder decision (spec §11):
  * unfinished lesson? → notifications enabled? → inside local-time window?
- * → FCM. The dedupe key is date-scoped, so retried runs never double-send.
+ * → FCM. Legacy sweep: T18 mission/due-queue work is still required before release.
  */
 export const sendDailyReminders = onSchedule(
   { schedule: "every 60 minutes", timeZone: "UTC" },
@@ -28,6 +28,7 @@ export const sendDailyReminders = onSchedule(
 
       const userSnap = await db().doc(paths.user(uid)).get();
       const timezone =
+        (prefsDoc.get("timezone") as string | undefined) ??
         (userSnap.get("timezone") as string | undefined) ??
         "America/Sao_Paulo";
 
