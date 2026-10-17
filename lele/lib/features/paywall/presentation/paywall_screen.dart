@@ -8,9 +8,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
-import '../../auth/application/auth_controller.dart';
-import '../application/checkout_controller.dart';
-import '../domain/checkout_failure.dart';
+import '../application/store_catalog_provider.dart';
 import '../domain/plan.dart';
 
 class PaywallScreen extends ConsumerStatefulWidget {
@@ -22,54 +20,10 @@ class PaywallScreen extends ConsumerStatefulWidget {
 
 class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   String _selectedPlanId = 'annual';
-  bool _busy = false;
-
-  /// App plan ids → backend/Stripe plan ids (domain/plans.ts).
-  static const _backendPlanIds = {
-    'monthly': 'founder_monthly',
-    'quarterly': 'founder_quarterly',
-    'annual': 'founder_annual',
-  };
-
-  Future<void> _startCheckout() async {
-    if (_busy) return;
-    if (ref.read(authControllerProvider).requiresEmailVerification) {
-      context.goNamed(
-        AppRoutes.emailVerification,
-        queryParameters: const {'next': 'paywall'},
-      );
-      return;
-    }
-    final checkout = ref.read(checkoutControllerProvider);
-    if (!checkout.paymentsEnabled) {
-      return;
-    }
-    setState(() => _busy = true);
-    try {
-      await checkout.start(_backendPlanIds[_selectedPlanId]!);
-    } on CheckoutFailure catch (failure) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(failure.message),
-            backgroundColor: AppColors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final paymentsEnabled = ref
-        .watch(checkoutControllerProvider)
-        .paymentsEnabled;
-    final needsEmailVerification = ref
-        .watch(authControllerProvider)
-        .requiresEmailVerification;
+    final plans = ref.watch(storeCatalogProvider);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -113,7 +67,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
                     borderRadius: BorderRadius.circular(AppRadius.chip),
                   ),
                   child: Text(
-                    'PREÇO DE FUNDADOR',
+                    'LELÊ PREMIUM',
                     style: AppTextStyles.baloo(
                       12,
                       color: Colors.white,
@@ -135,7 +89,15 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               const SizedBox(height: AppSpacing.sm),
               const _Benefit('Relatórios de progresso para os pais'),
               const SizedBox(height: AppSpacing.lg),
-              for (final plan in founderPlans) ...[
+              if (plans.isEmpty) ...[
+                Text(
+                  'Os planos e preços serão exibidos quando o catálogo da Google Play ou App Store estiver configurado e disponível.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall,
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              for (final plan in plans) ...[
                 _PlanCard(
                   plan: plan,
                   selected: plan.id == _selectedPlanId,
@@ -145,22 +107,16 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
               ],
               const SizedBox(height: AppSpacing.xs),
               LeleButton(
-                label: !paymentsEnabled
-                    ? 'Assinaturas em breve'
-                    : needsEmailVerification
-                    ? 'Confirme seu e-mail para continuar'
-                    : _busy
-                    ? 'Abrindo pagamento...'
-                    : 'Começar teste grátis de 7 dias',
+                label: 'Assinaturas em breve',
                 fontSize: 19,
                 color: AppColors.purple,
                 shadowColor: AppColors.purpleDark,
-                enabled: paymentsEnabled && !_busy,
-                onPressed: _startCheckout,
+                enabled: false,
+                onPressed: () {},
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Cancele quando quiser. O 1º módulo é sempre gratuito.',
+                'O 1º módulo é gratuito. As assinaturas serão feitas exclusivamente pela Google Play ou App Store.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.nunito(
                   12,

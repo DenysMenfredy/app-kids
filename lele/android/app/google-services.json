@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "293659867381",
+    "project_id": "letrando-dev",
+    "storage_bucket": "letrando-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293659867381:android:45886330baeba918606dbc",
+        "android_client_info": {
+          "package_name": "br.com.lele.lele"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "293659867381-f86gdbn33pipds5hmetkqspba1crc8na.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.lele.lele",
+            "certificate_hash": "2ecac7f32d02f3b7fd548523bb8ac14e87766466"
+          }
+        },
+        {
+          "client_id": "293659867381-18ah8uuf7vh641ohrc0j44nb18u2cf28.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgeV0l8GZYV3WWQ-CEMeeZ7DVdwnvzAIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "293659867381-18ah8uuf7vh641ohrc0j44nb18u2cf28.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "293659867381-jen5fe468h36pqfdgle28epkabev9a18.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "br.com.lele.lele"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

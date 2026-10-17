@@ -97,8 +97,12 @@ Sign up with any email and password — the Auth emulator accepts anything, and
 (scored server-side, placing the child on the journey) → dashboard → child
 mode → the lesson for wherever they were placed.
 
-Payments are the one thing that won't work locally: `backend/functions/.env.demo-letrando`
-holds fake Stripe values so the emulator starts, but checkout needs real keys.
+Plan v2 uses Google Play/App Store subscriptions only. New external checkout is
+retired, including direct callable requests; no trial or fixed price is promised.
+Native purchasing stays disabled until store verification and callbacks pass.
+Legacy reconciliation is preserved until existing customers are inventoried.
+See `backend/docs/adr/0017-store-only-mvp-and-explicit-firebase-builds.md` and
+`lele/config/README.md` for the current billing/configuration boundaries.
 
 ## Tests
 

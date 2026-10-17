@@ -7,6 +7,11 @@ name: Release Android
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: Firebase/GitHub environment (tags always use production)
+        type: choice
+        options: [staging, production]
+        default: staging
       distribute:
         description: Send the APK to Firebase App Distribution testers
         type: boolean
@@ -27,7 +32,9 @@ jobs:
     name: Build signed Android release
     runs-on: ubuntu-latest
     # The upload keystore lives in this Environment's secrets.
-    environment: production
+    environment: ${{ github.event_name == 'push' && 'production' || inputs.environment }}
+    env:
+      APP_ENV: ${{ github.event_name == 'push' && 'production' || inputs.environment }}
     defaults:
       run:
         working-directory: lele
@@ -50,23 +57,12 @@ jobs:
       # A release is the wrong place to discover a red test.
       - run: flutter test
 
-      # A placeholder compiles but throws on the first launch. Do not upload
-      # a signed artifact unless its Firebase app belongs to production.
-      - name: Verify production Firebase configuration
+      - name: Select and verify environment and native Firebase configuration
         run: |
-          if rg -q 'PLACEHOLDER' lib/firebase_options.dart; then
-            echo 'Firebase options are still a placeholder.' >&2
-            exit 1
-          fi
-          if ! rg -q "projectId: 'letrando-production'" lib/firebase_options.dart; then
-            echo 'FlutterFire options are not for letrando-production.' >&2
-            exit 1
-          fi
-          if [ ! -f android/app/google-services.json ] || \
-             ! rg -q '"project_id"[[:space:]]*:[[:space:]]*"letrando-production"' android/app/google-services.json; then
-            echo 'Production Android Firebase configuration is missing or mismatched.' >&2
-            exit 1
-          fi
+          cp "config/native/${APP_ENV}/google-services.json" android/app/google-services.json
+          dart tool/verify_firebase_config.dart \
+            --config="config/firebase.${APP_ENV}.json" \
+            --platform=android --environment="${APP_ENV}" --release
 
       - name: Restore the upload keystore
         env:
@@ -88,8 +84,8 @@ jobs:
 
       - name: Build the app bundle (Play) and APK (testers)
         run: |
-          flutter build appbundle --release --dart-define=USE_FIREBASE=true
-          flutter build apk --release --dart-define=USE_FIREBASE=true
+          flutter build appbundle --release --dart-define-from-file=config/firebase.${APP_ENV}.json
+          flutter build apk --release --dart-define-from-file=config/firebase.${APP_ENV}.json
 
       - uses: actions/upload-artifact@v4
         with:
@@ -108,12 +104,14 @@ jobs:
       - name: Hand the build to the tester group
         if: inputs.distribute || startsWith(github.ref, 'refs/tags/')
         run: |
+          project_id="$(jq -er '.FIREBASE_PROJECT_ID' "config/firebase.${APP_ENV}.json")"
+          app_id="$(jq -er '.FIREBASE_ANDROID_APP_ID' "config/firebase.${APP_ENV}.json")"
           npx --yes firebase-tools@13 appdistribution:distribute \
             build/app/outputs/flutter-apk/app-release.apk \
-            --app ${{ vars.FIREBASE_ANDROID_APP_ID }} \
+            --app "$app_id" \
             --groups testers \
             --release-notes "${{ github.ref_name }} (${{ github.sha }})" \
-            --project production
+            --project "$project_id"
 
       - name: Shred the signing material
         if: always()

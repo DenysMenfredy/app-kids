@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>293659867381-jen5fe468h36pqfdgle28epkabev9a18.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.293659867381-jen5fe468h36pqfdgle28epkabev9a18</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>293659867381-f86gdbn33pipds5hmetkqspba1crc8na.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDgkVZlxCJWkaevCvhWP8WRsfnpCnySAb0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>293659867381</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>br.com.lele.lele</string>
+	<key>PROJECT_ID</key>
+	<string>letrando-dev</string>
+	<key>STORAGE_BUCKET</key>
+	<string>letrando-dev.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:293659867381:ios:870c4e97cd731aa9606dbc</string>
+</dict>
+</plist>

@@ -2,6 +2,10 @@
 
 Date: 2026-10-07 · Status: accepted for product scope; implementation partial
 
+Billing/trial/channel clauses were superseded on 2026-10-16 by ADR 0017 and
+execution plan v2. D02's first-module-free boundary remains. The text below is
+historical context, not permission to enable external acquisition.
+
 Owner: product owner (decision supplied during execution of the MVP plan).
 
 ## Decision

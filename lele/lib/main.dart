@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'core/config/app_config.dart';
+import 'core/config/firebase_build_config.dart';
 import 'core/firebase/firebase_emulators.dart';
 import 'core/storage/local_storage.dart';
 import 'features/session/application/demo_progress_controller.dart';
@@ -16,6 +17,14 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  FirebaseBuildConfig.compiled.validate(
+    platform: kIsWeb
+        ? 'web'
+        : defaultTargetPlatform == TargetPlatform.iOS
+        ? 'ios'
+        : 'android',
+    release: kReleaseMode,
+  );
   if (AppConfig.useFirebase) {
     if (AppConfig.useEmulator && kReleaseMode) {
       throw StateError('Emuladores Firebase não são permitidos em release.');

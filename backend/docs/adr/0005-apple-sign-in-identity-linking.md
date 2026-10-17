@@ -2,6 +2,11 @@
 
 Date: 2026-09-17 · Status: accepted; Flutter implementation added 2026-10-08
 
+Transport note (2026-10-16): ADR 0018 corrects native Google to the official
+Google SDK plus Firebase credential exchange; Apple's Firebase provider path
+and the UID/linking decisions below remain unchanged. Apple console/device
+acceptance is deferred until the owner obtains Developer membership.
+
 ## Context
 
 Sign in with Apple has been added to the iOS login screen. App Store review

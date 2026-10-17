@@ -90,14 +90,12 @@ class CallableLessonSyncService
        );
 
   CallableLessonSyncService.withTransport({
-    required LessonTransport transport,
-    required PendingLessonStore store,
+    required this._transport,
+    required this._store,
     bool Function()? authorized,
     this.retryDelay = const Duration(milliseconds: 200),
     this.callTimeout = const Duration(seconds: 8),
-  }) : _transport = transport,
-       _store = store,
-       _authorized = authorized ?? (() => true);
+  }) : _authorized = authorized ?? (() => true);
 
   final LessonTransport _transport;
   final PendingLessonStore _store;

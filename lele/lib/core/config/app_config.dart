@@ -7,8 +7,8 @@
 ///  - **firebase**: real Firebase Auth / Firestore / Cloud Functions against
 ///    the Letrando backend (see `backend/`).
 ///
-/// Enable Firebase mode after running `flutterfire configure`:
-///   flutter run --dart-define=USE_FIREBASE=true
+/// Real Firebase builds select an explicit public environment configuration:
+///   flutter run --dart-define-from-file=config/firebase.dev.json
 ///
 /// To run against the local emulators instead of a real project (see
 /// `backend/dev.sh`), add USE_EMULATOR — no `flutterfire configure` needed:
@@ -34,12 +34,6 @@ abstract final class AppConfig {
   /// debug provider or a Firebase emulator in a release build.
   static const String appCheckWebSiteKey = String.fromEnvironment(
     'APP_CHECK_RECAPTCHA_SITE_KEY',
-  );
-
-  /// Stripe Checkout is a web-only channel. Keep it disabled until the
-  /// seven-day trial and the web App Check registration are verified.
-  static const bool enableWebCheckout = bool.fromEnvironment(
-    'ENABLE_WEB_CHECKOUT',
   );
 
   /// Legacy profile ID used only to find accounts created before server-issued

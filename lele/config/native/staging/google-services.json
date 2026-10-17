@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "293526780029",
+    "project_id": "letrando-staging",
+    "storage_bucket": "letrando-staging.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293526780029:android:f65e89498bbfe07903d914",
+        "android_client_info": {
+          "package_name": "br.com.lele.lele"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjhlIqBt-JUohJP2qEqN_u7OxDdjQEzJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -35,10 +35,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "br.com.lele.lele"
@@ -79,8 +75,42 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
 flutter {
     source = "../.."
+}
+
+// Runs for direct Gradle builds too, not only the GitHub release workflow.
+// Do not ship a demo/debug identity or a mismatched native Firebase app.
+val flutterSdkForConfigCheck = Properties().apply {
+    rootProject.file("local.properties").inputStream().use { load(it) }
+}.getProperty("flutter.sdk") ?: throw GradleException("flutter.sdk is missing")
+
+fun firebaseConfigCheck(taskName: String, releaseBuild: Boolean) =
+    tasks.register<Exec>(taskName) {
+        workingDir(rootProject.projectDir.parentFile)
+        doFirst {
+            val arguments = mutableListOf(
+                "$flutterSdkForConfigCheck/bin/cache/dart-sdk/bin/dart",
+                "tool/verify_firebase_config.dart",
+                "--defines=${project.findProperty("dart-defines") ?: ""}",
+                "--platform=android",
+            )
+            if (releaseBuild) arguments.add("--release")
+            commandLine(arguments)
+        }
+    }
+
+val verifyDebugFirebase = firebaseConfigCheck("verifyDebugFirebase", false)
+val verifyReleaseFirebase = firebaseConfigCheck("verifyReleaseFirebase", true)
+tasks.named("preBuild") { dependsOn(verifyDebugFirebase) }
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(verifyReleaseFirebase)
 }
 
 dependencies {

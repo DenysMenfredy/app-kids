@@ -4,10 +4,8 @@ import 'package:lele/core/config/app_config.dart';
 import 'package:lele/core/storage/local_storage.dart';
 import 'package:lele/features/auth/data/auth_repository.dart';
 import 'package:lele/features/lesson/data/lesson_sync_service.dart';
-import 'package:lele/features/paywall/application/checkout_controller.dart';
 import 'package:lele/features/paywall/application/entitlement_provider.dart';
-import 'package:lele/features/paywall/data/subscription_service.dart';
-import 'package:lele/features/paywall/domain/checkout_failure.dart';
+import 'package:lele/features/paywall/application/store_catalog_provider.dart';
 import 'package:lele/features/session/application/demo_progress_controller.dart';
 import 'package:lele/features/session/application/progress_provider.dart';
 import 'package:lele/features/session/data/profile_sync_service.dart';
@@ -83,12 +81,9 @@ void main() {
       completes,
     );
     await expectLater(
-      lessonSync.activityAttempt(
-        'lesson_008',
-        'child_1',
-        'activity_008_tap',
-        {'selectedLabel': 'D'},
-      ),
+      lessonSync.activityAttempt('lesson_008', 'child_1', 'activity_008_tap', {
+        'selectedLabel': 'D',
+      }),
       completes,
     );
     await expectLater(
@@ -97,19 +92,9 @@ void main() {
     );
   });
 
-  test('checkout reports being unavailable instead of half-working', () async {
+  test('unconfigured native catalog never substitutes invented prices', () {
     final container = makeContainer();
-    final service = container.read(subscriptionServiceProvider);
-    expect(service, isA<UnavailableSubscriptionService>());
-    expect(container.read(checkoutControllerProvider).paymentsEnabled, isFalse);
-    await expectLater(
-      service.createCheckoutSession('founder_annual'),
-      throwsA(isA<CheckoutFailure>()),
-    );
-    await expectLater(
-      container.read(checkoutControllerProvider).start('founder_annual'),
-      throwsA(isA<CheckoutFailure>()),
-    );
+    expect(container.read(storeCatalogProvider), isEmpty);
   });
 
   test('premium is inactive without a backend (fails safe)', () async {

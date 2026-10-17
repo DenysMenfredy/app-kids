@@ -183,6 +183,15 @@ the current exercise. See ADR 0015 and `test:learning:smoke`/`test:stories:smoke
 
 ## Payments flow (§8)
 
+**Current plan v2:** new subscriptions use only Google Play/App Store, with
+server-side verification. Acquisition is disabled while native F3 is unfinished.
+`createCheckoutSession` now rejects every new request, even a previously
+approved web app. The diagram below describes preserved legacy reconciliation,
+not a supported new acquisition path. Keep existing customer contracts,
+webhook signature/idempotency checks, portal and entitlement synchronization
+until a remote customer inventory and native staging tests authorize retirement.
+See ADR 0017. No remote endpoint or real contract was changed in this local pass.
+
 ```
 Flutter → createCheckoutSession (callable, App Check, plan validation)
         → Stripe Checkout (hosted page; no card data in the app)
@@ -288,6 +297,12 @@ firebase deploy --project production
 ```
 
 ## Environment setup (per Firebase project)
+
+This list contains historical legacy Stripe/analytics operations. Do not enable
+new external acquisition or analytics collection from it: plan v2 requires
+native store APIs/callbacks, and D07/child-distribution consent eligibility is
+still open. First follow `../lele/config/README.md` for public build configuration
+and ADR 0017 for the current gates; do not place server credentials in the app.
 
 1. Create the three Firebase projects from `.firebaserc`.
 2. Secrets (Secret Manager):

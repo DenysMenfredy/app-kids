@@ -1,0 +1,14 @@
+{
+  "USE_FIREBASE": "true",
+  "USE_EMULATOR": "false",
+  "APP_ENV": "staging",
+  "FIREBASE_PROJECT_ID": "letrando-staging",
+  "FIREBASE_MESSAGING_SENDER_ID": "293526780029",
+  "FIREBASE_STORAGE_BUCKET": "letrando-staging.firebasestorage.app",
+  "FIREBASE_ANDROID_PACKAGE_NAME": "br.com.lele.lele",
+  "FIREBASE_ANDROID_APP_ID": "1:293526780029:android:f65e89498bbfe07903d914",
+  "FIREBASE_ANDROID_API_KEY": "AIzaSyCjhlIqBt-JUohJP2qEqN_u7OxDdjQEzJk",
+  "FIREBASE_IOS_APP_ID": "1:293526780029:ios:a5741edd689a05f203d914",
+  "FIREBASE_IOS_API_KEY": "AIzaSyCg645ITRCY8JH2dO3sNUtYDQXch60mit0",
+  "FIREBASE_IOS_BUNDLE_ID": "br.com.lele.lele"
+}

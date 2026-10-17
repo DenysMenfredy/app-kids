@@ -14,6 +14,9 @@ void main() {
 
     expect(find.text('Assinaturas em breve'), findsOneWidget);
     expect(find.text('Começar teste grátis de 7 dias'), findsNothing);
+    expect(find.text('PREÇO DE FUNDADOR'), findsNothing);
+    expect(find.textContaining('R\$'), findsNothing);
+    expect(find.textContaining('Google Play ou App Store'), findsWidgets);
     final button = tester.widget<LeleButton>(
       find.widgetWithText(LeleButton, 'Assinaturas em breve'),
     );

@@ -15,6 +15,7 @@
     "test:learning:smoke": "node scripts/learning_summary_smoke.mjs",
     "test:stories:smoke": "node scripts/stories_smoke.mjs",
     "test:notifications:smoke": "node scripts/notifications_smoke.mjs",
+    "inventory:mvp": "node scripts/mvp_inventory.mjs",
     "lint": "eslint src",
     "serve": "npm run build && firebase emulators:start --only functions",
     "deploy:dev": "firebase deploy --only functions --project dev",

@@ -37,12 +37,11 @@ class BookReaderState {
 /// One reader run is bound to its original parent/child and content version.
 class BookReaderController extends ChangeNotifier {
   BookReaderController({
-    required BookRepository repository,
-    required TtsService narrator,
+    required this._repository,
+    required this._narrator,
     required this.bookId,
     required this.scope,
-  }) : _repository = repository,
-       _narrator = narrator {
+  }) {
     unawaited(load());
   }
 

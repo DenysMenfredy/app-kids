@@ -14,7 +14,7 @@ describe("Stripe web checkout channel", () => {
     assert.equal(isApprovedWebCheckoutApp("web-id", "mobile-id"), false);
   });
 
-  it("allows only the matching attested web app ID", () => {
-    assert.equal(isApprovedWebCheckoutApp("web-id", "web-id"), true);
+  it("rejects even the previously approved web app under plan v2", () => {
+    assert.equal(isApprovedWebCheckoutApp("web-id", "web-id"), false);
   });
 });

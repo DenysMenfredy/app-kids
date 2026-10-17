@@ -22,6 +22,10 @@ jobs:
         working-directory: lele
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
           # Pinned, not "stable": resolving on a different SDK silently
@@ -38,6 +42,8 @@ jobs:
         run: git diff --exit-code pubspec.lock
       - run: flutter analyze
       - run: flutter test
+      - name: Native Android dependency and build-guard smoke
+        run: flutter build apk --debug --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATOR=true
 
   functions:
     name: Cloud Functions
@@ -54,6 +60,7 @@ jobs:
           cache-dependency-path: backend/functions/package-lock.json
       - run: npm ci
       - run: npm test
+      - run: npm run inventory:mvp
 
   rules:
     name: Security Rules

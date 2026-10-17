@@ -9,6 +9,8 @@ import 'package:lele/core/widgets/lele_icon_button.dart';
 import 'package:lele/features/books/presentation/books_screen.dart';
 import 'package:lele/features/child_home/presentation/child_home_screen.dart';
 import 'package:lele/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:lele/features/paywall/application/store_catalog_provider.dart';
+import 'package:lele/features/paywall/domain/plan.dart';
 import 'package:lele/features/paywall/presentation/paywall_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,7 +34,18 @@ Future<void> pump(WidgetTester tester, Widget screen, double width) async {
   final prefs = await SharedPreferences.getInstance();
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        // A store-localized fixture, never the production fallback catalog.
+        storeCatalogProvider.overrideWithValue(const [
+          Plan(
+            id: 'monthly',
+            name: 'Mensal',
+            subtitle: 'Por mês',
+            price: r'R$ 19,90',
+          ),
+        ]),
+      ],
       child: MaterialApp(theme: AppTheme.light, home: screen),
     ),
   );

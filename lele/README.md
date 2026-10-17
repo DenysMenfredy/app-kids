@@ -8,7 +8,8 @@ children ages 3–7, built from the Claude Design handoff
 ## Product surface
 
 **Parent flow:** Splash → Welcome carousel → Register/Login → Child profile →
-Assessment (3 questions) → Parent dashboard → Paywall (founder pricing).
+Assessment (3 questions) → Parent dashboard → Paywall (native catalog required;
+no fixed founder prices or unverified trial promise).
 
 **Child flow:** Child home (journey map anchored on the child's current
 lesson, streak/coins/XP) → Today's lesson → its 4 activities, with the
@@ -139,7 +140,7 @@ The app runs against either an offline stub or the real Letrando backend
 | Lesson progress | local only | + `updateProgress` / `completeLesson` callables |
 | XP / coins / streak | computed on device | streamed from `gamification/{childId}` |
 | Premium | always false | streams `entitlements/premium` |
-| Purchase | unavailable | mobile beta disabled; web checkout opt-in after the real trial is ready |
+| Purchase | unavailable | native Google Play/App Store integration required; acquisition disabled until verified; no web checkout |
 
 Local mode never touches a Firebase instance, so tests and pre-configuration
 development work with no project set up. Firebase mode keeps the local store
@@ -276,17 +277,21 @@ GitHub Environment (`.github/workflows/release-android.yml`).
 
 ### Enabling the Firebase backend
 
+Use the environment setup in [config/README.md](config/README.md). The public
+options/native files must come from that environment's real Firebase app
+registrations; do not overwrite the shared option selector with one project's
+generated file. Debug/demo remains available without real configuration.
+
 ```bash
-dart pub global activate flutterfire_cli
-flutterfire configure --project=letrando-dev   # overwrites lib/firebase_options.dart
-flutter run --dart-define=USE_FIREBASE=true
+flutter run --dart-define-from-file=config/firebase.dev.json
+flutter build apk --release --dart-define-from-file=config/firebase.staging.json
 ```
 
-`flutterfire configure` also writes the native config files
-(`google-services.json`, `GoogleService-Info.plist`). Deploy the backend and
-seed its content first (see `../backend/README.md`): the callables must exist
-in `southamerica-east1`, and the onboarding assessment is read from
-Firestore.
+Android/Xcode pre-build and runtime checks reject missing/mismatched config,
+and release rejects demo, emulator and dev-project modes. Real OAuth/App Check,
+native resources/capabilities and staging device validation remain required.
+The backend must be configured in `southamerica-east1` with published seed
+content; these commands do not deploy or grant entitlements.
 
 ## Known MVP simplifications
 

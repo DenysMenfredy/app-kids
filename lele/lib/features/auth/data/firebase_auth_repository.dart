@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/firebase/firebase_providers.dart';
@@ -6,15 +7,18 @@ import '../domain/apple_account_link_outcome.dart';
 import '../domain/auth_failure.dart';
 import '../domain/sign_in_outcome.dart';
 import 'auth_repository.dart';
+import 'google_identity_service.dart';
 
 /// Firebase Auth implementation (spec §3). The backend's onUserCreated
 /// trigger bootstraps the Firestore profile when an account is created;
 /// this class only handles identity.
 class FirebaseAuthRepository
     implements AuthRepository, AppleAccountLinkRepository {
-  FirebaseAuthRepository(this._auth);
+  FirebaseAuthRepository(this._auth, {GoogleIdentityService? googleIdentity})
+    : _googleIdentity = googleIdentity ?? NativeGoogleIdentityService();
 
   final FirebaseAuth _auth;
+  final GoogleIdentityService _googleIdentity;
 
   @override
   String? get currentUserId => _auth.currentUser?.uid;
@@ -57,14 +61,28 @@ class FirebaseAuthRepository
   }
 
   @override
-  Future<SignInOutcome> signInWithGoogle() {
-    // signInWithProvider drives the native Google flow on iOS/Android
-    // without the google_sign_in package. Firebase Auth links providers
-    // that share a verified email to the same UID (spec §3).
-    return _providerSignIn(_googleProvider());
+  Future<SignInOutcome> signInWithGoogle() async {
+    try {
+      final UserCredential credential;
+      if (kIsWeb) {
+        credential = await _auth.signInWithPopup(_googleProvider());
+      } else {
+        final token = await _googleIdentity.authenticate();
+        if (token == null) return SignInOutcome.cancelled;
+        credential = await _auth.signInWithCredential(
+          GoogleAuthProvider.credential(idToken: token),
+        );
+      }
+      // Only Firebase's result decides UID/new-account status. Never look up,
+      // link or merge another family by the Google account's email.
+      return _outcomeOf(credential);
+    } on FirebaseAuthException catch (error) {
+      if (isSignInCancellation(error.code)) return SignInOutcome.cancelled;
+      throw AuthFailure(authErrorMessage(error.code));
+    }
   }
 
-  /// Google's provider, configured rather than bare.
+  /// Google's web-popup provider, configured rather than bare.
   ///
   /// `prompt: select_account` is the part that matters on a family device.
   /// Without it Google silently reuses whichever account signed in last, so
@@ -84,9 +102,8 @@ class FirebaseAuthRepository
 
   @override
   Future<SignInOutcome> signInWithApple() {
-    // Same shape as Google: signInWithProvider drives the native
-    // ASAuthorization sheet on iOS, so there is no second auth SDK and no
-    // nonce to thread through the client.
+    // Firebase drives the native ASAuthorization sheet on iOS and manages
+    // the nonce. Unlike Google, Apple supports signInWithProvider directly.
     //
     // Unlike Google, this does NOT reliably resolve to an existing account.
     // A parent who picks Apple's "Hide My Email" arrives with a relay
@@ -157,7 +174,14 @@ class FirebaseAuthRepository
   });
 
   @override
-  Future<void> signOut() => _auth.signOut();
+  Future<void> signOut() async {
+    try {
+      if (!kIsWeb) await _googleIdentity.signOut();
+    } finally {
+      // Google cleanup must never prevent signing out the Firebase family UID.
+      await _auth.signOut();
+    }
+  }
 
   Future<T> _guard<T>(Future<T> Function() action) async {
     try {
@@ -228,6 +252,9 @@ String authErrorMessage(String code) {
       return 'Muitas tentativas. Aguarde um pouco e tente de novo.';
     case 'network-request-failed':
       return 'Sem conexão. Verifique sua internet.';
+    case 'operation-not-allowed':
+    case 'configuration-not-found':
+      return 'Esta forma de acesso ainda não está configurada para este app.';
     default:
       return 'Não foi possível entrar agora. Tente novamente.';
   }

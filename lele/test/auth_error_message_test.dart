@@ -32,6 +32,15 @@ void main() {
       );
     });
 
+    test('unconfigured providers have a setup-specific message', () {
+      for (final code in ['operation-not-allowed', 'configuration-not-found']) {
+        expect(
+          authErrorMessage(code),
+          'Esta forma de acesso ainda não está configurada para este app.',
+        );
+      }
+    });
+
     test('never returns an empty message', () {
       const codes = [
         'invalid-credential',
