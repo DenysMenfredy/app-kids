@@ -89,6 +89,9 @@ const asVerifiedParent = () => env.authenticatedContext(PARENT, {
   email_verified: true,
 }).firestore();
 const asStranger = () => env.authenticatedContext(STRANGER).firestore();
+const asVerifiedStranger = () => env.authenticatedContext(STRANGER, {
+  email_verified: true,
+}).firestore();
 const asAnon = () => env.unauthenticatedContext().firestore();
 const asAdmin = (fn) => env.withSecurityRulesDisabled(fn);
 
@@ -841,6 +844,103 @@ describe("devices & notifications", () => {
       await assertFails(asParent().doc(path).set({ uid: PARENT }));
       await assertFails(asParent().doc(path).delete());
     }
+  });
+});
+
+describe("F2 cross-account isolation (two synthetic families)", () => {
+  const ownPaths = [
+    `users/${PARENT}`,
+    `users/${PARENT}/consent/current`,
+    `users/${PARENT}/children/child_a`,
+    `users/${PARENT}/children/child_a/bookmarks/sapo`,
+    `users/${PARENT}/sessions/session_a`,
+    `users/${PARENT}/learningProgress/child_a_lesson_001`,
+    `users/${PARENT}/gamification/child_a`,
+    `users/${PARENT}/assessmentResults/child_a`,
+    `users/${PARENT}/notifications/note_a`,
+    `users/${PARENT}/devices/device_a`,
+    `users/${PARENT}/subscriptions/sub_a`,
+    `users/${PARENT}/entitlements/premium`,
+    `users/${PARENT}/notificationPreferences/default`,
+  ];
+
+  beforeEach(async () => {
+    await asAdmin(async (ctx) => {
+      const db = ctx.firestore();
+      await db.doc(`users/${PARENT}`).set({ displayName: "Família A" });
+      await db.doc(`users/${STRANGER}`).set({ displayName: "Família B" });
+      await db.doc(`users/${PARENT}/consent/current`).set(currentConsent(PARENT));
+      await db.doc(`users/${STRANGER}/consent/current`).set(currentConsent(STRANGER));
+      await db.doc(`users/${PARENT}/children/child_a`).set({
+        name: "Criança A", age: 5, avatarId: "teal",
+      });
+      await db.doc(`users/${STRANGER}/children/child_b`).set({
+        name: "Criança B", age: 5, avatarId: "orange",
+      });
+      await db.doc(`users/${PARENT}/children/child_a/bookmarks/sapo`).set({
+        bookId: "sapo", contentVersion: 1, pageIndex: 0,
+      });
+      await db.doc(`users/${PARENT}/sessions/session_a`).set({ childId: "child_a" });
+      await db.doc(`users/${PARENT}/learningProgress/child_a_lesson_001`).set({
+        status: "in_progress",
+      });
+      await db.doc(`users/${PARENT}/gamification/child_a`).set({ xp: 50 });
+      await db.doc(`users/${PARENT}/assessmentResults/child_a`).set({ score: 1 });
+      await db.doc(`users/${PARENT}/notifications/note_a`).set({ title: "A" });
+      await db.doc(`users/${PARENT}/devices/device_a`).set({ token: "a" });
+      await db.doc(`users/${PARENT}/subscriptions/sub_a`).set({ status: "active" });
+      await db.doc(`users/${PARENT}/entitlements/premium`).set({ active: true });
+      await db.doc(`users/${PARENT}/notificationPreferences/default`).set({
+        dailyReminder: true, achievement: true, weeklyReport: true,
+        subscription: true, marketing: false, preferredTime: "18:00",
+      });
+    });
+  });
+
+  it("keeps every family path readable only by its owner", async () => {
+    for (const path of ownPaths) {
+      await assertSucceeds(asParent().doc(path).get());
+      await assertFails(asStranger().doc(path).get());
+      await assertFails(asAnon().doc(path).get());
+    }
+    await assertSucceeds(asStranger().doc(`users/${STRANGER}/children/child_b`).get());
+    await assertFails(asParent().doc(`users/${STRANGER}/children/child_b`).get());
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/deletion/current`).get(),
+    );
+  });
+
+  it("denies cross-family writes even with a verified token", async () => {
+    const otherChild = asVerifiedStranger().doc(`users/${PARENT}/children/child_a`);
+    await assertFails(otherChild.update({ name: "Hijacked" }));
+    await assertFails(
+      asStranger().doc(`users/${PARENT}`).update({ displayName: "Hijacked" }),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/notificationPreferences/default`)
+        .update({ marketing: true }),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/consent/current`).update({ textVersion: "v2" }),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/children/child_a/bookmarks/sapo`)
+        .update({ pageIndex: 1 }),
+    );
+    await assertFails(
+      asStranger().doc(`users/${PARENT}/children/new_child`).set({
+        name: "Hijacked", age: 5, avatarId: "teal",
+      }),
+    );
+
+    // The owner still has the intended write path.
+    await assertSucceeds(
+      asVerifiedParent().doc(`users/${PARENT}/children/child_a`)
+        .update({ name: "Criança A2" }),
+    );
+    await assertSucceeds(
+      asParent().doc(`users/${PARENT}`).update({ displayName: "Família A2" }),
+    );
   });
 });
 
