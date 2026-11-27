@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/layout/adaptive_page.dart';
 import '../core/theme/app_theme.dart';
+import '../features/auth/presentation/parent_consent_gate.dart';
 import '../features/dashboard/application/weekly_learning_provider.dart';
 import '../features/lesson/application/lesson_session_controller.dart';
 import '../features/notifications/application/notification_controller.dart';
@@ -69,7 +70,7 @@ class _LeleAppState extends ConsumerState<LeleApp> with WidgetsBindingObserver {
         data: MediaQuery.of(
           context,
         ).copyWith(textScaler: adaptiveTextScaler(context)),
-        child: child!,
+        child: ParentConsentGate(child: child!),
       ),
       routerConfig: router,
       // The app is pt-BR only, but declaring the locale without these

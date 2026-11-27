@@ -10,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_icon_button.dart';
+import '../../auth/presentation/parent_consent_gate.dart';
 import '../application/book_reader_controller.dart';
 import 'book_cover_style.dart';
 import 'book_illustration.dart';
@@ -210,7 +211,19 @@ class _BookReaderScreenState extends ConsumerState<BookReaderScreen>
                             TextButton.icon(
                               onPressed: state.busy
                                   ? null
-                                  : () => unawaited(controller.retrySave()),
+                                  : () async {
+                                      if (state.consentRequired) {
+                                        final accepted =
+                                            await showParentConsentDialog(
+                                              context,
+                                              ref,
+                                            );
+                                        if (!accepted || !context.mounted) {
+                                          return;
+                                        }
+                                      }
+                                      await controller.retrySave();
+                                    },
                               icon: const Icon(
                                 Icons.sync_problem_rounded,
                                 color: AppColors.redDark,

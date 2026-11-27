@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/consent/parent_consent.dart';
 import '../../learning/application/journey_provider.dart';
 import '../../session/application/child_provider.dart';
 import '../../session/application/demo_progress_controller.dart';
@@ -26,6 +27,19 @@ final lessonRunProvider =
     NotifierProvider<LessonRunController, LessonRecovery?>(
       LessonRunController.new,
     );
+
+/// Set when the backend refused a lesson write until the parent accepts the
+/// current terms. The lesson screen turns this into a consent dialog instead
+/// of the generic "check your connection" message.
+class LessonConsentRequired extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setRequired(bool value) => state = value;
+}
+
+final lessonConsentRequiredProvider =
+    NotifierProvider<LessonConsentRequired, bool>(LessonConsentRequired.new);
 
 final pendingLessonProvider = FutureProvider.autoDispose<PendingLesson?>((ref) {
   ref.watch(sessionStorageScopeProvider);
@@ -68,7 +82,10 @@ class LessonSessionController {
             _activeChildId!,
             contentVersion: contentVersion,
           );
-    } catch (_) {
+    } catch (error) {
+      if (isParentConsentFailure(error)) {
+        _ref.read(lessonConsentRequiredProvider.notifier).setRequired(true);
+      }
       if (_run == run) _reset();
       return false;
     }
@@ -113,7 +130,10 @@ class LessonSessionController {
           );
       _startPresence();
       return progress;
-    } catch (_) {
+    } catch (error) {
+      if (isParentConsentFailure(error)) {
+        _ref.read(lessonConsentRequiredProvider.notifier).setRequired(true);
+      }
       if (_valid(run)) _reset();
       return null;
     }
@@ -232,7 +252,10 @@ class LessonSessionController {
           _unsaved.removeAt(0);
         }
         return true;
-      } catch (_) {
+      } catch (error) {
+        if (isParentConsentFailure(error)) {
+          _ref.read(lessonConsentRequiredProvider.notifier).setRequired(true);
+        }
         return false;
       }
     }
@@ -267,7 +290,10 @@ class LessonSessionController {
         _activeLessonId = null;
         _activeChildId = null;
         return reward;
-      } catch (_) {
+      } catch (error) {
+        if (isParentConsentFailure(error)) {
+          _ref.read(lessonConsentRequiredProvider.notifier).setRequired(true);
+        }
         return null;
       }
     }

@@ -9,6 +9,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_card.dart';
+import '../../auth/presentation/parent_consent_gate.dart';
 import '../../session/application/child_provider.dart';
 import '../application/assessment_content_provider.dart';
 import '../application/assessment_controller.dart';
@@ -60,7 +61,17 @@ class _Questions extends ConsumerWidget {
     if (answered < assessment.questions.length) return;
 
     await controller.submit(childId: ref.read(activeChildIdProvider));
-    if (context.mounted) context.goNamed(AppRoutes.assessmentResult);
+    if (!context.mounted) return;
+    if (ref.read(assessmentProvider).consentRequired) {
+      final accepted = await showParentConsentDialog(context, ref);
+      if (!accepted || !context.mounted) return;
+      ref.read(assessmentProvider.notifier).clearConsentRequired();
+      await controller.submit(childId: ref.read(activeChildIdProvider));
+      if (!context.mounted || ref.read(assessmentProvider).consentRequired) {
+        return;
+      }
+    }
+    context.goNamed(AppRoutes.assessmentResult);
   }
 
   @override
