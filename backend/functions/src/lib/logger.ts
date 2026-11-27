@@ -13,7 +13,8 @@ export function log(
     | "notifications"
     | "learning"
     | "analytics"
-    | "admin",
+    | "admin"
+    | "consent",
   message: string,
   fields: Record<string, unknown> = {},
 ): void {

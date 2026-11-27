@@ -15,6 +15,7 @@ import {
 import { localDateIso } from "../domain/time";
 import { validTimezone } from "../domain/active_time";
 import { sessionClockPatch } from "./session_clock";
+import { requireCurrentParentConsent } from "../lib/consent";
 import { db, paths } from "../lib/firestore";
 import { findNextLessonId } from "./next_lesson";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
@@ -44,6 +45,7 @@ export const completeLesson = onCall(
       maxLength: 64,
     });
 
+    await requireCurrentParentConsent(uid);
     const lessonRef = db().collection(paths.lessons).doc(lessonId);
     const [lesson, user] = await Promise.all([
       lessonRef.get(),

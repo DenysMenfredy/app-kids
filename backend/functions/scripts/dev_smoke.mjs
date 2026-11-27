@@ -3,11 +3,12 @@
  *
  * Unlike backend/smoke.sh, this does not use emulators. It proves that the
  * deployed pieces work together: Application Default Credentials, the Auth
- * bootstrap trigger, App Check enforcement, a real callable round-trip and
- * Firestore Admin access. It creates one synthetic parent, exercises
- * createChildProfile twice with the same requestId (idempotency), verifies
- * that a request without App Check is rejected, and always removes the
- * account and every document under it.
+ * bootstrap trigger, the parent-consent gate, App Check enforcement, a real
+ * callable round-trip and Firestore Admin access. It creates one synthetic
+ * parent, verifies that child creation is blocked before consent, records
+ * consent twice (idempotency), exercises createChildProfile twice with the
+ * same requestId, verifies that a request without App Check is rejected, and
+ * always removes the account and every document under it.
  *
  * Requirements:
  *   - Application Default Credentials for a principal allowed to manage
@@ -27,6 +28,8 @@ import { fileURLToPath } from "node:url";
 import { applicationDefault, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+
+import { CURRENT_CONSENT_TEXT_VERSION } from "../lib/domain/consent.js";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const projects = new Set(["letrando-dev", "letrando-staging"]);
@@ -76,8 +79,7 @@ if (!debugToken) {
 }
 
 const evidencePath = arg("evidence");
-const functionUrl =
-  `https://southamerica-east1-${project}.cloudfunctions.net/createChildProfile`;
+const functionRoot = `https://southamerica-east1-${project}.cloudfunctions.net`;
 const checks = [];
 let status = "failed";
 let failure = null;
@@ -141,7 +143,17 @@ async function waitForUserDocument(uid) {
 }
 
 async function callCreateChildProfile(idToken, appCheckToken, data) {
-  return request(functionUrl, {
+  return request(`${functionRoot}/createChildProfile`, {
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+      ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
+    },
+    body: { data },
+  });
+}
+
+async function callRecordParentConsent(idToken, appCheckToken, data) {
+  return request(`${functionRoot}/recordParentConsent`, {
     headers: {
       Authorization: `Bearer ${idToken}`,
       ...(appCheckToken ? { "X-Firebase-AppCheck": appCheckToken } : {}),
@@ -203,6 +215,25 @@ try {
     requestId,
     profile: { name: "Smoke", age: 5, avatarId: "teal" },
   };
+
+  const beforeConsent = await callCreateChildProfile(idToken, appCheckToken, data);
+  assert.equal(beforeConsent.json?.error?.status, "FAILED_PRECONDITION");
+  assert.equal(beforeConsent.json?.error?.details?.code, "consent_required");
+  pass("child creation is blocked before the parent records consent");
+
+  const consent = {
+    textVersion: CURRENT_CONSENT_TEXT_VERSION,
+    purposes: { notifications: false, marketing: false, analytics: false },
+    origin: "parent_app",
+  };
+  const recorded = await callRecordParentConsent(idToken, appCheckToken, consent);
+  assert.equal(recorded.json?.result?.ok, true);
+  assert.equal(recorded.json?.result?.changed, true);
+  const replayed = await callRecordParentConsent(idToken, appCheckToken, consent);
+  assert.equal(replayed.json?.result?.ok, true);
+  assert.equal(replayed.json?.result?.changed, false);
+  pass("parent consent is recorded idempotently");
+
   const first = await callCreateChildProfile(idToken, appCheckToken, data);
   const childId = first.json?.result?.childId;
   if (!childId) {

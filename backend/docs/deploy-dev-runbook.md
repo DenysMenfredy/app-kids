@@ -187,9 +187,10 @@ APP_CHECK_DEBUG_TOKEN=... npm run smoke:dev -- \
 ```
 
 The smoke script creates `smoke+<random>@example.test`, verifies the Auth
-bootstrap, exchanges the App Check debug token, creates one child profile
-twice with the same `requestId`, checks that a request without App Check is
-rejected, and removes the synthetic account and every document under it. It
+bootstrap, exchanges the App Check debug token, verifies that child creation is
+blocked before consent, records consent twice (idempotency), creates one child
+profile twice with the same `requestId`, checks that a request without App Check
+is rejected, and removes the synthetic account and every document under it. It
 refuses anything except `letrando-dev` and `letrando-staging`, and its JSON
 evidence contains no email, UID or token.
 

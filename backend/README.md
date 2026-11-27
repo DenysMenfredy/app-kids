@@ -25,6 +25,7 @@ backend/
 │       ├── subscriptions/     # syncEntitlement trigger (single writer)
 │       ├── notifications/     # registerDevice, sendDailyReminders, FCM fan-out
 │       ├── profiles/          # server-issued child profile IDs
+│       ├── consent/           # server-owned parent consent (ADR 0020)
 │       ├── learning/          # sessions, scored attempts, completion,
 │       │                      # updateProgress, submitAssessment
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
@@ -49,15 +50,18 @@ The mobile client is untrusted. It may only:
 - read/write approved fields of its own profile and existing child profiles,
   and its own notification preferences; read its own sessions and learning
   data (the latter are written by trusted functions, ADR 0006);
+- read its own parent-consent record; only `recordParentConsent` writes it
+  (ADR 0020);
 - read its own subscriptions/entitlements/notifications/devices;
 - read public catalog metadata; read first-module activity/story payloads or
   Premium payloads only while their server entitlement is current.
 
 Everything privileged — checkout creation, webhook processing, entitlement
-activation, role assignment, child-profile creation, content publishing,
-device registration, notification fan-out, assessment scoring and reward
-granting — happens in Cloud Functions guarded by auth, applicable role checks
-and App Check.
+activation, role assignment, child-profile creation, parent consent, content
+publishing, device registration, notification fan-out, assessment scoring and
+reward granting — happens in Cloud Functions guarded by auth, applicable role
+checks and App Check. Child-profile creation and every child-data write also
+require the current consent version and fail closed without it.
 
 ## Learning flow (§5, ADR 0003)
 
@@ -284,11 +288,11 @@ npm test                # TypeScript build + domain and seed-integrity tests
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests — 34 tests against the Firestore emulator.
+# Security Rules tests — 44 tests against the Firestore emulator.
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
-npm test                # firebase emulators:exec → node --test (29 tests)
+npm test                # firebase emulators:exec → node --test (44 tests)
 
 # Real-environment smoke (after a dev/staging deploy): creates a synthetic
 # parent, exercises App Check + createChildProfile, and always cleans up.

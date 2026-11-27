@@ -3,6 +3,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { mayCompleteLesson } from "../domain/lesson_completion";
 import { validTimezone } from "../domain/active_time";
+import { requireCurrentParentConsent } from "../lib/consent";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
@@ -35,6 +36,7 @@ export const startLessonSession = onCall(
         !/^[A-Za-z0-9_-]{1,64}$/.test(requestId))) {
       throw new HttpsError("invalid-argument", "Request ID inválido.");
     }
+    await requireCurrentParentConsent(uid);
     const sessionRef = requestId === undefined ? sessions.doc() : sessions.doc(
       createHash("sha256").update(requestId).digest("hex"),
     );

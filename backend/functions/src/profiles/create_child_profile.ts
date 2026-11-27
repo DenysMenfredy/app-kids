@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { parseChildProfile } from "../domain/child_profile";
+import { requireCurrentParentConsent } from "../lib/consent";
 import { db, paths } from "../lib/firestore";
 import {
   enforceAppCheck,
@@ -16,6 +17,7 @@ export const createChildProfile = onCall(
   async (request) => {
     const uid = requireAuth(request);
     requireVerifiedParentEmail(request);
+    await requireCurrentParentConsent(uid);
     const requestId = requireString(request.data?.requestId, "requestId", {
       maxLength: 80,
     });

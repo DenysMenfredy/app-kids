@@ -35,6 +35,9 @@ export { updateProgress } from "./learning/update_progress";
 export { createChildProfile } from "./profiles/create_child_profile";
 export { saveBookBookmark } from "./books/save_book_bookmark";
 
+// consent/
+export { recordParentConsent } from "./consent/record_parent_consent";
+
 // admin/
 export { manageContent } from "./admin/manage_content";
 export { setUserRole } from "./admin/set_user_role";

@@ -5,6 +5,8 @@ import { initializeApp, getApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 
+import { CURRENT_CONSENT_TEXT_VERSION } from "../lib/domain/consent.js";
+
 for (const key of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"]) {
   assert.match(process.env[key] ?? "", /^(localhost|127\.0\.0\.1):\d+$/);
 }
@@ -28,6 +30,12 @@ async function parent() {
   }).then((response) => response.json());
   assert.ok(login.idToken);
   await db.doc(`users/${user.uid}`).update({ timezone: "America/Belem" });
+  const consent = await call("recordParentConsent", { token: login.idToken }, {
+    textVersion: CURRENT_CONSENT_TEXT_VERSION,
+    purposes: { notifications: false, marketing: false, analytics: false },
+    origin: "parent_app",
+  });
+  assert.equal(consent.result?.ok, true, "Consent setup failed");
   return { uid: user.uid, token: login.idToken };
 }
 async function call(name, owner, data) {

@@ -102,6 +102,32 @@ TOKEN=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('idToken','')
 check "verified test account can refresh its Auth token" "$r"
 [ -n "$TOKEN" ] || exit 1
 
+NO_CONSENT_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"requestId\":\"no_consent_${UID_}\",\"profile\":{\"name\":\"Sofia\",\"age\":5,\"avatarId\":\"orange\"}}}")
+grep -q 'consent_required' <<<"$NO_CONSENT_CHILD" && r=ok || r=no
+check "child creation is blocked before consent" "$r"
+
+NO_CONSENT_LESSON=$(curl -s -X POST "${FN}/startLessonSession" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"data":{"childId":"child_without_consent","lessonId":"lesson_001"}}')
+grep -q 'consent_required' <<<"$NO_CONSENT_LESSON" && r=ok || r=no
+check "lesson collection is blocked before consent" "$r"
+
+CONSENT=$(curl -s -X POST "${FN}/recordParentConsent" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"data":{"textVersion":"d07-placeholder-v1","purposes":{"notifications":false,"marketing":false,"analytics":false},"origin":"parent_app"}}')
+CONSENT_CHANGED=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('changed'))" <<<"$CONSENT")
+[ "$CONSENT_CHANGED" = "True" ] && r=ok || r=no
+check "parent consent is recorded server-side" "$r"
+
+CONSENT_RETRY=$(curl -s -X POST "${FN}/recordParentConsent" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"data":{"textVersion":"d07-placeholder-v1","purposes":{"notifications":false,"marketing":false,"analytics":false},"origin":"parent_app"}}')
+CONSENT_CHANGED=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('changed'))" <<<"$CONSENT_RETRY")
+[ "$CONSENT_CHANGED" = "False" ] && r=ok || r=no
+check "replaying the same consent is idempotent" "$r"
+
 CREATE_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d "{\"data\":{\"requestId\":\"smoke_${UID_}\",\"profile\":{\"name\":\"Sofia\",\"age\":5,\"avatarId\":\"orange\"}}}")

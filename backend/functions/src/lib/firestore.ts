@@ -3,6 +3,8 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 /** Central place for collection paths so they never drift from the spec. */
 export const paths = {
   user: (uid: string) => `users/${uid}`,
+  /** Server-owned parent acceptance of the current child-data terms. */
+  parentConsent: (uid: string) => `users/${uid}/consent/current`,
   children: (uid: string) => `users/${uid}/children`,
   dailySummaries: (uid: string, childId: string) =>
     `users/${uid}/children/${childId}/dailySummaries`,
