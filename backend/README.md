@@ -290,7 +290,12 @@ cd ../test/rules
 npm install
 npm test                # firebase emulators:exec → node --test (29 tests)
 
-# Deploy (per environment)
+# Real-environment smoke (after a dev/staging deploy): creates a synthetic
+# parent, exercises App Check + createChildProfile, and always cleans up.
+APP_CHECK_DEBUG_TOKEN=... npm run smoke:dev -- --project letrando-dev
+
+# Deploy: prefer the manual "Deploy backend" GitHub workflow. It tests, deploys,
+# seeds dev/staging and runs the dev smoke; see docs/deploy-dev-runbook.md.
 firebase deploy --project dev        # letrando-dev
 firebase deploy --project staging
 firebase deploy --project production
