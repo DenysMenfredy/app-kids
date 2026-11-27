@@ -14,7 +14,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { cert, initializeApp } from "firebase-admin/app";
+import { initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { bookPublicationProblem } from "../lib/domain/books.js";
 import { lessonPublicationProblem } from "../lib/domain/lesson_content.js";
@@ -40,13 +40,11 @@ if (projectId.includes("production") && arg("force") === undefined) {
   process.exit(1);
 }
 
-const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-initializeApp({
-  projectId,
-  ...(credentialsPath && !process.env.FIRESTORE_EMULATOR_HOST
-    ? { credential: cert(JSON.parse(readFileSync(credentialsPath, "utf8"))) }
-    : {}),
-});
+// Admin SDK picks up GOOGLE_APPLICATION_CREDENTIALS on its own, including the
+// external-account file that google-github-actions/auth writes for Workload
+// Identity Federation. Do not call cert() here: that only understands a
+// service-account key and would break the keyless CI path.
+initializeApp({ projectId });
 const db = getFirestore();
 
 /** Each subdirectory of seed/ is a Firestore collection. */
