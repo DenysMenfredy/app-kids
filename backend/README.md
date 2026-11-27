@@ -26,6 +26,7 @@ backend/
 │       ├── notifications/     # registerDevice, sendDailyReminders, FCM fan-out
 │       ├── profiles/          # server-issued child profile IDs
 │       ├── consent/           # server-owned parent consent (ADR 0020)
+│       ├── account/           # account-deletion request tombstone (ADR 0022)
 │       ├── learning/          # sessions, scored attempts, completion,
 │       │                      # updateProgress, submitAssessment
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
@@ -52,16 +53,19 @@ The mobile client is untrusted. It may only:
   data (the latter are written by trusted functions, ADR 0006);
 - read its own parent-consent record; only `recordParentConsent` writes it
   (ADR 0020);
+- read its own account-deletion tombstone; only `requestAccountDeletion`
+  writes it (ADR 0022);
 - read its own subscriptions/entitlements/notifications/devices;
 - read public catalog metadata; read first-module activity/story payloads or
   Premium payloads only while their server entitlement is current.
 
 Everything privileged — checkout creation, webhook processing, entitlement
-activation, role assignment, child-profile creation, parent consent, content
-publishing, device registration, notification fan-out, assessment scoring and
-reward granting — happens in Cloud Functions guarded by auth, applicable role
-checks and App Check. Child-profile creation and every child-data write also
-require the current consent version and fail closed without it.
+activation, role assignment, child-profile creation, parent consent, account
+deletion, content publishing, device registration, notification fan-out,
+assessment scoring and reward granting — happens in Cloud Functions guarded by
+auth, applicable role checks and App Check. Child-profile creation and every
+child-data write also require the current consent version and fail closed
+without it; a pending deletion request blocks them even when consent is current.
 
 ## Learning flow (§5, ADR 0003)
 
@@ -349,7 +353,8 @@ development (spec §21).
 - Multi-child summary/aggregation for the parent dashboard (the app can now
   select a child; XP, coins, streak and journey remain scoped per child).
 - Profile deletion and migration of legacy `primary` children; see ADR 0008.
-- Account deletion / data-retention jobs (LGPD §19 — deletion mechanism must
-  land before public launch).
+- Account deletion worker (the authenticated request and tombstone exist;
+  subcollection/Storage/Auth cascade, late callbacks and restore reapplication
+  are PR08b; retention remains D07).
 - Achievement and weekly-report notification jobs (sender infra is in place).
 - The legal review flagged in §19: this spec is engineering, not legal advice.

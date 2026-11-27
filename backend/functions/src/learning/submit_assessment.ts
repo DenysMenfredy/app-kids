@@ -10,7 +10,7 @@ import {
   placementFor,
   scoreAnswers,
 } from "../domain/assessment";
-import { requireCurrentParentConsent } from "../lib/consent";
+import { requireParentCanCollectChildData } from "../lib/parent_guard";
 import { DEFAULT_ASSESSMENT_ID, db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
@@ -34,7 +34,7 @@ export const submitAssessment = onCall(
       : DEFAULT_ASSESSMENT_ID;
     const answers = parseAnswers(request.data?.answers);
 
-    await requireCurrentParentConsent(uid);
+    await requireParentCanCollectChildData(uid);
     const childRef = db().collection(paths.children(uid)).doc(childId);
     const child = await childRef.get();
     if (!child.exists) {

@@ -14,7 +14,8 @@ export function log(
     | "learning"
     | "analytics"
     | "admin"
-    | "consent",
+    | "consent"
+    | "deletion",
   message: string,
   fields: Record<string, unknown> = {},
 ): void {

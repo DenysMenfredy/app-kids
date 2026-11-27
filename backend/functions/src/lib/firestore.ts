@@ -5,6 +5,8 @@ export const paths = {
   user: (uid: string) => `users/${uid}`,
   /** Server-owned parent acceptance of the current child-data terms. */
   parentConsent: (uid: string) => `users/${uid}/consent/current`,
+  /** Server-owned account-deletion tombstone (ADR 0022). */
+  accountDeletion: (uid: string) => `users/${uid}/deletion/current`,
   children: (uid: string) => `users/${uid}/children`,
   dailySummaries: (uid: string, childId: string) =>
     `users/${uid}/children/${childId}/dailySummaries`,

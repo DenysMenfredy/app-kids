@@ -38,6 +38,9 @@ export { saveBookBookmark } from "./books/save_book_bookmark";
 // consent/
 export { recordParentConsent } from "./consent/record_parent_consent";
 
+// account/
+export { requestAccountDeletion } from "./account/request_account_deletion";
+
 // admin/
 export { manageContent } from "./admin/manage_content";
 export { setUserRole } from "./admin/set_user_role";

@@ -19,8 +19,8 @@ UID_=""
 cleanup_smoke_account() {
   local status=$?
   if [ -n "$UID_" ]; then
-    if ! FIRESTORE_EMULATOR_HOST=localhost:8080 \
-      FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 \
+    if ! FIRESTORE_EMULATOR_HOST="$FIRESTORE_HOST" \
+      FIREBASE_AUTH_EMULATOR_HOST="$AUTH_HOST" \
       node "$BACKEND_DIR/functions/scripts/cleanup_smoke_account.mjs" "$UID_"; then
       echo "Could not remove smoke-test account $UID_ from the demo emulator." >&2
       status=1
@@ -32,10 +32,15 @@ cleanup_smoke_account() {
 }
 trap cleanup_smoke_account EXIT
 
-PROJECT="demo-letrando"
-AUTH="http://localhost:9099/identitytoolkit.googleapis.com/v1"
-FS="http://localhost:8080/v1/projects/${PROJECT}/databases/(default)/documents"
-FN="http://localhost:5001/${PROJECT}/southamerica-east1"
+# Defaults are the canonical ./dev.sh stack. Set these to run the same checks
+# against an isolated emulator stack when the canonical ports are busy.
+FIRESTORE_HOST="${FIRESTORE_EMULATOR_HOST:-localhost:8080}"
+AUTH_HOST="${FIREBASE_AUTH_EMULATOR_HOST:-localhost:9099}"
+FUNCTIONS_HOST="${SMOKE_FUNCTIONS_HOST:-localhost:5001}"
+PROJECT="${SMOKE_PROJECT:-demo-letrando}"
+AUTH="http://${AUTH_HOST}/identitytoolkit.googleapis.com/v1"
+FS="http://${FIRESTORE_HOST}/v1/projects/${PROJECT}/databases/(default)/documents"
+FN="http://${FUNCTIONS_HOST}/${PROJECT}/southamerica-east1"
 
 failures=0
 check() { # check <label> <condition-result> <detail>
@@ -91,8 +96,8 @@ UNVERIFIED_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
 grep -q 'FAILED_PRECONDITION' <<<"$UNVERIFIED_CHILD" && r=ok || r=no
 check "unverified email cannot create a child profile" "$r"
 
-FIRESTORE_EMULATOR_HOST=localhost:8080 \
-  FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 \
+FIRESTORE_EMULATOR_HOST="$FIRESTORE_HOST" \
+  FIREBASE_AUTH_EMULATOR_HOST="$AUTH_HOST" \
   node "$BACKEND_DIR/functions/scripts/verify_smoke_account.mjs" "$UID_"
 VERIFIED_LOGIN=$(curl -s -X POST "${AUTH}/accounts:signInWithPassword?key=demo-api-key" \
   -H 'Content-Type: application/json' \
@@ -352,6 +357,40 @@ MINT=$(curl -s -X PATCH "${FS}/users/${UID_}/gamification/${CHILD_ID}" \
   -d '{"fields":{"xp":{"integerValue":"999999"}}}')
 grep -q 'PERMISSION_DENIED' <<<"$MINT" && r=ok || r=no
 check "client cannot mint XP" "$r"
+
+# Account deletion request/tombstone (ADR 0022). Keep this last: it revokes
+# refresh tokens and blocks all further child-data operations for the account.
+DELETION=$(curl -s -X POST "${FN}/requestAccountDeletion" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"requestId\":\"delete_${UID_}\"}}")
+DELETION_CHANGED=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('changed'))" <<<"$DELETION")
+[ "$DELETION_CHANGED" = "True" ] && r=ok || r=no
+check "account deletion request is recorded" "$r"
+
+DELETION_RETRY=$(curl -s -X POST "${FN}/requestAccountDeletion" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"requestId\":\"delete_${UID_}\"}}")
+DELETION_CHANGED=$(python3 -c "import sys,json;print(json.load(sys.stdin).get('result',{}).get('changed'))" <<<"$DELETION_RETRY")
+[ "$DELETION_CHANGED" = "False" ] && r=ok || r=no
+check "replaying the deletion request is idempotent" "$r"
+
+BLOCKED_CHILD=$(curl -s -X POST "${FN}/createChildProfile" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"requestId\":\"after_delete_${UID_}\",\"profile\":{\"name\":\"Sofia\",\"age\":5,\"avatarId\":\"orange\"}}}")
+grep -q 'account_deletion_pending' <<<"$BLOCKED_CHILD" && r=ok || r=no
+check "child creation is blocked while deletion is pending" "$r"
+
+BLOCKED_LESSON=$(curl -s -X POST "${FN}/startLessonSession" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d "{\"data\":{\"childId\":\"$CHILD_ID\",\"lessonId\":\"$LESSON\"}}")
+grep -q 'account_deletion_pending' <<<"$BLOCKED_LESSON" && r=ok || r=no
+check "lesson collection is blocked while deletion is pending" "$r"
+
+BLOCKED_PROFILE=$(curl -s -X PATCH "${FS}/users/${UID_}?updateMask.fieldPaths=displayName" \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"fields":{"displayName":{"stringValue":"Deleted"}}}')
+grep -q 'PERMISSION_DENIED' <<<"$BLOCKED_PROFILE" && r=ok || r=no
+check "client profile edits are blocked while deletion is pending" "$r"
 
 echo
 if [ "$failures" -eq 0 ]; then

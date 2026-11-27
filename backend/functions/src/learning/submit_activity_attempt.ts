@@ -8,7 +8,7 @@ import {
   isActivityComplete,
   scoreActivityResponse,
 } from "../domain/lesson_sessions";
-import { requireCurrentParentConsent } from "../lib/consent";
+import { requireParentCanCollectChildData } from "../lib/parent_guard";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
@@ -39,7 +39,7 @@ export const submitActivityAttempt = onCall(
       throw new HttpsError("invalid-argument", "Campo inválido: requestId");
     }
 
-    await requireCurrentParentConsent(uid);
+    await requireParentCanCollectChildData(uid);
     const firestore = db();
     const sessionRef = firestore.collection(paths.sessions(uid)).doc(sessionId);
     const activityAttemptId = `${sessionId}_${requestId}`;

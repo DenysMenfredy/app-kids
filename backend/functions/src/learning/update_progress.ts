@@ -2,7 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { mayUpdateLessonProgress } from "../domain/progress_transition";
-import { requireCurrentParentConsent } from "../lib/consent";
+import { requireParentCanCollectChildData } from "../lib/parent_guard";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
@@ -39,7 +39,7 @@ export const updateProgress = onCall(
       );
     }
 
-    await requireCurrentParentConsent(uid);
+    await requireParentCanCollectChildData(uid);
     const lessonRef = db().collection(paths.lessons).doc(lessonId);
     const childRef = db().collection(paths.children(uid)).doc(childId);
     const progressRef = db()
