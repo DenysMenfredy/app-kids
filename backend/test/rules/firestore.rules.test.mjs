@@ -30,6 +30,22 @@ let env;
 
 const PARENT = "parent_uid";
 const STRANGER = "stranger_uid";
+// Must match CURRENT_CONSENT_TEXT_VERSION in
+// backend/functions/src/domain/consent.ts and firestore.rules.
+const CONSENT_TEXT_VERSION = "d07-placeholder-v1";
+const CONSENT_PURPOSES = { notifications: true, marketing: false, analytics: false };
+
+function currentConsent(uid) {
+  return {
+    schemaVersion: 1,
+    textVersion: CONSENT_TEXT_VERSION,
+    purposes: CONSENT_PURPOSES,
+    origin: "parent_app",
+    uid,
+    acceptedAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  };
+}
 
 before(async () => {
   env = await initializeTestEnvironment({
@@ -48,6 +64,11 @@ after(async () => {
 
 beforeEach(async () => {
   await env.clearFirestore();
+  // Most tests exercise child edits after consent; the consent-specific
+  // tests delete or replace this document to prove the gate.
+  await asAdmin(async (ctx) => {
+    await ctx.firestore().doc(`users/${PARENT}/consent/current`).set(currentConsent(PARENT));
+  });
 });
 
 const asParent = () => env.authenticatedContext(PARENT).firestore();
@@ -313,6 +334,53 @@ describe("children (parent/child boundary, spec §19)", () => {
     await assertFails(
       asStranger().doc(`users/${PARENT}/children/child1`).set({ name: "X" }),
     );
+  });
+});
+
+describe("parent consent (server-owned, versioned — ADR 0020)", () => {
+  const path = `users/${PARENT}/consent/current`;
+
+  it("lets the owner read consent but never write it", async () => {
+    await assertSucceeds(asParent().doc(path).get());
+    await assertFails(asStranger().doc(path).get());
+    await assertFails(asAnon().doc(path).get());
+
+    const valid = currentConsent(PARENT);
+    await assertFails(asParent().doc(path).set(valid));
+    await assertFails(asParent().doc(path).update({
+      purposes: { ...CONSENT_PURPOSES, marketing: true },
+    }));
+    await assertFails(asParent().doc(path).delete());
+  });
+
+  it("blocks child edits when consent is missing or outdated", async () => {
+    await asAdmin(async (ctx) => {
+      await ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      });
+    });
+    const child = asVerifiedParent().doc(`users/${PARENT}/children/child1`);
+
+    await asAdmin((ctx) => ctx.firestore().doc(path).delete());
+    await assertFails(child.update({ name: "Lucas A." }));
+
+    await asAdmin((ctx) => ctx.firestore().doc(path).set({
+      ...currentConsent(PARENT), textVersion: "d07-placeholder-0",
+    }));
+    await assertFails(child.update({ name: "Lucas A." }));
+
+    await asAdmin((ctx) => ctx.firestore().doc(path).set(currentConsent(PARENT)));
+    await assertSucceeds(child.update({ name: "Lucas A." }));
+  });
+
+  it("keeps child reads available without consent", async () => {
+    await asAdmin(async (ctx) => {
+      await ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      });
+      await ctx.firestore().doc(path).delete();
+    });
+    await assertSucceeds(asParent().doc(`users/${PARENT}/children/child1`).get());
   });
 });
 

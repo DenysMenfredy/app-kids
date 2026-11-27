@@ -1,5 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { requireCurrentParentConsent } from "../lib/consent";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { hasLessonAccess } from "./lesson_access";
@@ -17,6 +18,7 @@ export const updateLessonSession = onCall({ enforceAppCheck }, async (request) =
       !Number.isSafeInteger(sequence) || sequence < 1) {
     throw new HttpsError("invalid-argument", "Comando de sessão inválido.");
   }
+  await requireCurrentParentConsent(uid);
   const ref = db().collection(paths.sessions(uid)).doc(sessionId);
   return db().runTransaction(async (tx) => {
     const [sessionSnap, child] = await Promise.all([

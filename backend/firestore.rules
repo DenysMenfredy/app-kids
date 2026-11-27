@@ -84,6 +84,23 @@ service cloud.firestore {
         .hasAny(['updatedAt']) || request.resource.data.updatedAt == request.time;
     }
 
+    // Versioned parent consent (ADR 0020). The version literal must match
+    // CURRENT_CONSENT_TEXT_VERSION in backend/functions/src/domain/consent.ts.
+    // The document is written only by recordParentConsent (Admin SDK).
+    function hasCurrentParentConsent(uid) {
+      let path = /databases/$(database)/documents/users/$(uid)/consent/current;
+      return exists(path)
+        && get(path).data.schemaVersion == 1
+        && get(path).data.textVersion == 'd07-placeholder-v1'
+        && get(path).data.uid == uid
+        && get(path).data.origin in ['parent_app']
+        && get(path).data.purposes is map
+        && get(path).data.purposes.notifications is bool
+        && get(path).data.purposes.marketing is bool
+        && get(path).data.purposes.analytics is bool
+        && get(path).data.acceptedAt is timestamp;
+    }
+
     // Child-data constraint (spec §4, §19): minimum required data only.
     // school / address / precise location / phone / photos are not allowed.
     function validChild() {
@@ -182,13 +199,21 @@ service cloud.firestore {
         && validChangedTimestamp();
       allow delete: if false; // account deletion runs through the backend
 
+      match /consent/current {
+        // Server-owned acceptance (ADR 0020); the parent may only read it.
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
       match /children/{childId} {
         allow read: if isOwner(uid);
         // Child IDs are allocated by createChildProfile on the server.
-        // Parents can edit only the bounded profile fields on existing docs.
+        // Parents can edit only the bounded profile fields on existing docs,
+        // and only while the current consent is on record.
         allow create: if false;
         allow update: if isOwner(uid)
           && canManageChildProfile()
+          && hasCurrentParentConsent(uid)
           && validChild()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(childEditableKeys())

@@ -2,6 +2,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { bookPublicationProblem, canAccessBook } from "../domain/books";
+import { requireCurrentParentConsent } from "../lib/consent";
 import { db, paths, PREMIUM_ENTITLEMENT_ID } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 
@@ -16,6 +17,7 @@ export const saveBookBookmark = onCall({ enforceAppCheck }, async (request) => {
       !Number.isInteger(contentVersion) || contentVersion < 1) {
     throw new HttpsError("invalid-argument", "Posição de leitura inválida.");
   }
+  await requireCurrentParentConsent(uid);
   const firestore = db();
   const childRef = firestore.collection(paths.children(uid)).doc(childId);
   const bookmarkRef = childRef.collection("bookmarks").doc(bookId);
