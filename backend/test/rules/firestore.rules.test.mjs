@@ -410,7 +410,7 @@ describe("account-deletion tombstone (server-owned, ADR 0022)", () => {
     await assertFails(asParent().doc(path).delete());
   });
 
-  it("blocks child and parent writes until the request is failed", async () => {
+  it("blocks child and parent writes for every tombstone state", async () => {
     await asAdmin(async (ctx) => {
       await ctx.firestore().doc(`users/${PARENT}`).set({ displayName: "Camila" });
       await ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
@@ -421,7 +421,7 @@ describe("account-deletion tombstone (server-owned, ADR 0022)", () => {
     const child = asVerifiedParent().doc(`users/${PARENT}/children/child1`);
     const profile = asParent().doc(`users/${PARENT}`);
 
-    for (const status of ["requested", "processing", "completed", "unknown"]) {
+    for (const status of ["requested", "processing", "completed", "failed", "unknown"]) {
       await asAdmin((ctx) => ctx.firestore().doc(path).set(
         accountDeletion(PARENT, status),
       ));
@@ -436,9 +436,7 @@ describe("account-deletion tombstone (server-owned, ADR 0022)", () => {
     });
     await assertFails(child.update({ name: "Lucas A." }));
 
-    await asAdmin((ctx) => ctx.firestore().doc(path).set(
-      accountDeletion(PARENT, "failed"),
-    ));
+    await asAdmin((ctx) => ctx.firestore().doc(path).delete());
     await assertSucceeds(child.update({ name: "Lucas A." }));
     await assertSucceeds(profile.update({ displayName: "Lucas" }));
   });

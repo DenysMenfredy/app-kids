@@ -1,6 +1,6 @@
 # ADR 0022 — Account-deletion request, reauthentication and tombstone
 
-Date: 2026-11-27 · Status: accepted; PR08a request path; deletion worker pending
+Date: 2026-11-27 · Status: accepted; request/tombstone in PR08a, worker in ADR 0023
 
 ## Context
 
@@ -10,10 +10,10 @@ request must immediately stop new child-data collection while the durable
 deletion worker runs. D07 (retention periods and the reviewed deletion policy)
 is still open, so this ADR defines the mechanism, not a legal deadline.
 
-PR08a covers the request, tombstone and blocking. PR08b covers the durable
-worker that removes subcollections, Storage objects and the Auth account,
-handles late callbacks and reapplies deletions after a restore. No user data is
-deleted by PR08a.
+PR08a covers the request, tombstone and blocking. ADR 0023 / PR08b
+covers the durable worker that removes subcollections, Storage objects and the
+Auth account and handles late callbacks; restore reapplication remains open.
+No user data is deleted by PR08a.
 
 ## Decision
 
@@ -48,8 +48,9 @@ deleted by PR08a.
    server-side tombstone guard, not token expiry, is authoritative.
 6. Reuse a single parent guard for child-data callables:
    `requireNoPendingDeletion` runs before `requireCurrentParentConsent`.
-   Every tombstone state except `failed` blocks, including missing or unknown
-   status. `createChildProfile`, `submitAssessment`, `startLessonSession`,
+   Every existing tombstone blocks, including `failed` and missing/unknown
+   status. A failed worker state can be retried but does not reopen the
+   account. `createChildProfile`, `submitAssessment`, `startLessonSession`,
    `submitActivityAttempt`, `completeLesson`, `updateLessonSession`,
    `updateProgress` and `saveBookBookmark` return `failed-precondition` with
    `details.code: "account_deletion_pending"` while deletion is pending.
@@ -60,8 +61,8 @@ deleted by PR08a.
    no client write can recreate or bypass the tombstone.
 8. No legal retention period is invented. `sessionsRevokedAt` records when
    sessions were closed; a future `retentionDueAt` or equivalent must come from
-   the D07 matrix. PR08b owns deletion of subcollections, Storage and Auth,
-   plus late-callback and restore reapplication.
+   the D07 matrix. ADR 0023 owns deletion of subcollections, Storage and Auth,
+   plus late-callback guards; restore reapplication remains open.
 
 ## Consequences and remaining gates
 
@@ -73,12 +74,13 @@ deleted by PR08a.
   reauthentication prompt, call `requestAccountDeletion`, show the pending
   state and handle `reauth_required`/`session_revocation_failed`. A client that
   does not send a recent token gets a typed rejection; no silent fallback.
-- **Worker dependency:** until PR08b, the tombstone blocks but does not delete
-  data. The status can stay `requested`; operators must not claim deletion is
-  complete from this record alone.
+- **Worker dependency:** the ADR 0023 worker now deletes locally; before
+  its deploy, the tombstone blocks but does not delete data. The status can
+  stay `requested`; operators must not claim deletion is complete from this
+  record alone.
 - **Failure mode:** if `revokeRefreshTokens` fails, the callable returns
   `internal` after writing the tombstone. The request is not lost, and the
   guard still blocks child data; retry is safe and idempotent.
 - **Not covered:** account deletion for a parent with shared/legacy Apple
   credentials, retention exports, legal holds, billing records, and the actual
-  cascade/restore rehearsal belong to PR08b/D07.
+  cascade/restore rehearsal remain future work and D07.

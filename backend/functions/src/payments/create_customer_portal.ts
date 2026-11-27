@@ -1,6 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 import { checkoutReturnUrl, stripeSecretKey } from "../config";
+import { requireNoPendingDeletion } from "../lib/deletion";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth } from "../lib/guards";
 import { log } from "../lib/logger";
@@ -18,6 +19,7 @@ export const createCustomerPortal = onCall(
   },
   async (request) => {
     const uid = requireAuth(request);
+    await requireNoPendingDeletion(uid);
 
     const subscriptions = await db()
       .collection(paths.subscriptions(uid))

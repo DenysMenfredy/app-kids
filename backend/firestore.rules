@@ -101,11 +101,11 @@ service cloud.firestore {
         && get(path).data.acceptedAt is timestamp;
     }
 
-    // Account-deletion tombstone (ADR 0022). Only a failed request is
-    // retryable; missing/unknown state fails closed.
+    // Account-deletion tombstone (ADR 0022). Any existing tombstone blocks
+    // client writes; a failed worker state is retried, not reopened.
     function hasPendingAccountDeletion(uid) {
       let path = /databases/$(database)/documents/users/$(uid)/deletion/current;
-      return exists(path) && get(path).data.status != 'failed';
+      return exists(path);
     }
 
     // Child-data constraint (spec §4, §19): minimum required data only.

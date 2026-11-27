@@ -5,6 +5,7 @@ import {
   parseParentConsentInput,
   purposesEqual,
 } from "../domain/consent";
+import { requireNoPendingDeletion } from "../lib/deletion";
 import { db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth } from "../lib/guards";
 import { log } from "../lib/logger";
@@ -22,6 +23,7 @@ export const recordParentConsent = onCall(
   { enforceAppCheck },
   async (request) => {
     const uid = requireAuth(request);
+    await requireNoPendingDeletion(uid);
     const input = parseParentConsentInput(request.data);
     if (!input) {
       throw new HttpsError(

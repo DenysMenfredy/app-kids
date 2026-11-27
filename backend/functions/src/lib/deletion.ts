@@ -1,7 +1,21 @@
+import { Firestore } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
 import { deletionBlocksOperations } from "../domain/account_deletion";
 import { db, paths } from "./firestore";
+
+/**
+ * Read-only check used by payment webhooks and other late writers. A
+ * tombstone in any state except retryable `failed` keeps the account closed.
+ */
+export async function isAccountDeletionBlocked(
+  firestore: Firestore,
+  uid: string,
+): Promise<boolean> {
+  const snapshot = await firestore.doc(paths.accountDeletion(uid)).get();
+  if (!snapshot.exists) return false;
+  return deletionBlocksOperations(snapshot.get("status"));
+}
 
 /**
  * Stops new data collection while an account-deletion request is pending.
