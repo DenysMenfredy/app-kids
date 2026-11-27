@@ -47,6 +47,17 @@ class DashboardScreen extends ConsumerWidget {
       }
       if (children.any((child) => child.id == session.childId)) return;
 
+      final migratedId = ref.read(migratedPrimaryChildIdProvider);
+      if (migratedId != null &&
+          children.any((child) => child.id == migratedId)) {
+        ref
+            .read(sessionProvider.notifier)
+            .selectChild(
+              children.firstWhere((child) => child.id == migratedId),
+            );
+        return;
+      }
+
       final fallback = children.firstWhere(
         (child) => child.id == AppConfig.primaryChildId,
         orElse: () => children.first,
