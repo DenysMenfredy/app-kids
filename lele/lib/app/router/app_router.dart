@@ -30,6 +30,7 @@ import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/paywall/presentation/paywall_screen.dart';
 import '../../features/reward/presentation/reward_screen.dart';
 import '../../features/session/presentation/child_profile_gate.dart';
+import '../../features/settings/presentation/account_settings_screen.dart';
 
 /// Route names — use these with `context.goNamed` so paths can change freely.
 abstract final class AppRoutes {
@@ -44,6 +45,7 @@ abstract final class AppRoutes {
   static const assessmentResult = 'assessmentResult';
   static const dashboard = 'dashboard';
   static const notifications = 'notifications';
+  static const accountSettings = 'accountSettings';
   static const paywall = 'paywall';
   static const childHome = 'childHome';
   static const lessonIntro = 'lessonIntro';
@@ -198,6 +200,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/notifications',
         name: AppRoutes.notifications,
         builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/account',
+        name: AppRoutes.accountSettings,
+        builder: (context, state) => const AccountSettingsScreen(),
       ),
       GoRoute(
         path: '/paywall',
