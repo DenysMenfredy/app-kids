@@ -8,12 +8,14 @@ import {
   InvalidAnswerError,
   maxScore,
   placementFor,
+  resolveTierPlacement,
   scoreAnswers,
 } from "../domain/assessment";
 import { requireParentCanCollectChildData } from "../lib/parent_guard";
 import { DEFAULT_ASSESSMENT_ID, db, paths } from "../lib/firestore";
 import { enforceAppCheck, requireAuth, requireString } from "../lib/guards";
 import { log } from "../lib/logger";
+import { canAccessModuleForUser } from "./lesson_access";
 
 /**
  * Scores an assessment and places the child on the learning journey.
@@ -59,7 +61,42 @@ export const submitAssessment = onCall(
       }
       throw error;
     }
-    const placement = placementFor(assessment.placements, score);
+    const requestedPlacement = placementFor(assessment.placements, score);
+    const hasFullCurriculum = await canAccessModuleForUser(
+      uid,
+      requestedPlacement.moduleNumber,
+    );
+    const freePlacement = assessment.placements.find(
+      (rule) => rule.moduleNumber === 1,
+    );
+    let freeFirstLessonId = freePlacement?.firstLessonId ?? "";
+    if (!hasFullCurriculum) {
+      if (!freePlacement) {
+        throw new HttpsError(
+          "failed-precondition",
+          "Módulo gratuito indisponível.",
+        );
+      }
+      const freeModules = await db()
+        .collection(paths.modules)
+        .where("number", "==", 1)
+        .limit(5)
+        .get();
+      const freeModule = freeModules.docs.find(
+        (document) => document.get("published") === true,
+      );
+      const configuredLesson = freeModule?.get("firstLessonId");
+      if (typeof configuredLesson === "string" && configuredLesson.length > 0) {
+        freeFirstLessonId = configuredLesson;
+      }
+    }
+    const tier = resolveTierPlacement(
+      requestedPlacement,
+      freePlacement ?? requestedPlacement,
+      freeFirstLessonId,
+      hasFullCurriculum,
+    );
+    const placement = tier.placement;
 
     const batch = db().batch();
     // Only fields the child schema allows, so the parent can still edit the
@@ -81,6 +118,8 @@ export const submitAssessment = onCall(
       score,
       maxScore: maxScore(assessment.questions),
       placement,
+      requestedModuleNumber: tier.requestedModuleNumber,
+      freeTierCapped: tier.freeTierCapped,
       completedAt: FieldValue.serverTimestamp(),
     });
     await batch.commit();
@@ -89,6 +128,7 @@ export const submitAssessment = onCall(
       assessmentId,
       score,
       moduleNumber: placement.moduleNumber,
+      freeTierCapped: tier.freeTierCapped,
     });
     log("learning", "assessment_completed", {
       uid,
@@ -96,9 +136,16 @@ export const submitAssessment = onCall(
       assessmentId,
       score,
       moduleNumber: placement.moduleNumber,
+      requestedModuleNumber: tier.requestedModuleNumber,
+      freeTierCapped: tier.freeTierCapped,
     });
 
-    return { score, placement };
+    return {
+      score,
+      placement,
+      freeTierCapped: tier.freeTierCapped,
+      requestedModuleNumber: tier.requestedModuleNumber,
+    };
   },
 );
 

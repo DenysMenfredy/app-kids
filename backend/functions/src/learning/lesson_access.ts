@@ -27,17 +27,43 @@ export async function hasLessonAccess(
   ]);
   if (!moduleSnap.exists || moduleSnap.get("published") !== true) return false;
 
-  const entitlement = entitlementSnap.data();
   return canAccessModule(
     moduleSnap.get("number"),
-    entitlement
-      ? {
-          active: entitlement.active,
-          features: entitlement.features,
-          validFrom: timestampDate(entitlement.validFrom),
-          validUntil: timestampDate(entitlement.validUntil),
-        }
-      : null,
+    entitlementSnapshot(entitlementSnap.data()),
+    new Date(),
+  );
+}
+
+/** Maps the stored entitlement document to the domain authority's shape. */
+export function entitlementSnapshot(
+  data: FirebaseFirestore.DocumentData | undefined,
+): {
+  active: unknown;
+  features: unknown;
+  validFrom: Date | null;
+  validUntil: Date | null;
+} | null {
+  if (!data) return null;
+  return {
+    active: data.active,
+    features: data.features,
+    validFrom: timestampDate(data.validFrom),
+    validUntil: timestampDate(data.validUntil),
+  };
+}
+
+/** Reads the same entitlement authority used by lesson start. */
+export async function canAccessModuleForUser(
+  uid: string,
+  moduleNumber: number,
+): Promise<boolean> {
+  const entitlement = await db()
+    .collection(paths.entitlements(uid))
+    .doc(PREMIUM_ENTITLEMENT_ID)
+    .get();
+  return canAccessModule(
+    moduleNumber,
+    entitlementSnapshot(entitlement.data()),
     new Date(),
   );
 }

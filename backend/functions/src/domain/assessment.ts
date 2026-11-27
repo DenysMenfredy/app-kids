@@ -89,6 +89,38 @@ export function maxScore(questions: AssessmentQuestion[]): number {
   );
 }
 
+export interface TieredPlacement {
+  placement: PlacementRule;
+  freeTierCapped: boolean;
+  requestedModuleNumber: number;
+}
+
+/**
+ * G1 temporary rule: with no current full-curriculum entitlement, a placement
+ * above module 1 is capped to the free module. The requested band is kept for
+ * the response/audit even though the persisted placement is module 1.
+ */
+export function resolveTierPlacement(
+  requested: PlacementRule,
+  freePlacement: PlacementRule,
+  freeFirstLessonId: string,
+  hasFullCurriculum: boolean,
+): TieredPlacement {
+  const requestedModuleNumber = requested.moduleNumber;
+  if (hasFullCurriculum || requestedModuleNumber === 1) {
+    return { placement: requested, freeTierCapped: false, requestedModuleNumber };
+  }
+  return {
+    placement: {
+      ...freePlacement,
+      moduleNumber: 1,
+      firstLessonId: freeFirstLessonId,
+    },
+    freeTierCapped: true,
+    requestedModuleNumber,
+  };
+}
+
 export function placementFor(
   placements: PlacementRule[],
   score: number,

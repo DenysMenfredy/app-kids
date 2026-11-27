@@ -7,6 +7,7 @@ import {
   maxScore,
   orderedQuestions,
   placementFor,
+  resolveTierPlacement,
   scoreAnswers,
 } from "./assessment";
 
@@ -133,6 +134,33 @@ describe("placementFor", () => {
 
   it("rejects an assessment with no placement rules", () => {
     assert.throws(() => placementFor([], 0), InvalidAnswerError);
+  });
+});
+
+describe("tiered placement", () => {
+  const free = assessment.placements[0];
+  const premium = assessment.placements[1];
+
+  it("keeps the requested band when the parent has full curriculum", () => {
+    const result = resolveTierPlacement(premium, free, "lesson_001", true);
+    assert.equal(result.placement.moduleNumber, premium.moduleNumber);
+    assert.equal(result.freeTierCapped, false);
+    assert.equal(result.requestedModuleNumber, premium.moduleNumber);
+  });
+
+  it("caps a premium band to module 1 without an entitlement", () => {
+    const result = resolveTierPlacement(premium, free, "lesson_001", false);
+    assert.equal(result.placement.moduleNumber, 1);
+    assert.equal(result.placement.firstLessonId, "lesson_001");
+    assert.equal(result.freeTierCapped, true);
+    assert.equal(result.requestedModuleNumber, premium.moduleNumber);
+  });
+
+  it("does not flag a module-1 placement as capped", () => {
+    const result = resolveTierPlacement(free, free, "lesson_001", false);
+    assert.equal(result.placement.moduleNumber, 1);
+    assert.equal(result.freeTierCapped, false);
+    assert.equal(result.requestedModuleNumber, 1);
   });
 });
 

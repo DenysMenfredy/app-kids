@@ -315,6 +315,9 @@ npm run migrate:primary -- --project demo-letrando --apply
 npm run migrate:primary -- --project demo-letrando --rollback
 npm run test:primary-migration:smoke
 
+# G1 free-tier placement cap (Auth + Firestore + Functions + seed):
+# SMOKE_FUNCTIONS_HOST=127.0.0.1:5001 npm run test:assessment-placement:smoke
+
 # Deploy: prefer the manual "Deploy backend" GitHub workflow. It tests, deploys,
 # seeds dev/staging and runs the dev smoke; see docs/deploy-dev-runbook.md.
 firebase deploy --project dev        # letrando-dev
