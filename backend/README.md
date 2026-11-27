@@ -292,11 +292,11 @@ npm test                # TypeScript build + domain and seed-integrity tests
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests — 46 tests against the Firestore emulator.
+# Security Rules tests — 48 tests against the Firestore emulator.
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
-npm test                # firebase emulators:exec → node --test (46 tests)
+npm test                # firebase emulators:exec → node --test (48 tests)
 
 # Real-environment smoke (after a dev/staging deploy): creates a synthetic
 # parent, exercises App Check + createChildProfile, and always cleans up.
@@ -304,6 +304,9 @@ APP_CHECK_DEBUG_TOKEN=... npm run smoke:dev -- --project letrando-dev
 
 # Durable deletion worker smoke (Auth + Firestore + Storage emulators):
 # STORAGE_EMULATOR_HOST=http://127.0.0.1:9190 npm run test:deletion:smoke
+
+# F2 isolation between two synthetic families (Auth + Firestore + Functions + seed):
+# SMOKE_FUNCTIONS_HOST=127.0.0.1:5001 npm run test:isolation:smoke
 
 # Deploy: prefer the manual "Deploy backend" GitHub workflow. It tests, deploys,
 # seeds dev/staging and runs the dev smoke; see docs/deploy-dev-runbook.md.

@@ -16,6 +16,7 @@
     "test:stories:smoke": "node scripts/stories_smoke.mjs",
     "test:notifications:smoke": "node scripts/notifications_smoke.mjs",
     "test:deletion:smoke": "node scripts/deletion_worker_smoke.mjs",
+    "test:isolation:smoke": "node scripts/isolation_smoke.mjs",
     "smoke:dev": "node scripts/dev_smoke.mjs",
     "inventory:mvp": "node scripts/mvp_inventory.mjs",
     "lint": "eslint src",
