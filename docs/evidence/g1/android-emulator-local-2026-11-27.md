@@ -46,6 +46,8 @@ no real family data and no passwords in this document.
 | 9 | Reward | XP, coins and streak increase | PASS | `08-reward.png` (+50 XP, +10 coins, 1 day) |
 | 10 | Book | Free book opens; page turns; bookmark saved | PASS | `09-books.png`, `10-book-reader.png` (page 1 → 2 of 5) |
 | 11 | Stability | No app crash after the flow | PASS with environment caveat | see below |
+| 12 | Offline / relogin | Cached dashboard opens offline; logout/login restores the same child and progress | PASS | `11-offline-dashboard.png`, `13-relogin-dashboard.png` |
+| 13 | Local notifications | Permission granted; demo notification appears in the tray | PASS | `12-notification-demo.png` |
 
 ### Consent observations
 
@@ -77,11 +79,32 @@ headless software-rendered emulator, not as a product pass at full resolution.
 2. **Full-resolution emulator ANR** described above; retest on a physical
    device or a hardware-rendered emulator before treating it as resolved.
 
+### Offline and relogin
+
+With airplane mode on, a cold app launch still opened the parent dashboard
+with the cached child, module progress (33%) and streak; no crash or blank
+screen. After restoring the network, signing out and signing back in with the
+same synthetic account restored the same child and progress, and the weekly
+summary appeared from the backend.
+
+### Local notifications
+
+The notification settings screen requested the Android permission, accepted
+it, and the local demo notification appeared in the system tray as
+`Lelê · Demonstração`. Remote FCM is intentionally disabled in the emulator
+configuration. See `12-notification-demo.png`.
+
+### Account switch
+
+Three synthetic accounts were created in sequence. Each dashboard showed only
+its own child and progress; the app never displayed the previous account's
+child after sign-out/sign-in. The focused regression coverage is in PR #13.
+
 ## Gaps
 
 - Physical-device validation remains required for G1.
-- Account-switch/isolation UI is being covered by PR05; offline/relogin and
-  local notifications were not part of this first round.
 - Cloud deploy, App Check and real e-mail delivery remain paused (ADR 0021).
+- The premium placement finding is being handled by the backend (free-tier
+  cap); no app workaround is planned in this PR.
 - The app build is PR #10 (`daeb9a4`, merged as `4bfaaca`). Main also carries the PR08
   backend/account-deletion changes; they do not alter this onboarding flow.
