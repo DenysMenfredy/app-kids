@@ -29,19 +29,30 @@ then has no accessible lesson — a dead-end in the first-session flow.
    when native billing and server-verified entitlement activation are enabled
    and the G1 paywall/entitlement flow is live. It must not be removed merely to
    make a client build pass.
-5. This fixes new submissions. Children already stored above module 1 without a
-   current entitlement are not rewritten by this change; they need a repair or
-   re-assessment before release. No remote data is touched.
+5. Add an emulator-only repair pass for already-affected children. It detects
+   a child whose `currentLessonId` belongs to a published module above 1 while
+   the parent has no current `full_curriculum` entitlement, and changes **only**
+   `currentCourseId`/`currentLessonId` to module 1's first lesson. It preserves
+   `learningLevel`, learning progress, sessions, attempts, rewards, assessment
+   results and bookmarks. Previous pointers are stored per child in the
+   server-owned `users/{uid}/migrations/moduleOneRepair` document, so rollback
+   can restore them. The tool is idempotent, dry-run by default and reports
+   aggregate counts; no remote data is touched.
+6. Rollback restores only the recorded pointers and removes the repair document.
+   It assumes the child has not advanced since the repair; after a real cutover,
+   use a verified export instead.
 
 ## Consequences and remaining gates
 
 - **No dead-end in the new flow:** a free high score lands on module 1's first
   lesson and can start a session; an active premium entitlement keeps the
   original band.
-- **Existing placements:** a one-time repair/backfill for previously misplaced
-  children is still required; it is separate from this P0.
+- **Existing placements:** the local repair pass now exists; a staging/production
+  run still requires owner authorization and an export. Fixture counts and
+  rollback are recorded in the PR evidence.
 - **Billing dependency:** the cap stays until native-store purchase,
   server-side verification and entitlement activation are real. The exact
   removal point is the G1 billing enablement decision, not a date invented here.
-- **Tests:** domain tier-placement tests plus an emulator smoke with free,
-  active-premium and expired-premium synthetic families.
+- **Tests:** domain tier-placement tests plus emulator smokes with free,
+  active-premium and expired-premium synthetic families, and the repair/rollback
+  fixture pass.
