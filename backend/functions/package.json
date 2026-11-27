@@ -17,6 +17,8 @@
     "test:notifications:smoke": "node scripts/notifications_smoke.mjs",
     "test:deletion:smoke": "node scripts/deletion_worker_smoke.mjs",
     "test:isolation:smoke": "node scripts/isolation_smoke.mjs",
+    "test:primary-migration:smoke": "node scripts/primary_migration_smoke.mjs",
+    "migrate:primary": "node scripts/migrate_primary_children.mjs",
     "smoke:dev": "node scripts/dev_smoke.mjs",
     "inventory:mvp": "node scripts/mvp_inventory.mjs",
     "lint": "eslint src",

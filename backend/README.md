@@ -292,11 +292,11 @@ npm test                # TypeScript build + domain and seed-integrity tests
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests — 48 tests against the Firestore emulator.
+# Security Rules tests — 49 tests against the Firestore emulator.
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
-npm test                # firebase emulators:exec → node --test (48 tests)
+npm test                # firebase emulators:exec → node --test (49 tests)
 
 # Real-environment smoke (after a dev/staging deploy): creates a synthetic
 # parent, exercises App Check + createChildProfile, and always cleans up.
@@ -307,6 +307,13 @@ APP_CHECK_DEBUG_TOKEN=... npm run smoke:dev -- --project letrando-dev
 
 # F2 isolation between two synthetic families (Auth + Firestore + Functions + seed):
 # SMOKE_FUNCTIONS_HOST=127.0.0.1:5001 npm run test:isolation:smoke
+
+# Legacy `primary` child migration rehearsal (Firestore emulator only; dry-run
+# unless --apply, rollback with --rollback):
+npm run migrate:primary -- --project demo-letrando
+npm run migrate:primary -- --project demo-letrando --apply
+npm run migrate:primary -- --project demo-letrando --rollback
+npm run test:primary-migration:smoke
 
 # Deploy: prefer the manual "Deploy backend" GitHub workflow. It tests, deploys,
 # seeds dev/staging and runs the dev smoke; see docs/deploy-dev-runbook.md.
@@ -358,7 +365,7 @@ development (spec §21).
   this seed by a test so the two can't drift.
 - Multi-child summary/aggregation for the parent dashboard (the app can now
   select a child; XP, coins, streak and journey remain scoped per child).
-- Profile deletion and migration of legacy `primary` children; see ADR 0008.
+- Profile deletion and the production `primary` cutover/cleanup; local migration rehearsal is in ADR 0024.
 - Account deletion worker: implemented locally (ADR 0023); the scheduled
   deploy, D07 retention and restore reapplication remain open.
 - Achievement and weekly-report notification jobs (sender infra is in place).

@@ -39,7 +39,7 @@ The Flutter app now lists, creates, selects and edits profile fields for
 multiple children, and learning writes are scoped to the selected child.
 Profile deletion is not exposed: it must wait for a durable, idempotent
 cascade over progress, sessions, attempts, rewards, assessment results and
-exports, plus the retention policy in D07. Existing `primary` data still
-needs a staging migration with a mapping, before/after counts and rollback
-procedure. The local Rules tests and Functions unit tests do not prove that
+exports, plus the retention policy in D07. A local `primary` migration
+rehearsal now exists (ADR 0024); staging/production still need an
+owner-approved export, before/after counts and a cutover/rollback run. The local Rules tests and Functions unit tests do not prove that
 migration or a real-device account-switch/offline scenario.

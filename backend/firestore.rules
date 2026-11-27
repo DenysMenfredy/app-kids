@@ -220,6 +220,13 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      match /migrations/{migrationId} {
+        // Server-owned legacy-child mapping (ADR 0024); the app reads its
+        // own mapping for dual-read and never writes it.
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
       match /children/{childId} {
         allow read: if isOwner(uid);
         // Child IDs are allocated by createChildProfile on the server.

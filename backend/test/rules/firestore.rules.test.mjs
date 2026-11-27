@@ -944,5 +944,26 @@ describe("F2 cross-account isolation (two synthetic families)", () => {
   });
 });
 
+describe("primary migration mapping (server-owned, ADR 0024)", () => {
+  const path = `users/${PARENT}/migrations/primaryChild`;
+  const mapping = {
+    schemaVersion: 1,
+    flowVersion: "primary-migration-v1",
+    legacyId: "primary",
+    newChildId: "server_child_id",
+    status: "migrated",
+  };
+
+  it("lets only the owner read the mapping and denies client writes", async () => {
+    await asAdmin((ctx) => ctx.firestore().doc(path).set(mapping));
+    await assertSucceeds(asParent().doc(path).get());
+    await assertFails(asStranger().doc(path).get());
+    await assertFails(asAnon().doc(path).get());
+    await assertFails(asParent().doc(path).set(mapping));
+    await assertFails(asParent().doc(path).update({ status: "rolled_back" }));
+    await assertFails(asParent().doc(path).delete());
+  });
+});
+
 // Keep node:test happy when the file is loaded without the emulator.
 assert.ok(true);
