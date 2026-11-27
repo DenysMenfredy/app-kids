@@ -2,7 +2,8 @@ name: Deploy backend
 
 # Nothing here fires on a push. A deploy is always someone's decision, and
 # staging/production are reached through GitHub Environments, which is where
-# the required reviewers live.
+# the required reviewers live. The dev workflow also seeds content and runs
+# the synthetic-account smoke check documented in backend/docs/deploy-dev-runbook.md.
 on:
   workflow_dispatch:
     inputs:
@@ -26,8 +27,28 @@ jobs:
     name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      FIREBASE_PROJECT: letrando-${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v7
+
+      # Fail with the missing variable's name instead of the auth action's
+      # generic error. The values live in the GitHub Environment, not here.
+      - name: Verify the GitHub Environment is configured
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          missing=0
+          if [ -z "$WIF_PROVIDER" ]; then
+            echo "::error::GCP_WORKLOAD_IDENTITY_PROVIDER is not set in the '${{ inputs.environment }}' environment. See backend/docs/deploy-dev-runbook.md."
+            missing=1
+          fi
+          if [ -z "$DEPLOY_SERVICE_ACCOUNT" ]; then
+            echo "::error::GCP_DEPLOY_SERVICE_ACCOUNT is not set in the '${{ inputs.environment }}' environment. See backend/docs/deploy-dev-runbook.md."
+            missing=1
+          fi
+          exit "$missing"
 
       - uses: actions/setup-node@v7
         with:
@@ -59,10 +80,51 @@ jobs:
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
 
-      - name: Deploy rules, indexes and functions
+      - name: Deploy rules, indexes, storage and functions
         working-directory: backend
         run: |
           npx --yes firebase-tools@13 deploy \
             --only firestore:rules,firestore:indexes,storage,functions \
-            --project ${{ inputs.environment }} \
+            --project "$FIREBASE_PROJECT" \
             --non-interactive
+
+      # Content is configuration, not code (spec §5). The seed script uses
+      # stable document IDs and merge/overwrite writes, so a re-run converges
+      # to the same state. Production publishes through manageContent instead.
+      - name: Seed curriculum content (dev and staging only)
+        if: inputs.environment != 'production'
+        working-directory: backend/functions
+        run: |
+          case "$FIREBASE_PROJECT" in
+            letrando-dev|letrando-staging) ;;
+            *)
+              echo "::error::Refusing to seed $FIREBASE_PROJECT; only dev and staging are allowed."
+              exit 1
+              ;;
+          esac
+          npm run build
+          npm run seed -- --project "$FIREBASE_PROJECT"
+
+      # A deploy is not done until a real callable round-trip passes with a
+      # synthetic account. The debug token is a dev-only secret registered in
+      # the App Check console; it is never committed or printed.
+      - name: Smoke test the deployed dev backend
+        if: inputs.environment == 'dev'
+        working-directory: backend/functions
+        env:
+          APP_CHECK_DEBUG_TOKEN: ${{ secrets.DEV_APP_CHECK_DEBUG_TOKEN }}
+        run: |
+          if [ -z "$APP_CHECK_DEBUG_TOKEN" ]; then
+            echo "::error::Register a dev App Check debug token and set DEV_APP_CHECK_DEBUG_TOKEN in the 'dev' environment. See backend/docs/deploy-dev-runbook.md."
+            exit 1
+          fi
+          npm run smoke:dev -- --project "$FIREBASE_PROJECT" \
+            --evidence "$RUNNER_TEMP/dev-smoke.json"
+
+      - name: Keep the smoke evidence
+        if: always() && inputs.environment == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-smoke-evidence
+          path: ${{ runner.temp }}/dev-smoke.json
+          if-no-files-found: warn
