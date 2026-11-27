@@ -157,6 +157,15 @@ class DashboardScreen extends ConsumerWidget {
                         label: const Text('Avisos e lembretes'),
                       ),
                     ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () =>
+                            context.goNamed(AppRoutes.accountSettings),
+                        icon: const Icon(Icons.manage_accounts_outlined),
+                        label: const Text('Configurações da conta'),
+                      ),
+                    ),
                     if (hasChild)
                       _ChildCard(
                         child: childState.requireValue!.profile,
