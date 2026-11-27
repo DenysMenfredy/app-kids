@@ -129,12 +129,11 @@ auto-approve, merge or promote to production.
 App Check is enforced by every deployed callable (`enforceAppCheck`). A
 missing or invalid token returns `401 UNAUTHENTICATED`, which can look like an
 Auth problem. The Android dev app is
-`1:293659867381:android:45886330baeba918606dbc`; the iOS app is
-`1:293659867381:ios:870c4e97cd731aa9606dbc`.
+`1:293659867381:android:45886330baeba918606dbc`. The iOS app remains registered
+in Firebase but is deferred by ADR 0019; do not configure App Attest for the MVP.
 
 1. **Register providers** in **App Check → Apps**:
    - Android `Lele Dev Android`: Play Integrity.
-   - iOS `Lele Dev iOS`: App Attest with DeviceCheck fallback.
 2. **Register a debug token** for the Android app. Run a debug build with the
    dev config and read the token from logcat:
    ```sh
@@ -156,8 +155,9 @@ Auth problem. The Android dev app is
    Console (internal testing track is enough for the first check).
 4. **Release attestation is separate**: a green dev deploy with a debug token
    does not prove Play Integrity on a release build. Install a release build on
-   a physical device, confirm token exchange in App Check metrics, and repeat
-   for iOS before marking the MVP acceptance criterion complete.
+   a physical device and confirm token exchange in App Check metrics before
+   marking the Android MVP acceptance criterion complete. iOS stays deferred by
+   ADR 0019.
 
 ## Running the deploy
 
@@ -240,7 +240,7 @@ Observed with an owner Firebase token and the GitHub API before this PR:
 | Cloud Functions API | disabled; no functions |
 | Storage buckets | none |
 | App Check API | enabled; no provider config, no debug tokens |
-| Firebase apps | Android and iOS dev apps registered |
+| Firebase apps | Android dev app registered; iOS deferred by ADR 0019 |
 | GitHub `dev` Environment | absent |
 | GitHub repo variables/secrets | none (`GCP_*` missing) |
 
