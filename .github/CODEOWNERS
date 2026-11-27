@@ -1,0 +1,7 @@
+# Single GitHub identity today (DenysMenfredy). This documents ownership;
+# branch protection does not require code-owner review until a second
+# reviewer account exists.
+* @DenysMenfredy
+/lele/ @DenysMenfredy
+/backend/ @DenysMenfredy
+/.github/ @DenysMenfredy
