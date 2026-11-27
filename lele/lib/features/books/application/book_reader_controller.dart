@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/consent/parent_consent.dart';
 import '../../../core/services/tts_service.dart';
 import '../../paywall/application/entitlement_provider.dart';
 import '../data/book_repository.dart';
@@ -19,6 +20,7 @@ class BookReaderState {
     this.saveError,
     this.premiumRequired = false,
     this.speaking = false,
+    this.consentRequired = false,
   });
 
   final bool loading;
@@ -29,6 +31,7 @@ class BookReaderState {
   final String? saveError;
   final bool premiumRequired;
   final bool speaking;
+  final bool consentRequired;
   BookPage? get page => content?.pages[pageIndex];
   bool get isLastPage =>
       content != null && pageIndex == content!.pages.length - 1;
@@ -135,13 +138,17 @@ class BookReaderController extends ChangeNotifier {
       await _repository.saveBookmark(scope!, content.book, index);
       if (_disposed || generation != _loadGeneration) return;
       _set(BookReaderState(content: content, pageIndex: index));
-    } catch (_) {
+    } catch (error) {
       if (_disposed || generation != _loadGeneration) return;
+      final consent = isParentConsentFailure(error);
       _set(
         BookReaderState(
           content: content,
           pageIndex: index,
-          saveError: 'Não salvamos sua página. Toque para tentar novamente.',
+          consentRequired: consent,
+          saveError: consent
+              ? 'Aceite os termos atuais para salvar sua página.'
+              : 'Não salvamos sua página. Toque para tentar novamente.',
         ),
       );
     }

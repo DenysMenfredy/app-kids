@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/consent/parent_consent.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../../core/storage/local_storage.dart';
 import '../data/profile_sync_service.dart';
@@ -107,11 +108,21 @@ class SessionController extends Notifier<SessionState> {
     if (requestId == null) await prefs.setString(requestIdKey, operationId);
 
     final sync = ref.read(profileSyncServiceProvider);
-    final savedChildId = await sync.saveChildProfile(
-      profile: profile,
-      requestId: operationId,
-      existingChildId: createNew ? null : state.childId,
-    );
+    final String savedChildId;
+    try {
+      savedChildId = await sync.saveChildProfile(
+        profile: profile,
+        requestId: operationId,
+        existingChildId: createNew ? null : state.childId,
+      );
+    } catch (error) {
+      // A version bump between launch and this save: show the terms gate
+      // rather than only the generic connection message.
+      if (isParentConsentFailure(error)) {
+        ref.invalidate(parentConsentStatusProvider);
+      }
+      rethrow;
+    }
     state = state.copyWith(child: profile, childId: savedChildId);
     _persist();
     if (requestId == null) await prefs.remove(requestIdKey);

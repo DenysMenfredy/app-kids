@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/consent/parent_consent.dart';
 import '../../../core/firebase/firebase_providers.dart';
 import '../../lesson/application/lesson_session_controller.dart';
 import '../../notifications/application/notification_controller.dart';
@@ -38,6 +39,17 @@ class AuthController {
   }) async {
     await _repository.signUp(name: name, email: email, password: password);
     _ref.read(sessionProvider.notifier).setParentName(name);
+    // The registration checkbox is the acceptance point. Record it while the
+    // account is fresh; if the call fails, the consent gate before child
+    // creation asks again instead of blocking registration itself.
+    if (AppConfig.useFirebase) {
+      try {
+        await _ref.read(parentConsentServiceProvider).record();
+        _ref.invalidate(parentConsentStatusProvider);
+      } catch (error) {
+        logConsentFailure(error);
+      }
+    }
   }
 
   Future<SignInOutcome> signInWithGoogle() => _repository.signInWithGoogle();

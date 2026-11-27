@@ -13,6 +13,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/lele_button.dart';
 import '../../../core/widgets/lele_icon_button.dart';
+import '../../auth/presentation/parent_consent_gate.dart';
 import '../../learning/application/journey_provider.dart';
 import '../application/lesson_content_provider.dart';
 import '../application/lesson_controller.dart';
@@ -169,11 +170,31 @@ class _LessonState extends ConsumerState<_Lesson> {
 
   void _failed() {
     setState(() => _starting = false);
+    if (ref.read(lessonConsentRequiredProvider)) {
+      ref.read(lessonConsentRequiredProvider.notifier).setRequired(false);
+      unawaited(_askForConsent());
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
           'Não foi possível salvar ou continuar. Verifique a conexão e tente novamente. '
           'Se a lição mudou, comece novamente.',
+        ),
+      ),
+    );
+    ref.invalidate(pendingLessonProvider);
+  }
+
+  Future<void> _askForConsent() async {
+    final accepted = await showParentConsentDialog(context, ref);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          accepted
+              ? 'Aceite registrado. Toque para começar a lição.'
+              : 'É preciso aceitar os termos atuais para salvar o progresso.',
         ),
       ),
     );
