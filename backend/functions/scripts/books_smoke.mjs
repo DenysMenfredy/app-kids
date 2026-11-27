@@ -7,6 +7,8 @@ import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 
+import { CURRENT_CONSENT_TEXT_VERSION } from "../lib/domain/consent.js";
+
 for (const key of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST"]) {
   assert.match(process.env[key] ?? "", /^(127\.0\.0\.1|localhost):\d+$/, `${key} must point to a local emulator`);
 }
@@ -38,7 +40,14 @@ async function createParent() {
   // Wait for bootstrap before changing roles or cleaning up this test account.
   for (let attempt = 0; attempt < 50; attempt++) {
     if ((await db.doc(`users/${user.uid}`).get()).get("onboardingState")) {
-      return { user, password, token: await tokenFor(user, password) };
+      const token = await tokenFor(user, password);
+      const consent = await call("recordParentConsent", token, {
+        textVersion: CURRENT_CONSENT_TEXT_VERSION,
+        purposes: { notifications: false, marketing: false, analytics: false },
+        origin: "parent_app",
+      });
+      assert.equal(consent.result?.ok, true, "Consent setup failed");
+      return { user, password, token };
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
