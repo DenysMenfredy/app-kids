@@ -315,6 +315,13 @@ npm run migrate:primary -- --project demo-letrando --apply
 npm run migrate:primary -- --project demo-letrando --rollback
 npm run test:primary-migration:smoke
 
+# Module-1 repair for children above module 1 without entitlement (Firestore
+# emulator only; dry-run unless --apply, rollback with --rollback):
+npm run repair:module-one -- --project demo-letrando
+npm run repair:module-one -- --project demo-letrando --apply
+npm run repair:module-one -- --project demo-letrando --rollback
+npm run test:module-one-repair:smoke
+
 # G1 free-tier placement cap (Auth + Firestore + Functions + seed):
 # SMOKE_FUNCTIONS_HOST=127.0.0.1:5001 npm run test:assessment-placement:smoke
 

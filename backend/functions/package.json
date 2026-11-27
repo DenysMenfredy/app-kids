@@ -20,6 +20,8 @@
     "test:primary-migration:smoke": "node scripts/primary_migration_smoke.mjs",
     "migrate:primary": "node scripts/migrate_primary_children.mjs",
     "test:assessment-placement:smoke": "node scripts/assessment_placement_smoke.mjs",
+    "test:module-one-repair:smoke": "node scripts/module_one_repair_smoke.mjs",
+    "repair:module-one": "node scripts/repair_module_one_placements.mjs",
     "smoke:dev": "node scripts/dev_smoke.mjs",
     "inventory:mvp": "node scripts/mvp_inventory.mjs",
     "lint": "eslint src",
