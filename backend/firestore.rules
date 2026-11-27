@@ -101,6 +101,13 @@ service cloud.firestore {
         && get(path).data.acceptedAt is timestamp;
     }
 
+    // Account-deletion tombstone (ADR 0022). Only a failed request is
+    // retryable; missing/unknown state fails closed.
+    function hasPendingAccountDeletion(uid) {
+      let path = /databases/$(database)/documents/users/$(uid)/deletion/current;
+      return exists(path) && get(path).data.status != 'failed';
+    }
+
     // Child-data constraint (spec §4, §19): minimum required data only.
     // school / address / precise location / phone / photos are not allowed.
     function validChild() {
@@ -187,11 +194,13 @@ service cloud.firestore {
       // Auth email and createdAt are server-owned. A client may create the
       // profile before the Auth trigger runs, but only with editable fields.
       allow create: if isOwner(uid)
+        && !hasPendingAccountDeletion(uid)
         && incomingKeysOnly(userEditableKeys())
         && validEditableUserProfile()
         && (!('updatedAt' in request.resource.data)
           || request.resource.data.updatedAt == request.time);
       allow update: if isOwner(uid)
+        && !hasPendingAccountDeletion(uid)
         && validUserProfile()
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(userEditableKeys())
@@ -205,15 +214,23 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      match /deletion/current {
+        // Server-owned tombstone (ADR 0022); the parent may only read it.
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
       match /children/{childId} {
         allow read: if isOwner(uid);
         // Child IDs are allocated by createChildProfile on the server.
         // Parents can edit only the bounded profile fields on existing docs,
-        // and only while the current consent is on record.
+        // and only while the current consent is on record and deletion has not
+        // been requested.
         allow create: if false;
         allow update: if isOwner(uid)
           && canManageChildProfile()
           && hasCurrentParentConsent(uid)
+          && !hasPendingAccountDeletion(uid)
           && validChild()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(childEditableKeys())
@@ -259,7 +276,9 @@ service cloud.firestore {
 
       match /notificationPreferences/{preferenceId} {
         allow read: if isOwner(uid);
-        allow create, update: if isOwner(uid) && validNotificationPreferences();
+        allow create, update: if isOwner(uid)
+          && !hasPendingAccountDeletion(uid)
+          && validNotificationPreferences();
         allow delete: if false;
       }
 

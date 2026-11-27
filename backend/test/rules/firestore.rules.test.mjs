@@ -47,6 +47,19 @@ function currentConsent(uid) {
   };
 }
 
+function accountDeletion(uid, status = "requested") {
+  return {
+    schemaVersion: 1,
+    flowVersion: "t08b-placeholder-v1",
+    status,
+    requestId: "request_123",
+    uid,
+    reauthenticatedAt: Timestamp.now(),
+    requestedAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  };
+}
+
 before(async () => {
   env = await initializeTestEnvironment({
     // Separate from ./dev.sh: sharing a project ID overwrites the live
@@ -381,6 +394,53 @@ describe("parent consent (server-owned, versioned — ADR 0020)", () => {
       await ctx.firestore().doc(path).delete();
     });
     await assertSucceeds(asParent().doc(`users/${PARENT}/children/child1`).get());
+  });
+});
+
+describe("account-deletion tombstone (server-owned, ADR 0022)", () => {
+  const path = `users/${PARENT}/deletion/current`;
+
+  it("lets the owner read the tombstone but never write it", async () => {
+    await asAdmin((ctx) => ctx.firestore().doc(path).set(accountDeletion(PARENT)));
+    await assertSucceeds(asParent().doc(path).get());
+    await assertFails(asStranger().doc(path).get());
+    await assertFails(asAnon().doc(path).get());
+    await assertFails(asParent().doc(path).set(accountDeletion(PARENT)));
+    await assertFails(asParent().doc(path).update({ status: "failed" }));
+    await assertFails(asParent().doc(path).delete());
+  });
+
+  it("blocks child and parent writes until the request is failed", async () => {
+    await asAdmin(async (ctx) => {
+      await ctx.firestore().doc(`users/${PARENT}`).set({ displayName: "Camila" });
+      await ctx.firestore().doc(`users/${PARENT}/children/child1`).set({
+        name: "Lucas", age: 4, avatarId: "orange",
+      });
+      await ctx.firestore().doc(path).set(accountDeletion(PARENT, "requested"));
+    });
+    const child = asVerifiedParent().doc(`users/${PARENT}/children/child1`);
+    const profile = asParent().doc(`users/${PARENT}`);
+
+    for (const status of ["requested", "processing", "completed", "unknown"]) {
+      await asAdmin((ctx) => ctx.firestore().doc(path).set(
+        accountDeletion(PARENT, status),
+      ));
+      await assertFails(child.update({ name: "Lucas A." }));
+      await assertFails(profile.update({ displayName: "Lucas" }));
+    }
+
+    await asAdmin((ctx) => {
+      const tombstone = accountDeletion(PARENT, "failed");
+      delete tombstone.status;
+      return ctx.firestore().doc(path).set(tombstone);
+    });
+    await assertFails(child.update({ name: "Lucas A." }));
+
+    await asAdmin((ctx) => ctx.firestore().doc(path).set(
+      accountDeletion(PARENT, "failed"),
+    ));
+    await assertSucceeds(child.update({ name: "Lucas A." }));
+    await assertSucceeds(profile.update({ displayName: "Lucas" }));
   });
 });
 
