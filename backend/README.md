@@ -26,7 +26,7 @@ backend/
 │       ├── notifications/     # registerDevice, sendDailyReminders, FCM fan-out
 │       ├── profiles/          # server-issued child profile IDs
 │       ├── consent/           # server-owned parent consent (ADR 0020)
-│       ├── account/           # account-deletion request tombstone (ADR 0022)
+│       ├── account/           # deletion request + durable worker (ADR 0022/0023)
 │       ├── learning/          # sessions, scored attempts, completion,
 │       │                      # updateProgress, submitAssessment
 │       ├── analytics/         # trackServerEvent → structured logs → BigQuery
@@ -292,15 +292,18 @@ npm test                # TypeScript build + domain and seed-integrity tests
 FIRESTORE_EMULATOR_HOST=localhost:8080 npm run seed -- --project letrando-dev
 GOOGLE_APPLICATION_CREDENTIALS=sa.json npm run seed -- --project letrando-dev
 
-# Security Rules tests — 44 tests against the Firestore emulator.
+# Security Rules tests — 46 tests against the Firestore emulator.
 # firebase-tools is a local devDependency; the emulator needs Java 11+.
 cd ../test/rules
 npm install
-npm test                # firebase emulators:exec → node --test (44 tests)
+npm test                # firebase emulators:exec → node --test (46 tests)
 
 # Real-environment smoke (after a dev/staging deploy): creates a synthetic
 # parent, exercises App Check + createChildProfile, and always cleans up.
 APP_CHECK_DEBUG_TOKEN=... npm run smoke:dev -- --project letrando-dev
+
+# Durable deletion worker smoke (Auth + Firestore + Storage emulators):
+# STORAGE_EMULATOR_HOST=http://127.0.0.1:9190 npm run test:deletion:smoke
 
 # Deploy: prefer the manual "Deploy backend" GitHub workflow. It tests, deploys,
 # seeds dev/staging and runs the dev smoke; see docs/deploy-dev-runbook.md.
@@ -353,8 +356,7 @@ development (spec §21).
 - Multi-child summary/aggregation for the parent dashboard (the app can now
   select a child; XP, coins, streak and journey remain scoped per child).
 - Profile deletion and migration of legacy `primary` children; see ADR 0008.
-- Account deletion worker (the authenticated request and tombstone exist;
-  subcollection/Storage/Auth cascade, late callbacks and restore reapplication
-  are PR08b; retention remains D07).
+- Account deletion worker: implemented locally (ADR 0023); the scheduled
+  deploy, D07 retention and restore reapplication remain open.
 - Achievement and weekly-report notification jobs (sender infra is in place).
 - The legal review flagged in §19: this spec is engineering, not legal advice.

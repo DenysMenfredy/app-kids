@@ -6,6 +6,7 @@ import {
   Timestamp,
 } from "firebase-admin/firestore";
 
+import { isAccountDeletionBlocked } from "../lib/deletion";
 import { paths } from "../lib/firestore";
 
 const RESERVATION_WINDOW_MS = 25 * 60 * 60 * 1000;
@@ -32,6 +33,9 @@ export async function claimTrialForCheckout(
   firestore: Firestore,
   uid: string,
 ): Promise<TrialClaim> {
+  if (await isAccountDeletionBlocked(firestore, uid)) {
+    return { status: "unavailable" };
+  }
   const trialRef = firestore.doc(paths.billingTrial(uid));
   const subscriptionQuery = firestore.collection(paths.subscriptions(uid));
   const customerHistory = firestore
@@ -126,6 +130,7 @@ export async function refreshTrialReservation(
   sessionId: string,
   expiresAt: number,
 ): Promise<void> {
+  if (await isAccountDeletionBlocked(firestore, uid)) return;
   const ref = firestore.doc(paths.billingTrial(uid));
   await firestore.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
@@ -153,6 +158,7 @@ export async function releaseTrialReservation(
   uid: string,
   reservationId: string,
 ): Promise<void> {
+  if (await isAccountDeletionBlocked(firestore, uid)) return;
   const ref = firestore.doc(paths.billingTrial(uid));
   await firestore.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);
@@ -178,6 +184,7 @@ export async function consumeTrialEligibility(
   uid: string,
   details: { subscriptionId?: string; reservationId?: string },
 ): Promise<void> {
+  if (await isAccountDeletionBlocked(firestore, uid)) return;
   const ref = firestore.doc(paths.billingTrial(uid));
   await firestore.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(ref);

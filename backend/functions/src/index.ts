@@ -40,6 +40,7 @@ export { recordParentConsent } from "./consent/record_parent_consent";
 
 // account/
 export { requestAccountDeletion } from "./account/request_account_deletion";
+export { processAccountDeletions } from "./account/deletion_worker";
 
 // admin/
 export { manageContent } from "./admin/manage_content";

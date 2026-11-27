@@ -3,6 +3,7 @@ import { onDocumentWritten } from "firebase-functions/v2/firestore";
 
 import { deriveEntitlement } from "../domain/entitlement";
 import { Subscription } from "../domain/subscription";
+import { isAccountDeletionBlocked } from "../lib/deletion";
 import { db, paths, PREMIUM_ENTITLEMENT_ID } from "../lib/firestore";
 import { log } from "../lib/logger";
 
@@ -21,6 +22,10 @@ export const syncEntitlement = onDocumentWritten(
 
 /** Derives the entitlement from the user's best current subscription. */
 export async function syncEntitlementForUser(uid: string): Promise<void> {
+  if (await isAccountDeletionBlocked(db(), uid)) {
+    log("subscriptions", "entitlement_sync_skipped_after_deletion", {});
+    return;
+  }
   const snapshot = await db().collection(paths.subscriptions(uid)).get();
   const now = new Date();
 

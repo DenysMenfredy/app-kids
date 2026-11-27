@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { stripeSecretKey, stripeWebhookSecret } from "../config";
 import { PLANS } from "../domain/plans";
 import { fromStripeStatus } from "../domain/subscription";
+import { isAccountDeletionBlocked } from "../lib/deletion";
 import { db, paths } from "../lib/firestore";
 import {
   claimWebhookEvent,
@@ -103,6 +104,13 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object;
+      const candidateUid = session.client_reference_id ?? session.metadata?.uid;
+      if (candidateUid && await isAccountDeletionBlocked(db(), candidateUid)) {
+        log("payments", "late_payment_event_after_deletion_skipped", {
+          eventType: event.type,
+        });
+        break;
+      }
       const uid = await recordStripeCustomerFromCheckout(db(), session);
       const reservationId = session.metadata?.trialReservationId;
       if (uid && reservationId) {
@@ -120,6 +128,12 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
     case "checkout.session.expired": {
       const session = event.data.object;
       const uid = session.metadata?.uid;
+      if (uid && await isAccountDeletionBlocked(db(), uid)) {
+        log("payments", "late_payment_event_after_deletion_skipped", {
+          eventType: event.type,
+        });
+        break;
+      }
       const reservationId = session.metadata?.trialReservationId;
       if (uid && reservationId) {
         await releaseTrialReservation(db(), uid, reservationId);
@@ -140,6 +154,12 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       const uid = await resolveStripeSubscriptionOwner(db(), subscription);
       if (subscription.metadata?.uid && subscription.metadata.uid !== uid) {
         throw new Error(`Subscription ${subscription.id} UID metadata mismatch`);
+      }
+      if (await isAccountDeletionBlocked(db(), uid)) {
+        log("payments", "late_payment_event_after_deletion_skipped", {
+          eventType: event.type,
+        });
+        break;
       }
       await consumeTrialEligibility(db(), uid, {
         subscriptionId: subscription.id,
@@ -178,6 +198,10 @@ async function upsertSubscription(
   providerEventCreated: number,
   uid: string,
 ): Promise<void> {
+  if (await isAccountDeletionBlocked(db(), uid)) {
+    log("payments", "late_subscription_after_deletion_skipped", {});
+    return;
+  }
   const planId = sub.metadata?.planId ?? "unknown";
   const plan = PLANS[planId];
   const item = sub.items.data[0];

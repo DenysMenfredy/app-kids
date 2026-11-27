@@ -69,11 +69,10 @@ describe("reauthentication window", () => {
 });
 
 describe("deletion tombstone blocking", () => {
-  it("blocks every state except a retryable failed request", () => {
-    for (const status of ["requested", "processing", "completed", "unknown", undefined]) {
+  it("blocks every existing tombstone, including failed and malformed ones", () => {
+    for (const status of ["requested", "processing", "completed", "failed", "unknown", undefined]) {
       assert.equal(deletionBlocksOperations(status), true);
     }
-    assert.equal(deletionBlocksOperations("failed"), false);
   });
 
   it("creates, retries, returns or rejects a request idempotently", () => {

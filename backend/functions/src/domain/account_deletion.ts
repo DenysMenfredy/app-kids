@@ -72,12 +72,12 @@ export function reauthRefusal(
 }
 
 /**
- * Any tombstone except a retryable `failed` state blocks child-data writes.
- * Missing or malformed status also fails closed: absence of a valid status is
- * not evidence that deletion is over.
+ * Any existing tombstone blocks new operations. A `failed` worker state is
+ * still an open deletion request: the worker retries it, but the account is
+ * not reopened for new data. Missing/malformed status also fails closed.
  */
-export function deletionBlocksOperations(status: unknown): boolean {
-  return status !== "failed";
+export function deletionBlocksOperations(_status: unknown): boolean {
+  return true;
 }
 
 /**

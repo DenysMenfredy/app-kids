@@ -72,6 +72,16 @@
   ],
   "fieldOverrides": [
     {
+      "collectionGroup": "deletion",
+      "fieldPath": "status",
+      "indexes": [
+        {
+          "queryScope": "COLLECTION_GROUP",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "notificationPreferences",
       "fieldPath": "preferredTime",
       "indexes": [

@@ -75,6 +75,9 @@ export const requestAccountDeletion = onCall(
         reauthenticatedAt: Timestamp.fromMillis(authTimeSeconds * 1000),
         requestedAt: now,
         updatedAt: now,
+        // The sweep reads this as a due job; a retry after `failed` resets it.
+        attempts: 0,
+        nextAttemptAt: now,
       });
       return {
         changed: true,
@@ -94,9 +97,7 @@ export const requestAccountDeletion = onCall(
         outcome.sessionsRevoked = true;
       } catch (error) {
         logError("deletion", "session_revocation_failed", {
-          uid,
           requestId: outcome.requestId,
-          error: error instanceof Error ? error.message : "unknown",
         });
         throw new HttpsError(
           "internal",
@@ -107,7 +108,6 @@ export const requestAccountDeletion = onCall(
     }
 
     log("deletion", "account_deletion_requested", {
-      uid,
       requestId: outcome.requestId,
       status: outcome.status,
       changed: outcome.changed,
